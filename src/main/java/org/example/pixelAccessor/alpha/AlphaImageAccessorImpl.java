@@ -1,14 +1,18 @@
-package org.example.utils;
+package org.example.pixelAccessor.alpha;
 
-public abstract class PixelAccessorImpl implements PixelAccessor {
+import org.example.pixelAccessor.ImageAccessor;
+
+/**
+ * Implementation of ImageAccessor for images with alpha channel
+ * When alpha channel data is requested each image type is handled separately
+ */
+public abstract class AlphaImageAccessorImpl implements ImageAccessor {
 
     // Image dimensions
     protected final int width;
     protected final int height;
 
     // Alpha
-    protected static final int ALPHA_MASK = 255 << 24;
-    protected boolean hasImageAlpha = false;    // set to true if image has an alpha channel
     protected int alphaPositionOffset;
 
     protected int alphaReplacementThreshold = -1;
@@ -18,7 +22,7 @@ public abstract class PixelAccessorImpl implements PixelAccessor {
     protected int replacementBlue = -1;
 
 
-    public PixelAccessorImpl(int width, int height) {
+    public AlphaImageAccessorImpl(int width, int height) {
         this.width = width;
         this.height = height;
     }
@@ -27,24 +31,24 @@ public abstract class PixelAccessorImpl implements PixelAccessor {
         ARGB
      */
     @Override
-    public int getARGB(int index) {
-        return (hasImageAlpha ? (getAlpha(index) << 24) : ALPHA_MASK) | (getRed(index) << 16)
+    public int getPixel(int index) {
+        return (getAlpha(index) << 24) | (getRed(index) << 16)
                 | (getGreen(index) << 8) | (getBlue(index));
     }
 
     @Override
-    public int getARGB(int x, int y) {
-        return getARGB(get1dIndex(x, y));
+    public int getPixel(int x, int y) {
+        return getPixel(get1dIndex(x, y));
     }
 
     @Override
-    public int[][] getARGB() {
+    public int[][] getPixels() {
         int[][] rgb = new int[width][height];
 
         for (int i = 0; i < width * height; i++) {
             int x = i % width;   // Calculate x-coordinate
             int y = i / width;   // Calculate y-coordinate
-            rgb[x][y] = getARGB(x, y);
+            rgb[x][y] = getPixel(x, y);
         }
         return rgb;
     }
@@ -68,7 +72,7 @@ public abstract class PixelAccessorImpl implements PixelAccessor {
 
     @Override
     public final int getAlpha(int index) {
-        if (!hasImageAlpha || !isReplaceAlphaSet())
+        if (!isReplaceAlphaSet())
             return getRawAlpha(index);
 
         int rawAlpha = getRawAlpha(index);
@@ -85,9 +89,6 @@ public abstract class PixelAccessorImpl implements PixelAccessor {
 
     @Override
     public int[][] getAlpha() {
-        if (!hasImageAlpha)
-            return new int[width][height];
-
         int[][] imageAlpha = new int[width][height];
         for (int i=0; i<width*height; i++) {
             int x = i % width;
@@ -102,9 +103,6 @@ public abstract class PixelAccessorImpl implements PixelAccessor {
      */
     @Override
     public int getRed(int index) {
-        if (!hasImageAlpha)
-            return getRawRed(index);
-
         if (getRawAlpha(index) >= alphaReplacementThreshold)
             return replacementRed;
 
@@ -132,9 +130,6 @@ public abstract class PixelAccessorImpl implements PixelAccessor {
      */
     @Override
     final public int getGreen(int index) {
-        if (!hasImageAlpha)
-            return getRawGreen(index);
-
         if (getAlpha(index) <= alphaReplacementThreshold)
             return replacementGreen;
 
@@ -162,9 +157,6 @@ public abstract class PixelAccessorImpl implements PixelAccessor {
      */
     @Override
     public final int getBlue(int index) {
-        if (!hasImageAlpha)
-            return getRawBlue(index);
-
         if (getRawAlpha(index) <= alphaReplacementThreshold)
             return replacementBlue;
 
@@ -173,7 +165,7 @@ public abstract class PixelAccessorImpl implements PixelAccessor {
 
     @Override
     public final int getBlue(int x, int y) {
-        return getGreen(get1dIndex(x, y));
+        return getBlue(get1dIndex(x, y));
     }
 
     @Override
@@ -196,32 +188,38 @@ public abstract class PixelAccessorImpl implements PixelAccessor {
      *
      * @return Red value integer (0-255)
      */
-    protected abstract int getRawRed(int index);
+    abstract int getRawRed(int index);
 
     /**
      * Gets the green channel value directly from image (omitting any replacements)
      *
      * @return Green value integer (0-255)
      */
-    protected abstract int getRawGreen(int index);
+    abstract int getRawGreen(int index);
 
     /**
      * Gets the blue channel value directly from image (omitting any replacements)
      *
      * @return Blue value integer
      */
-    protected abstract int getRawBlue(int index);
+    abstract int getRawBlue(int index);
 
     /**
      * Gets the alpha channel value directly from image (omitting any replacements)
      *
      * @return Alpha value integer (0-255)
      */
-    protected abstract int getRawAlpha(int index);
+    abstract int getRawAlpha(int index);
 
 
-    @Override
-    public int get1dIndex(int x, int y) {
+    /**
+     * Maps the XY coordinates to the 1D array index.
+     *
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @return 1D array index
+     */
+    protected int get1dIndex(int x, int y) {
         return (y * width) + x;
     }
 }

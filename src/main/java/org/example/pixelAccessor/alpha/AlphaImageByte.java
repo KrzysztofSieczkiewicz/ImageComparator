@@ -1,20 +1,18 @@
-package org.example.utils;
+package org.example.pixelAccessor.alpha;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 
 /**
  * Basic accessor for formats where image colors are saved in bytes:<p>
- * TYPE_3BYTE_BGR,<p>
  * TYPE_4BYTE_ABGR,<p>
- * Utilizes aws BufferedImage, doesn't support video memory caching
  */
-public class PixelByteAccessor extends PixelAccessorImpl {
+public class AlphaImageByte extends AlphaImageAccessorImpl {
 
     private final byte[] imageDataBytes;
-    private final int bytesPerColor;
+    private final int bytesPerColor = 4;
 
-    public PixelByteAccessor(BufferedImage bufferedImage) {
+    public AlphaImageByte(BufferedImage bufferedImage) {
         // Set underlying image properties
         super(
                 bufferedImage.getWidth(),
@@ -24,18 +22,8 @@ public class PixelByteAccessor extends PixelAccessorImpl {
         DataBufferByte dataBuffByte = (DataBufferByte) bufferedImage.getRaster().getDataBuffer();
         this.imageDataBytes = dataBuffByte.getData();
 
-        // Set accessor settings
-        if (bufferedImage.getColorModel().hasAlpha()) {
-            // Set properties for TYPE_3BYTE_ABGR
-            hasImageAlpha = true;
-            alphaPositionOffset = 1;
-            bytesPerColor = 4;
-        } else {
-            // Set properties for TYPE_4BYTE_BGR
-            hasImageAlpha = false;
-            alphaPositionOffset = 0;
-            bytesPerColor = 3;
-        }
+        // Set properties for TYPE_3BYTE_ABGR
+        alphaPositionOffset = 1;
     }
 
     /**
@@ -46,7 +34,7 @@ public class PixelByteAccessor extends PixelAccessorImpl {
      * @return a 2D array of the ARGB integers of the entire image
      */
     @Override
-    public int[][] getARGB() {
+    public int[][] getPixels() {
         int[][] rgb = new int[width][height];
 
         for (int i=0; i< imageDataBytes.length; i+=bytesPerColor) {
@@ -54,7 +42,7 @@ public class PixelByteAccessor extends PixelAccessorImpl {
             int x = dividend % width;
             int y = dividend / width;
 
-            rgb[x][y] = getARGB(i);
+            rgb[x][y] = getPixel(i);
         }
         return rgb;
     }
@@ -67,9 +55,6 @@ public class PixelByteAccessor extends PixelAccessorImpl {
      */
     @Override
     public int[][] getAlpha() {
-        if (!hasImageAlpha)
-            return new int[width][height];
-
         int[][] imageAlpha = new int[width][height];
 
         for (int i=0; i<imageDataBytes.length; i+=bytesPerColor) {
@@ -97,15 +82,11 @@ public class PixelByteAccessor extends PixelAccessorImpl {
 
     @Override
     public int getRawAlpha(int index) {
-        if (!hasImageAlpha)
-            return -1;
-
         return imageDataBytes[index] & 0xFF;
     }
 
     /**
-     * Maps the XY coordinates to the 1D array index
-     * Differs from default implementation by including number of bytes used for each color
+     * Maps the XY coordinates to the 1D array index by including number of bytes used for each color
      *
      * @param x X coordinate
      * @param y Y coordinate

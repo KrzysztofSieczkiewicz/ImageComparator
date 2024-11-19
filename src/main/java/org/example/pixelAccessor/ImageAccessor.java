@@ -1,25 +1,29 @@
-package org.example.utils;
+package org.example.pixelAccessor;
+
+import org.example.pixelAccessor.alpha.AlphaImageByte;
+import org.example.pixelAccessor.alpha.AlphaImageDefault;
+import org.example.pixelAccessor.alpha.AlphaImageInt;
 
 import java.awt.image.BufferedImage;
 
-public interface PixelAccessor {
+public interface ImageAccessor {
 
-    static PixelAccessor create(BufferedImage bufferedImage) {
+    static ImageAccessor create(BufferedImage bufferedImage) {
 
         switch (bufferedImage.getType()) {
             case BufferedImage.TYPE_3BYTE_BGR,
                  BufferedImage.TYPE_4BYTE_ABGR,
                  BufferedImage.TYPE_4BYTE_ABGR_PRE -> {
-                return new PixelByteAccessor(bufferedImage);
+                return new AlphaImageByte(bufferedImage);
             }
             case BufferedImage.TYPE_INT_BGR,
                  BufferedImage.TYPE_INT_RGB,
                  BufferedImage.TYPE_INT_ARGB,
                  BufferedImage.TYPE_INT_ARGB_PRE -> {
-                return new PixelIntAccessor(bufferedImage);
+                return new AlphaImageInt(bufferedImage);
             }
             default -> {
-                return new PixelDefaultAccessor(bufferedImage);
+                return new AlphaImageDefault(bufferedImage);
             }
         }
     }
@@ -27,7 +31,6 @@ public interface PixelAccessor {
     /*
         ARGB
      */
-
     /**
      * Gets ARGB integer of the pixel at specified 1D array index
      *
@@ -37,7 +40,7 @@ public interface PixelAccessor {
      * Green in the bits (8-15)<p>
      * Blue in the bits (0-7)
      */
-    int getARGB(int index);
+    int getPixel(int index);
 
     /**
      * Gets ARGB integer of the pixel at specified 2D coordinates.
@@ -47,14 +50,14 @@ public interface PixelAccessor {
      * @param y the Y coordinate of the pixel in the image 2D array
      * @return ARGB values (int32) using default int32 ARGB model
      */
-    int getARGB(int x, int y);
+    int getPixel(int x, int y);
 
     /**
      * Returns 2D array of RGB values from an entire image. Uses TYPE_INT_ARGB color model
      *
      * @return a 2D array of the ARGB integers of the entire image
      */
-    int[][] getARGB();
+    int[][] getPixels();
 
 
     /*
@@ -98,7 +101,6 @@ public interface PixelAccessor {
      * @return Alpha values (or null if Alpha is not supported in the image format)
      */
     int[][] getAlpha();
-
 
     /*
         RED CHANNEL
@@ -179,19 +181,4 @@ public interface PixelAccessor {
      * @return Blue values (int32) array of the pixel
      */
     int[][] getBlue();
-
-
-    /*
-        OTHERS
-     */
-
-    /**
-     * Maps the XY coordinates to the 1D array index
-     *
-     * @param x X coordinate
-     * @param y Y coordinate
-     * @return 1D array index
-     */
-    int get1dIndex(int x, int y);
-
 }
