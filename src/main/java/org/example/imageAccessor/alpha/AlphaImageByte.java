@@ -1,4 +1,4 @@
-package org.example.pixelAccessor.alpha;
+package org.example.imageAccessor.alpha;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -66,22 +66,22 @@ public class AlphaImageByte extends AlphaImageAccessorImpl {
     }
 
     @Override
-    public int getRawRed(int index) {
+    public int getRed(int index) {
         return imageDataBytes[index + alphaPositionOffset + 2] & 0xFF;
     }
 
     @Override
-    public int getRawGreen(int index) {
+    public int getGreen(int index) {
         return imageDataBytes[index + alphaPositionOffset + 1] & 0xFF;
     }
 
     @Override
-    protected int getRawBlue(int index) {
+    public int getBlue(int index) {
         return imageDataBytes[index + alphaPositionOffset] & 0xFF;
     }
 
     @Override
-    public int getRawAlpha(int index) {
+    public int getAlpha(int index) {
         return imageDataBytes[index] & 0xFF;
     }
 

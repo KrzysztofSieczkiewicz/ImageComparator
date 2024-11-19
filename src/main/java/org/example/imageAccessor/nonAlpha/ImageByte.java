@@ -1,4 +1,4 @@
-package org.example.pixelAccessor.nonAlpha;
+package org.example.imageAccessor.nonAlpha;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -7,11 +7,11 @@ import java.awt.image.DataBufferByte;
  * Basic accessor for formats where image colors are saved in bytes:<p>
  * TYPE_3BYTE_BGR,<p>
  */
-public class NonAlphaImageByte extends NonAlphaImageAccessorImpl {
+public class ImageByte extends ImageAccessorImpl {
     private final byte[] imageDataBytes;
     private final int bytesPerColor = 3;
 
-    public NonAlphaImageByte(BufferedImage bufferedImage) {
+    public ImageByte(BufferedImage bufferedImage) {
         super(
                 bufferedImage.getWidth(),
                 bufferedImage.getHeight() );

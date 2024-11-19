@@ -1,6 +1,6 @@
-package org.example.pixelAccessor.alpha;
+package org.example.imageAccessor.alpha;
 
-import org.example.pixelAccessor.ImageAccessor;
+import org.example.imageAccessor.ImageAccessor;
 
 /**
  * Implementation of ImageAccessor for images with alpha channel
@@ -14,12 +14,6 @@ public abstract class AlphaImageAccessorImpl implements ImageAccessor {
 
     // Alpha
     protected int alphaPositionOffset;
-
-    protected int alphaReplacementThreshold = -1;
-    protected int replacementAlpha = -1;
-    protected int replacementRed = -1;
-    protected int replacementGreen = -1;
-    protected int replacementBlue = -1;
 
 
     public AlphaImageAccessorImpl(int width, int height) {
@@ -57,30 +51,7 @@ public abstract class AlphaImageAccessorImpl implements ImageAccessor {
         ALPHA CHANNEL
      */
     @Override
-    public boolean isReplaceAlphaSet() {
-        return alphaReplacementThreshold >= 0;
-    }
-
-    @Override
-    public void setAlphaReplacement(int threshold, int red, int green, int blue, int alpha) {
-        this.alphaReplacementThreshold = threshold;
-        this.replacementRed = red;
-        this.replacementGreen = green;
-        this.replacementBlue = blue;
-        this.replacementAlpha = alpha;
-    }
-
-    @Override
-    public final int getAlpha(int index) {
-        if (!isReplaceAlphaSet())
-            return getRawAlpha(index);
-
-        int rawAlpha = getRawAlpha(index);
-        if (rawAlpha >= alphaReplacementThreshold)
-            return replacementAlpha;
-
-        return rawAlpha;
-    }
+    public abstract int getAlpha(int index);
 
     @Override
     public int getAlpha(int x, int y) {
@@ -102,12 +73,7 @@ public abstract class AlphaImageAccessorImpl implements ImageAccessor {
         RED CHANNEL
      */
     @Override
-    public int getRed(int index) {
-        if (getRawAlpha(index) >= alphaReplacementThreshold)
-            return replacementRed;
-
-        return getRawRed(index);
-    }
+    public abstract int getRed(int index);
 
     @Override
     public final int getRed(int x, int y) {
@@ -129,13 +95,7 @@ public abstract class AlphaImageAccessorImpl implements ImageAccessor {
         GREEN CHANNEL
      */
     @Override
-    final public int getGreen(int index) {
-        if (getAlpha(index) <= alphaReplacementThreshold)
-            return replacementGreen;
-
-        return getRawGreen(index);
-    }
-
+    public abstract int getGreen(int index);
     @Override
     public final int getGreen(int x, int y) {
         return getGreen(get1dIndex(x, y));
@@ -156,12 +116,7 @@ public abstract class AlphaImageAccessorImpl implements ImageAccessor {
         BLUE CHANNEL
      */
     @Override
-    public final int getBlue(int index) {
-        if (getRawAlpha(index) <= alphaReplacementThreshold)
-            return replacementBlue;
-
-        return getRawBlue(index);
-    }
+    public abstract int getBlue(int index);
 
     @Override
     public final int getBlue(int x, int y) {
@@ -178,39 +133,6 @@ public abstract class AlphaImageAccessorImpl implements ImageAccessor {
         }
         return imageBlue;
     }
-
-
-    /*
-        RAW IMAGE DATA
-     */
-    /**
-     * Gets the red channel value directly from image (omitting any replacements)
-     *
-     * @return Red value integer (0-255)
-     */
-    abstract int getRawRed(int index);
-
-    /**
-     * Gets the green channel value directly from image (omitting any replacements)
-     *
-     * @return Green value integer (0-255)
-     */
-    abstract int getRawGreen(int index);
-
-    /**
-     * Gets the blue channel value directly from image (omitting any replacements)
-     *
-     * @return Blue value integer
-     */
-    abstract int getRawBlue(int index);
-
-    /**
-     * Gets the alpha channel value directly from image (omitting any replacements)
-     *
-     * @return Alpha value integer (0-255)
-     */
-    abstract int getRawAlpha(int index);
-
 
     /**
      * Maps the XY coordinates to the 1D array index.

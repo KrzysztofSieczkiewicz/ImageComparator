@@ -1,4 +1,4 @@
-package org.example.pixelAccessor.alpha;
+package org.example.imageAccessor.nonAlpha;
 
 import org.example.utils.Util;
 
@@ -7,24 +7,22 @@ import java.awt.image.DataBufferInt;
 
 /**
  * Basic accessor for formats where image colors are saved in integers:<p>
- * TYPE_INT_ARGB,<p>
- * TYPE_INT_ARGB_PRE,<p>
+ * TYPE_INT_RGB,<p>
+ * TYPE_INT_BGR,<p>
  */
-public class AlphaImageInt extends AlphaImageAccessorImpl {
+public class ImageInt extends ImageAccessorImpl {
 
     private final int[] imageDataInt;
 
-    private final int maskRed;
-    private final int maskGreen;
-    private final int maskBlue;
-    private final int maskAlpha;
+    private int maskRed;
+    private int maskGreen;
+    private int maskBlue;
 
     private final int offsetRed;
     private final int offsetGreen;
     private final int offsetBlue;
-    private final int offsetAlpha;
 
-    public AlphaImageInt(BufferedImage bufferedImage) {
+    public ImageInt(BufferedImage bufferedImage) {
         // Set underlying image properties
         super(
                 bufferedImage.getWidth(),
@@ -34,34 +32,36 @@ public class AlphaImageInt extends AlphaImageAccessorImpl {
         DataBufferInt dataBufferInt = (DataBufferInt) bufferedImage.getRaster().getDataBuffer();
         this.imageDataInt = dataBufferInt.getData();
 
-        maskAlpha   = 0xff000000;
-        maskRed     = 0x00ff0000;
-        maskGreen   = 0x0000ff00;
-        maskBlue    = 0x000000ff;
-
-        offsetAlpha = Util.findFirstSetBitIndex(maskAlpha);
+        // Set masks and color offsets
+        switch (bufferedImage.getType()) {
+            case BufferedImage.TYPE_INT_RGB -> {
+                maskRed     = 0xff0000;
+                maskGreen   = 0x00ff00;
+                maskBlue    = 0x0000ff;
+            }
+            case BufferedImage.TYPE_INT_BGR -> {
+                maskBlue    = 0xff0000;
+                maskGreen   = 0x00ff00;
+                maskRed     = 0x0000ff;
+            }
+        }
         offsetRed   = Util.findFirstSetBitIndex(maskRed);
         offsetGreen = Util.findFirstSetBitIndex(maskGreen);
         offsetBlue  = Util.findFirstSetBitIndex(maskBlue);
     }
 
     @Override
-    protected int getRawRed(int index) {
+    public int getRed(int index) {
         return (imageDataInt[index] & maskRed) >>> offsetRed;
     }
 
     @Override
-    protected int getRawGreen(int index) {
+    public int getGreen(int index) {
         return (imageDataInt[index] & maskGreen) >>> offsetGreen;
     }
 
     @Override
-    protected int getRawBlue(int index) {
+    public int getBlue(int index) {
         return (imageDataInt[index] & maskBlue) >>> offsetBlue;
-    }
-
-    @Override
-    protected int getRawAlpha(int index) {
-        return (imageDataInt[index] & maskAlpha) >>> offsetAlpha;
     }
 }

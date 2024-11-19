@@ -1,4 +1,4 @@
-package org.example.pixelAccessor.alpha;
+package org.example.imageAccessor.alpha;
 
 import java.awt.image.BufferedImage;
 
@@ -26,22 +26,22 @@ public class AlphaImageDefault extends AlphaImageAccessorImpl {
     }
 
     @Override
-    protected int getRawAlpha(int index) {
+    public int getAlpha(int index) {
         return (imageRGBData[index] & ALPHA_MASK) >>> 24;
     }
 
     @Override
-    protected int getRawRed(int index) {
+    public int getRed(int index) {
         return (imageRGBData[index] & RED_MASK) >>> 16;
     }
 
     @Override
-    protected int getRawGreen(int index) {
+    public int getGreen(int index) {
         return (imageRGBData[index] & GREEN_MASK) >>> 8;
     }
 
     @Override
-    protected int getRawBlue(int index) {
+    public int getBlue(int index) {
         return (imageRGBData[index] & BLUE_MASK);
     }
 }

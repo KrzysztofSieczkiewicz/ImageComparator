@@ -1,8 +1,10 @@
-package org.example.pixelAccessor;
+package org.example.imageAccessor;
 
-import org.example.pixelAccessor.alpha.AlphaImageByte;
-import org.example.pixelAccessor.alpha.AlphaImageDefault;
-import org.example.pixelAccessor.alpha.AlphaImageInt;
+import org.example.imageAccessor.alpha.AlphaImageByte;
+import org.example.imageAccessor.alpha.AlphaImageDefault;
+import org.example.imageAccessor.alpha.AlphaImageInt;
+import org.example.imageAccessor.nonAlpha.ImageByte;
+import org.example.imageAccessor.nonAlpha.ImageInt;
 
 import java.awt.image.BufferedImage;
 
@@ -11,14 +13,18 @@ public interface ImageAccessor {
     static ImageAccessor create(BufferedImage bufferedImage) {
 
         switch (bufferedImage.getType()) {
-            case BufferedImage.TYPE_3BYTE_BGR,
-                 BufferedImage.TYPE_4BYTE_ABGR,
+            case BufferedImage.TYPE_3BYTE_BGR -> {
+                return new ImageByte(bufferedImage);
+            }
+            case BufferedImage.TYPE_4BYTE_ABGR,
                  BufferedImage.TYPE_4BYTE_ABGR_PRE -> {
                 return new AlphaImageByte(bufferedImage);
             }
             case BufferedImage.TYPE_INT_BGR,
-                 BufferedImage.TYPE_INT_RGB,
-                 BufferedImage.TYPE_INT_ARGB,
+                 BufferedImage.TYPE_INT_RGB -> {
+                return new ImageInt(bufferedImage);
+            }
+            case BufferedImage.TYPE_INT_ARGB,
                  BufferedImage.TYPE_INT_ARGB_PRE -> {
                 return new AlphaImageInt(bufferedImage);
             }
@@ -63,22 +69,6 @@ public interface ImageAccessor {
     /*
         ALPHA CHANNEL
      */
-    /**
-     * Check if opacity replacement threshold is set to the value equal or larger than 0.
-     * Setting this threshold is resolved by  calling {@link #setAlphaReplacement(int, int, int, int, int)}
-     */
-    boolean isReplaceAlphaSet();
-
-    /**
-     * Sets alpha replacement threshold and values for replacement color
-     * @param alphaThreshold alpha value above which replacement should occur
-     * @param red red component of replacement color
-     * @param green green component of replacement color
-     * @param blue blue component of replacement color
-     * @param alpha alpha component of replacement color
-     */
-    void setAlphaReplacement(int alphaThreshold, int red, int green, int blue, int alpha);
-
     /**
      * Gets an alpha value from the pixel at specified 1D array index
      *

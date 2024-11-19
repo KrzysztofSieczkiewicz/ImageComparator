@@ -1,4 +1,4 @@
-package org.example.pixelAccessor.nonAlpha;
+package org.example.imageAccessor.nonAlpha;
 
 import java.awt.image.BufferedImage;
 
@@ -7,11 +7,11 @@ import java.awt.image.BufferedImage;
  * Accesses image data from image RGB matrix instead of buffer.
  * Should handle any BufferedImage type, but is noticeably slower than dedicated accessors
  */
-public class NonAlphaImageDefault extends NonAlphaImageAccessorImpl {
+public class ImageDefault extends ImageAccessorImpl {
 
     private final int[] imageRGBData;
 
-    public NonAlphaImageDefault(BufferedImage bufferedImage) {
+    public ImageDefault(BufferedImage bufferedImage) {
         // Set underlying image properties
         super(bufferedImage.getWidth(),
               bufferedImage.getHeight() );

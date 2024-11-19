@@ -1,12 +1,12 @@
-package org.example.pixelAccessor.nonAlpha;
+package org.example.imageAccessor.nonAlpha;
 
-import org.example.pixelAccessor.ImageAccessor;
+import org.example.imageAccessor.ImageAccessor;
 
 /**
  * Implementation of ImageAccessor for images without alpha channel
  * When alpha channel data is requested methods return 0 or false
  */
-public abstract class NonAlphaImageAccessorImpl implements ImageAccessor {
+public abstract class ImageAccessorImpl implements ImageAccessor {
 
     // Image dimensions
     protected final int width;
@@ -15,7 +15,7 @@ public abstract class NonAlphaImageAccessorImpl implements ImageAccessor {
     protected static final int ALPHA_MASK = 255 << 24;
 
 
-    public NonAlphaImageAccessorImpl(int width, int height) {
+    public ImageAccessorImpl(int width, int height) {
         this.width = width;
         this.height = height;
     }
@@ -48,14 +48,6 @@ public abstract class NonAlphaImageAccessorImpl implements ImageAccessor {
     /*
         ALPHA CHANNEL
      */
-    @Override
-    public boolean isReplaceAlphaSet() {
-        return false;
-    }
-
-    @Override
-    public void setAlphaReplacement(int threshold, int red, int green, int blue, int alpha) {}
-
     @Override
     public final int getAlpha(int index) {
         return 0;
