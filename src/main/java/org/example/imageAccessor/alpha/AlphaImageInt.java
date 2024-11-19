@@ -1,6 +1,6 @@
 package org.example.imageAccessor.alpha;
 
-import org.example.utils.Util;
+import org.example.utils.BitOperationsUtil;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -39,10 +39,10 @@ public class AlphaImageInt extends AlphaImageAccessorImpl {
         maskGreen   = 0x0000ff00;
         maskBlue    = 0x000000ff;
 
-        offsetAlpha = Util.findFirstSetBitIndex(maskAlpha);
-        offsetRed   = Util.findFirstSetBitIndex(maskRed);
-        offsetGreen = Util.findFirstSetBitIndex(maskGreen);
-        offsetBlue  = Util.findFirstSetBitIndex(maskBlue);
+        offsetAlpha = BitOperationsUtil.findFirstSetBitIndex(maskAlpha);
+        offsetRed   = BitOperationsUtil.findFirstSetBitIndex(maskRed);
+        offsetGreen = BitOperationsUtil.findFirstSetBitIndex(maskGreen);
+        offsetBlue  = BitOperationsUtil.findFirstSetBitIndex(maskBlue);
     }
 
     @Override

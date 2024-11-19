@@ -1,6 +1,6 @@
 package org.example.imageAccessor.nonAlpha;
 
-import org.example.utils.Util;
+import org.example.utils.BitOperationsUtil;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -45,9 +45,9 @@ public class ImageInt extends ImageAccessorImpl {
                 maskRed     = 0x0000ff;
             }
         }
-        offsetRed   = Util.findFirstSetBitIndex(maskRed);
-        offsetGreen = Util.findFirstSetBitIndex(maskGreen);
-        offsetBlue  = Util.findFirstSetBitIndex(maskBlue);
+        offsetRed   = BitOperationsUtil.findFirstSetBitIndex(maskRed);
+        offsetGreen = BitOperationsUtil.findFirstSetBitIndex(maskGreen);
+        offsetBlue  = BitOperationsUtil.findFirstSetBitIndex(maskBlue);
     }
 
     @Override

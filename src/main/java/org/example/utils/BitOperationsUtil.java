@@ -1,9 +1,9 @@
 package org.example.utils;
 
-public class Util {
+public class BitOperationsUtil {
 
     /**
-     * Finds the first (least significant) bit set to 1
+     * Finds the first (least significant) bit that is set to 1
      * @param mask mask to be searched
      * @return index of the least significant set bit
      */

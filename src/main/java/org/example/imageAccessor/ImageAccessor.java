@@ -6,7 +6,10 @@ import org.example.imageAccessor.alpha.AlphaImageInt;
 import org.example.imageAccessor.nonAlpha.ImageByte;
 import org.example.imageAccessor.nonAlpha.ImageInt;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 public interface ImageAccessor {
 
@@ -32,6 +35,12 @@ public interface ImageAccessor {
                 return new AlphaImageDefault(bufferedImage);
             }
         }
+    }
+
+    static ImageAccessor readAndCreate(String filePath) throws IOException {
+        BufferedImage bufferedImage = ImageIO.read(new File(filePath));
+
+        return create(bufferedImage);
     }
 
     /*
