@@ -6,7 +6,7 @@ import org.example.pixelAccessor.ImageAccessor;
  * Implementation of ImageAccessor for images without alpha channel
  * When alpha channel data is requested methods return 0 or false
  */
-public abstract class ImageAccessorImpl implements ImageAccessor {
+public abstract class NonAlphaImageAccessorImpl implements ImageAccessor {
 
     // Image dimensions
     protected final int width;
@@ -15,7 +15,7 @@ public abstract class ImageAccessorImpl implements ImageAccessor {
     protected static final int ALPHA_MASK = 255 << 24;
 
 
-    public ImageAccessorImpl(int width, int height) {
+    public NonAlphaImageAccessorImpl(int width, int height) {
         this.width = width;
         this.height = height;
     }

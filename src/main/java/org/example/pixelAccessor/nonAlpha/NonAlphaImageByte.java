@@ -7,11 +7,11 @@ import java.awt.image.DataBufferByte;
  * Basic accessor for formats where image colors are saved in bytes:<p>
  * TYPE_3BYTE_BGR,<p>
  */
-public class ImageByte extends ImageAccessorImpl {
+public class NonAlphaImageByte extends NonAlphaImageAccessorImpl {
     private final byte[] imageDataBytes;
     private final int bytesPerColor = 3;
 
-    public ImageByte(BufferedImage bufferedImage) {
+    public NonAlphaImageByte(BufferedImage bufferedImage) {
         super(
                 bufferedImage.getWidth(),
                 bufferedImage.getHeight() );

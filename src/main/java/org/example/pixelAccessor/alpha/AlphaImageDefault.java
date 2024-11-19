@@ -9,7 +9,10 @@ import java.awt.image.BufferedImage;
  */
 public class AlphaImageDefault extends AlphaImageAccessorImpl {
 
-    protected final int fullMask = 255 << 24;
+    private static final int ALPHA_MASK = 255 << 24;
+    private static final int RED_MASK = 255 << 16;
+    private static final int GREEN_MASK = 255 << 8;
+    private static final int BLUE_MASK = 255;
 
     private final int[] imageRGBData;
 
@@ -24,21 +27,21 @@ public class AlphaImageDefault extends AlphaImageAccessorImpl {
 
     @Override
     protected int getRawAlpha(int index) {
-        return (imageRGBData[index] & fullMask) >>> 24;
+        return (imageRGBData[index] & ALPHA_MASK) >>> 24;
     }
 
     @Override
     protected int getRawRed(int index) {
-        return (imageRGBData[index] & fullMask) >>> 16;
+        return (imageRGBData[index] & RED_MASK) >>> 16;
     }
 
     @Override
     protected int getRawGreen(int index) {
-        return (imageRGBData[index] & fullMask) >>> 8;
+        return (imageRGBData[index] & GREEN_MASK) >>> 8;
     }
 
     @Override
     protected int getRawBlue(int index) {
-        return (imageRGBData[index] & fullMask);
+        return (imageRGBData[index] & BLUE_MASK);
     }
 }

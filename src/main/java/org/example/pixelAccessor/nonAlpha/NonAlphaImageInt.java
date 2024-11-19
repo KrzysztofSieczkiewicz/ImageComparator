@@ -10,7 +10,7 @@ import java.awt.image.DataBufferInt;
  * TYPE_INT_RGB,<p>
  * TYPE_INT_BGR,<p>
  */
-public class ImageInt extends ImageAccessorImpl {
+public class NonAlphaImageInt extends NonAlphaImageAccessorImpl {
 
     private final int[] imageDataInt;
 
@@ -22,7 +22,7 @@ public class ImageInt extends ImageAccessorImpl {
     private final int offsetGreen;
     private final int offsetBlue;
 
-    public ImageInt(BufferedImage bufferedImage) {
+    public NonAlphaImageInt(BufferedImage bufferedImage) {
         // Set underlying image properties
         super(
                 bufferedImage.getWidth(),

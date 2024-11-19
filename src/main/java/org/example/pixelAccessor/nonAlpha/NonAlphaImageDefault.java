@@ -7,11 +7,11 @@ import java.awt.image.BufferedImage;
  * Accesses image data from image RGB matrix instead of buffer.
  * Should handle any BufferedImage type, but is noticeably slower than dedicated accessors
  */
-public class ImageDefault extends ImageAccessorImpl {
+public class NonAlphaImageDefault extends NonAlphaImageAccessorImpl {
 
     private final int[] imageRGBData;
 
-    public ImageDefault(BufferedImage bufferedImage) {
+    public NonAlphaImageDefault(BufferedImage bufferedImage) {
         // Set underlying image properties
         super(bufferedImage.getWidth(),
               bufferedImage.getHeight() );
