@@ -1,11 +1,5 @@
 package org.example.imageAccessor;
 
-import org.example.imageAccessor.alpha.AlphaImageByte;
-import org.example.imageAccessor.alpha.AlphaImageDefault;
-import org.example.imageAccessor.alpha.AlphaImageInt;
-import org.example.imageAccessor.nonAlpha.ImageByte;
-import org.example.imageAccessor.nonAlpha.ImageInt;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -15,24 +9,26 @@ public interface ImageAccessor {
 
     static ImageAccessor create(BufferedImage bufferedImage) {
 
+        //return new ImageAccessorDefault(bufferedImage);
+
         switch (bufferedImage.getType()) {
-            case BufferedImage.TYPE_3BYTE_BGR -> {
-                return new ImageByte(bufferedImage);
-            }
-            case BufferedImage.TYPE_4BYTE_ABGR,
+            case BufferedImage.TYPE_3BYTE_BGR,
+                 BufferedImage.TYPE_4BYTE_ABGR,
                  BufferedImage.TYPE_4BYTE_ABGR_PRE -> {
-                return new AlphaImageByte(bufferedImage);
+
+                return new ImageAccessorByte(bufferedImage);
             }
             case BufferedImage.TYPE_INT_BGR,
-                 BufferedImage.TYPE_INT_RGB -> {
-                return new ImageInt(bufferedImage);
-            }
-            case BufferedImage.TYPE_INT_ARGB,
+                 BufferedImage.TYPE_INT_RGB,
+                 BufferedImage.TYPE_INT_ARGB,
                  BufferedImage.TYPE_INT_ARGB_PRE -> {
-                return new AlphaImageInt(bufferedImage);
+
+                System.out.println("INT");
+
+                return new ImageAccessorInt(bufferedImage);
             }
             default -> {
-                return new AlphaImageDefault(bufferedImage);
+                return new ImageAccessorDefault(bufferedImage);
             }
         }
     }
@@ -79,6 +75,30 @@ public interface ImageAccessor {
         ALPHA CHANNEL
      */
     /**
+     * Overwrites pixel data under 1D array index
+     * @param index image 1D array index
+     * @param a alpha value
+     * @param r red value
+     * @param g green value
+     * @param b blue value
+     */
+    void setPixel(int index, int a, int r, int g, int b);
+
+    /**
+     * Overwrites pixel data under image (X,Y) coordinates
+     * @param x X coordinate of the pixel
+     * @param y Y coordinate of the pixel
+     * @param a alpha value
+     * @param r red value
+     * @param g green value
+     * @param b blue value
+     */
+    void setPixel(int x, int y, int a, int r, int g, int b);
+
+    /*
+        ALPHA CHANNEL
+     */
+    /**
      * Gets an alpha value from the pixel at specified 1D array index
      *
      * @return Alpha value stored in the integer
@@ -100,6 +120,24 @@ public interface ImageAccessor {
      * @return Alpha values (or null if Alpha is not supported in the image format)
      */
     int[][] getAlpha();
+
+    /**
+     * Sets the alpha channel value under given 1D array index
+     *
+     * @param index 1D array index
+     * @param alpha desired alpha channel value
+     */
+    void setAlpha(int index, int alpha);
+
+    /**
+     * Sets the red channel value under given image coordinates
+     *
+     * @param x x coordinate of the pixel
+     * @param y y coordinate of the pixel
+     * @param alpha desired alpha channel value
+     */
+    void setAlpha(int x, int y, int alpha);
+
 
     /*
         RED CHANNEL
@@ -126,6 +164,23 @@ public interface ImageAccessor {
      * @return Red values (int32) array of the pixel
      */
     int[][] getRed();
+
+    /**
+     * Sets the red channel value under given 1D array index
+     *
+     * @param index 1D array index
+     * @param red desired red channel value
+     */
+    void setRed(int index, int red);
+
+    /**
+     * Sets the red channel value under given image coordinates
+     *
+     * @param x x coordinate of the pixel
+     * @param y y coordinate of the pixel
+     * @param red desired red channel value
+     */
+    void setRed(int x, int y, int red);
 
 
     /*
@@ -154,6 +209,23 @@ public interface ImageAccessor {
      */
     int[][] getGreen();
 
+    /**
+     * Sets the green channel value under given 1D array index
+     *
+     * @param index 1D array index
+     * @param green desired green channel value
+     */
+    void setGreen(int index, int green);
+
+    /**
+     * Sets the green channel value under given image coordinates
+     *
+     * @param x x coordinate of the pixel
+     * @param y y coordinate of the pixel
+     * @param green desired green channel value
+     */
+    void setGreen(int x, int y, int green);
+
 
     /*
         BLUE CHANNEL
@@ -180,4 +252,21 @@ public interface ImageAccessor {
      * @return Blue values (int32) array of the pixel
      */
     int[][] getBlue();
+
+    /**
+     * Sets the blue channel value under given 1D array index
+     *
+     * @param index 1D array index
+     * @param blue desired blue channel value
+     */
+    void setBlue(int index, int blue);
+
+    /**
+     * Sets the blue channel value under given image coordinates
+     *
+     * @param x x coordinate of the pixel
+     * @param y y coordinate of the pixel
+     * @param blue desired blue channel value
+     */
+    void setBlue(int x, int y, int blue);
 }
