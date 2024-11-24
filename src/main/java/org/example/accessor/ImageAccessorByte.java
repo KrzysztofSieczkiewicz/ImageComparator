@@ -1,4 +1,4 @@
-package org.example.imageAccessor;
+package org.example.accessor;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -14,7 +14,6 @@ public class ImageAccessorByte extends ImageAccessorImpl {
     private final int bytesPerColor;
 
     public ImageAccessorByte(BufferedImage bufferedImage) {
-        // Set underlying image properties
         super(
                 bufferedImage.getWidth(),
                 bufferedImage.getHeight() );
@@ -33,7 +32,6 @@ public class ImageAccessorByte extends ImageAccessorImpl {
             default -> throw new IllegalArgumentException("Unsupported image type: " + bufferedImage.getType());
         }
 
-        // Read image data
         this.imageDataBytes = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
     }
 

@@ -1,6 +1,4 @@
-package org.example.imageAccessor;
-
-import org.example.imageAccessor.ImageAccessor;
+package org.example.accessor;
 
 public abstract class ImageAccessorImpl implements ImageAccessor {
 

@@ -1,4 +1,4 @@
-package org.example.imageAccessor;
+package org.example.accessor;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -15,16 +15,12 @@ public interface ImageAccessor {
             case BufferedImage.TYPE_3BYTE_BGR,
                  BufferedImage.TYPE_4BYTE_ABGR,
                  BufferedImage.TYPE_4BYTE_ABGR_PRE -> {
-
                 return new ImageAccessorByte(bufferedImage);
             }
             case BufferedImage.TYPE_INT_BGR,
                  BufferedImage.TYPE_INT_RGB,
                  BufferedImage.TYPE_INT_ARGB,
                  BufferedImage.TYPE_INT_ARGB_PRE -> {
-
-                System.out.println("INT");
-
                 return new ImageAccessorInt(bufferedImage);
             }
             default -> {

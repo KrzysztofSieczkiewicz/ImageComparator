@@ -1,4 +1,4 @@
-package org.example.imageAccessor;
+package org.example.accessor;
 
 import java.awt.image.BufferedImage;
 

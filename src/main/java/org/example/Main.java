@@ -1,7 +1,11 @@
 package org.example;
 
-import org.example.imageAccessor.ImageAccessor;
+import org.example.accessor.ImageAccessor;
+import org.example.comparator.SimpleComparator;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 
 public class Main {
@@ -25,15 +29,21 @@ public class Main {
         end = System.nanoTime();
         System.out.println("Time taken to read: " + (end - start) + " ns");
 
+//        start = System.nanoTime();
+//        for (int i = 0; i < 100; i++) {
+//            imageAccessor.setPixel(0, 255, 255, 255, 255);
+//        }
+//        end = System.nanoTime();
+//        System.out.println("Time taken to write: " + (end - start) + " ns");
+
+        BufferedImage actualImage = ImageIO.read(new File("src/image.png"));
+        BufferedImage checkedmage = ImageIO.read(new File("src/image2.png"));
+        SimpleComparator comparator = new SimpleComparator();
+
         start = System.nanoTime();
-        for (int i = 0; i < 100; i++) {
-            imageAccessor.setPixel(0, 255, 255, 255, 255);
-        }
+        comparator.compare(actualImage, checkedmage);
         end = System.nanoTime();
-        System.out.println("Time taken to write: " + (end - start) + " ns");
-
-
-        // TODO - REPEAT AND SAVE TIMES, ADD "hasAlpha" CHECK AND COMPARE RESULTS - MAYBE SEPARATING ALPHA/NON-ALPHA HAS NO POINT
+        System.out.println("Time taken to compare: " + (end - start) + " ns");
     }
 }
 

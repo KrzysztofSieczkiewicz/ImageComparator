@@ -1,4 +1,4 @@
-package org.example.imageAccessor;
+package org.example.accessor;
 
 import org.example.utils.BitOperationsUtil;
 
@@ -28,7 +28,6 @@ public class ImageAccessorInt extends ImageAccessorImpl {
     private final int offsetAlpha;
 
     public ImageAccessorInt(BufferedImage bufferedImage) {
-        // Set underlying image properties
         super(
                 bufferedImage.getWidth(),
                 bufferedImage.getHeight() );
@@ -56,7 +55,6 @@ public class ImageAccessorInt extends ImageAccessorImpl {
             default -> throw new IllegalArgumentException("Unsupported image type: " + bufferedImage.getType());
         }
 
-        // Read image data
         this.imageDataInt = ((DataBufferInt) bufferedImage.getRaster().getDataBuffer()).getData();
 
         offsetAlpha = BitOperationsUtil.findFirstSetBitIndex(maskAlpha);
