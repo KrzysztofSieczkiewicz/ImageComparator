@@ -73,7 +73,7 @@ public class ImageAccessorByte extends ImageAccessorImpl {
 
     @Override
     public int getAlpha(int index) {
-        if (!hasAlpha) return -1;
+        if (!hasAlpha) return 255;
         return imageDataBytes[index] & 0xFF;
     }
 

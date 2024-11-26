@@ -37,11 +37,11 @@ public class Main {
 //        System.out.println("Time taken to write: " + (end - start) + " ns");
 
         BufferedImage actualImage = ImageIO.read(new File("src/image.png"));
-        BufferedImage checkedmage = ImageIO.read(new File("src/image2.png"));
+        BufferedImage checkedImage = ImageIO.read(new File("src/image2.png"));
         SimpleComparator comparator = new SimpleComparator();
 
         start = System.nanoTime();
-        comparator.compare(actualImage, checkedmage);
+        comparator.compare(actualImage, checkedImage);
         end = System.nanoTime();
         System.out.println("Time taken to compare: " + (end - start) + " ns");
     }

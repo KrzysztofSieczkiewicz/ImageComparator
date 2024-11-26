@@ -65,7 +65,7 @@ public class ImageAccessorInt extends ImageAccessorImpl {
 
     @Override
     public int getAlpha(int index) {
-        return hasAlpha ? (imageDataInt[index] & maskAlpha) >>> offsetAlpha : 0;
+        return hasAlpha ? (imageDataInt[index] & maskAlpha) >>> offsetAlpha : 255;
     }
 
     @Override
