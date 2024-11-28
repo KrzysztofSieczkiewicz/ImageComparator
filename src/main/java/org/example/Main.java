@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.accessor.ImageAccessor;
+import org.example.comparator.PHashComparator;
 import org.example.comparator.SimpleComparator;
 
 import javax.imageio.ImageIO;
@@ -40,8 +41,12 @@ public class Main {
         BufferedImage checkedImage = ImageIO.read(new File("src/image2.png"));
         SimpleComparator comparator = new SimpleComparator();
 
+        PHashComparator comp = new PHashComparator();
+
+
         start = System.nanoTime();
-        comparator.compare(actualImage, checkedImage);
+        comp.compare(actualImage, checkedImage);
+        //comparator.compare(actualImage, checkedImage);
         end = System.nanoTime();
         System.out.println("Time taken to compare: " + (end - start) + " ns");
     }

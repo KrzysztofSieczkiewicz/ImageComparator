@@ -3,24 +3,23 @@ package org.example.utils;
 import org.example.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 public class PHashUtil {
     private final int size = 32;
     private final int reducedSize = 8;
 
 
-
     /**
      * Calculate 64 bit long pHash
      */
-    public long getHash(BufferedImage img) {
+    public long getImageHash(BufferedImage img) {
 
         img = ImageUtil.resize(img, size, size);
         img = ImageUtil.greyscale(img);
 
         ImageAccessor imageAccessor = ImageAccessor.create(img);
 
-        // TODO: TEST IF BLUE VALUES REQUIRE NORMALIZATION AND CONVERSION TO DOUBLE
         int[][] blueValues = imageAccessor.getBlue();
 
         double[][] freqDomainValues = generateFrequencyDomain(blueValues);
@@ -47,16 +46,11 @@ public class PHashUtil {
         return hashBits;
     }
 
-    private double[][] generateFrequencyDomain(int[][] imageValues) {
+    private double[][] generateFrequencyDomain(int[][] pixels) {
+        double[] normalizations = new double[size];
+        Arrays.setAll(normalizations, i -> i * 2);
+        normalizations[0] = 1 / Math.sqrt(2.0);
 
-        // Initialize normalization coeffs
-        double[] c = new double[size];
-        for (int i = 1; i < size; i++) {
-            c[i] = 1;
-        }
-        c[0] = 1 / Math.sqrt(2.0);
-
-        // Precompute cosine UV terms
         double[][] cosTermsU = new double[size][size];
         double[][] cosTermsV = new double[size][size];
         for (int u = 0; u < size; u++) {
@@ -70,21 +64,20 @@ public class PHashUtil {
             }
         }
 
-        // Calc DCT
-        double[][] F = new double[size][size];
+        double[][] frequencies = new double[size][size];
         for (int u = 0; u < size; u++) {
             for (int v = 0; v < size; v++) {
-                double sum = 0.0;
+                double freq = 0.0;
 
                 for (int i = 0; i < size; i++) {
                     for (int j = 0; j < size; j++) {
-                        sum += cosTermsU[u][i] * cosTermsV[v][j] * imageValues[i][j];
+                        freq += cosTermsU[u][i] * cosTermsV[v][j] * pixels[i][j];
                     }
                 }
-                sum *= ((c[u] * c[v]) / 4.0);
-                F[u][v] = sum;
+                freq *= ((normalizations[u] * normalizations[v]) / 4.0);
+                frequencies[u][v] = freq;
             }
         }
-        return F;
+        return frequencies;
     }
 }
