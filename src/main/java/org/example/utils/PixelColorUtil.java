@@ -3,8 +3,12 @@ package org.example.utils;
 public class PixelColorUtil {
     // TODO: all distance methods require Math.sqrt(). Can be optimized by returning non square rooted value
     // and using squared threshold instead (as threshold can be calculated once instead of calculating sqrt of distance)
-    // on each call
+    // on each call - it might not be as impactful as it seems though
 
+    // TODO: Ensure that HSV returned from convertRGBtHSV is returned normalized
+    // meaning that H is between 0 and 360
+    // S is between 0 and 1
+    // V is between 0 and 1
     /**
      * Converts RGB space coordinates into HSV (cylindrical)
      * @param rgb rgb integer
@@ -33,10 +37,6 @@ public class PixelColorUtil {
         float deltaG = ( (max-green_calc)/6f + (delta/2f) ) / delta;
         float deltaB = ( (max-blue_calc)/6f + (delta/2f) ) / delta;
 
-        System.out.println("deltaRed: " + deltaR);
-        System.out.println("deltaGreen: " + deltaG);
-        System.out.println("deltaBlue: " + deltaB);
-
         if (red_calc == max) H = deltaB - deltaG;
         else if (green_calc == max) H = (1/3f) + deltaR - deltaB;
         else if (blue_calc == max) H = (2/3f) + deltaG - deltaR;
@@ -54,10 +54,10 @@ public class PixelColorUtil {
      * @return distance between colors in the HSV space
      */
     public static double calculateDistanceHSV(float[] hsv1, float[] hsv2) {
-        float diffH = hsv1[0] - hsv2[0];
-        float deltaH = Math.min(diffH, 360 - Math.abs(diffH));
+        float diffH = Math.abs(hsv1[0] - hsv2[0]);
+        float deltaH = Math.min(diffH, 360 - diffH);
         float deltaS = hsv1[1]-hsv2[1];
-        float deltaV = (hsv1[2]-hsv2[2]) / 255f;
+        float deltaV = hsv1[2]-hsv2[2];
 
         return Math.sqrt(deltaH*deltaH + deltaS*deltaS + deltaV*deltaV);
     }

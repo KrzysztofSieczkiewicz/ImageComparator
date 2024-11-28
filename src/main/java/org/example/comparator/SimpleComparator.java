@@ -25,23 +25,10 @@ public class SimpleComparator implements ImageComparator {
         for (int x=0; x<actual.getWidth(); x++) {
             for (int y=0; y<actual.getHeight(); y++) {
 
-                double distance = PixelColorUtil.calculateDistanceRGB(
-                        expectedAccessor.getPixel(x,y),
-                        actualAccessor.getPixel(x,y) );
+                float[] expectedHSV = PixelColorUtil.convertRGBtoHSV(expectedAccessor.getPixel(x,y));
+                float[] actualHSV = PixelColorUtil.convertRGBtoHSV(actualAccessor.getPixel(x,y));
 
-//                System.out.print(expectedAccessor.getPixel(x,y) + ", ");
-//                System.out.print(actualAccessor.getPixel(x,y) + ", ");
-//                System.out.print(distance + "\n");
-
-//                System.out.print(expectedAccessor.getAlpha(x,y) + ", ");
-//                System.out.print(expectedAccessor.getRed(x,y) + ", ");
-//                System.out.print(expectedAccessor.getGreen(x,y) + ", ");
-//                System.out.print(expectedAccessor.getBlue(x,y) + "\n");
-//
-//                System.out.print(actualAccessor.getAlpha(x,y) + ", ");
-//                System.out.print(actualAccessor.getRed(x,y) + ", ");
-//                System.out.print(actualAccessor.getGreen(x,y) + ", ");
-//                System.out.print(actualAccessor.getBlue(x,y) + "\n");
+                double distance = PixelColorUtil.calculateDistanceHSV(expectedHSV, actualHSV);
 
                 if (distance >= threshold)
                     mismatchAccessor.setPixel(x,y, 0, 255, 0, 0);
