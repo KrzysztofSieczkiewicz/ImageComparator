@@ -29,7 +29,7 @@ public class ImageUtil {
     }
 
     public static BufferedImage gaussianBlur(BufferedImage img) {
-        float kernelData[] = {
+        float[] kernelData = {
                 0.0625f, 0.125f, 0.0625f,
                 0.125f, 0.25f, 0.125f,
                 0.0625f, 0.125f, 0.0625f

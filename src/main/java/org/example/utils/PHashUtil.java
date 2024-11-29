@@ -4,16 +4,17 @@ import org.example.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
+import java.util.BitSet;
 
 public class PHashUtil {
     private final int size = 32;
-    private final int reducedSize = 8;
+    private static final int reducedSize = 8;
 
 
     /**
      * Calculate 64 bit long pHash
      */
-    public long getImageHash(BufferedImage img) {
+    public BitSet getImageHash(BufferedImage img) {
 
         img = ImageUtil.resize(img, size, size);
         img = ImageUtil.greyscale(img);
@@ -35,15 +36,18 @@ public class PHashUtil {
         double average = total/ (double) (reducedSize*reducedSize -1);
 
         // reduce frequency domain values set values of hash bits either to 0 or 1 depending on average value
-        long hashBits = 0;
+        BitSet bits = new BitSet();
 
         for (int x=0; x<reducedSize; x++) {
             for (int y=0; y<reducedSize; y++) {
-                hashBits = (freqDomainValues[x][y] > average ? (hashBits << 1) | 0x01 : (hashBits << 1) & 0xFFFFFFFFFFFFFFFEL);
+                bits.set(
+                        (y * reducedSize) + x,
+                        freqDomainValues[x][y] > average
+                );
             }
         }
 
-        return hashBits;
+        return bits;
     }
 
     private double[][] generateFrequencyDomain(int[][] pixels) {
@@ -80,4 +84,15 @@ public class PHashUtil {
         }
         return frequencies;
     }
+
+    public static int calculateHammingDistance(BitSet hash1, BitSet hash2) {
+        BitSet xorResult = (BitSet) hash1.clone();
+        xorResult.xor(hash2);
+        return xorResult.cardinality();
+    }
+
+    public static double calculateSimilarity(int hammingDistance) {
+        return 1.0 - ((double) hammingDistance / (reducedSize*reducedSize));
+    }
+
 }
