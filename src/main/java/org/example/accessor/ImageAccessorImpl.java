@@ -198,6 +198,16 @@ public abstract class ImageAccessorImpl implements ImageAccessor {
     }
 
     @Override
+    public int getWidth() {
+        return width;
+    }
+
+    @Override
+    public int getHeight() {
+        return height;
+    }
+
+    @Override
     public void setBlue(int x, int y, int blue) {
         setBlue(get1dIndex(x, y), blue);
     }

@@ -265,4 +265,15 @@ public interface ImageAccessor {
      * @param blue desired blue channel value
      */
     void setBlue(int x, int y, int blue);
+
+
+    /**
+     * Returns underlying image width
+     */
+    int getWidth();
+
+    /**
+     * Returns underlying image height
+     */
+    int getHeight();
 }
