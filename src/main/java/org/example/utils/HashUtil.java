@@ -1,51 +1,9 @@
 package org.example.utils;
 
-import org.example.accessor.ImageAccessor;
-
-import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.BitSet;
 
-public class PHashUtil {
-    private final int size = 64;
-    private static final int reducedSize = 24;
-
-
-    /**
-     * Computes pHash representing provided image. Hash size depends on configuration (reducedSize squared)
-     *
-     * @param img BufferedImage to be hashed
-     * @return BitSet representing Image (A set of bits with value)
-     */
-    public BitSet getImageHash(BufferedImage img) {
-        img = ImageUtil.resize(img, size, size);
-        img = ImageUtil.greyscale(img);
-
-        ImageAccessor imageAccessor = ImageAccessor.create(img);
-        int[][] blueValues = imageAccessor.getBlue();
-
-        double[][] freqDomainValues = generateFrequencyDomain(blueValues);
-        double total = 0.0;
-        for (int x=0; x<reducedSize; x++) {
-            for (int y=0; y<reducedSize; y++) {
-                total += freqDomainValues[x][y];
-            }
-        }
-        total -= freqDomainValues[0][0]; // Skip first val
-        double average = total/ (double) (reducedSize*reducedSize -1);
-
-        BitSet bits = new BitSet();
-        for (int x=0; x<reducedSize; x++) {
-            for (int y=0; y<reducedSize; y++) {
-                bits.set(
-                        (y * reducedSize) + x,
-                        freqDomainValues[x][y] > average
-                );
-            }
-        }
-
-        return bits;
-    }
+public class HashUtil {
 
     /**
      * Converts image pixels into Frequency Domain (discrete cosine space). Can be expensive to calculate.
@@ -54,8 +12,11 @@ public class PHashUtil {
      * @param pixels matrix representing image pixels (pref. greyscale)
      * @return matrix of doubles containing different frequency values - will be of identical size as matrix provided
      */
-    private double[][] generateFrequencyDomain(int[][] pixels) {
+    public static double[][] generateFrequencyDomain(int[][] pixels) {
+        int size = pixels.length;
+
         double[] normalizations = new double[size];
+
         Arrays.setAll(normalizations, i -> i * 2);
         normalizations[0] = 1 / Math.sqrt(2.0);
 
@@ -89,7 +50,7 @@ public class PHashUtil {
     }
 
     /**
-     * Calculates Hamming Distance - number of differing bits between two Hashes (XOR operation)
+     * Calculates Hamming Distance - number of differing bits between two Hashes (XOR)
      *
      * @param hash1 hash representing first image
      * @param hash2 hash representing second image
@@ -102,13 +63,13 @@ public class PHashUtil {
     }
 
     /**
-     * Calculates normalized similarity between images (between 0 and 1)
-     * 
+     * Calculates similarity between images based on hammingDistance and compared bits amount
+     *
      * @param hammingDistance hamming distance for compared hashes
      * @return normalized difference
      */
-    public static double calculateSimilarity(int hammingDistance) {
-        return 1.0 - ((double) hammingDistance / (reducedSize*reducedSize));
+    public static double calculateSimilarity(int hammingDistance, int reducedImageSize) {
+        return 1.0 - ((double) hammingDistance / (reducedImageSize*reducedImageSize));
     }
 
 }
