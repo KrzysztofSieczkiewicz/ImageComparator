@@ -1,5 +1,7 @@
 package org.example.analyzer;
 
+import java.util.Stack;
+
 public class PixelGroup {
 
     public void listConnectedMismatches(boolean[][] pixels) {
@@ -14,11 +16,10 @@ public class PixelGroup {
                 if (visited[x][y]) continue;
                 if (pixels[x][y]) {
                     searchConnected(pixels, visited, x, y);
-                    // ADD ISLAND TO THE LIST HERE
+
+                    // ADD ISLAND TO THE LIST INSTEAD
                     count++;
                 }
-
-                visited[x][y] = true;
             }
         }
 
@@ -26,18 +27,27 @@ public class PixelGroup {
     }
 
     private void searchConnected(boolean[][] matrix, boolean[][] visited, int x, int y) {
+        final int[] xNeighbours = {-1, -1, -1, 0, 0, 1, 1, 1};
+        final int[] yNeighbours = {-1, 0, 1, -1, 1, -1, 0, 1};
 
-        int[] xNeighbours = {-1, -1, -1, 0, 0, 1, 1, 1};
-        int[] yNeighbours = {-1, 0, 1, -1, 1, -1, 0, 1};
-
+        Stack<int[]> stack = new Stack<>();
+        stack.push(new int[]{x,y});
         visited[x][y] = true;
 
-        for (int i=0; i<8; i++) {
-            int newX = x + xNeighbours[i];
-            int newY = y + yNeighbours[i];
+        while(!stack.isEmpty()) {
+            int[] current = stack.pop();
+            int currX = current[0];
+            int currY = current[1];
 
-            if (!canBeChecked(matrix, visited, newX, newY)) continue;
-            searchConnected(matrix, visited, newX, newY);
+            for (int i=0; i<8; i++) {
+                int newX = currX + xNeighbours[i];
+                int newY = currY + yNeighbours[i];
+
+                if (canBeChecked(matrix, visited, newX, newY)) {
+                    stack.push(new int[]{newX, newY});
+                    visited[newX][newY] = true;
+                }
+            }
         }
     }
 
@@ -45,8 +55,6 @@ public class PixelGroup {
         int X = matrix.length;
         int Y = matrix[0].length;
 
-        if (x < 0 || y < 0 || x >= X || y >= Y) return false;
-
-        return !visited[x][y] && matrix[x][y];
+        return  x>=0 && y>=0 && x<X && y<Y && !visited[x][y] && matrix[x][y];
     }
 }
