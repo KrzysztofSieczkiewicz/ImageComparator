@@ -26,13 +26,12 @@ public class Main {
         end = System.nanoTime();
         System.out.println("Time taken to read image: " + (end - start) + " ns");
 
-        start = System.nanoTime();
-        for (int i = 0; i < 100; i++) {
-            imageAccessor.getPixel(0);
-        }
-        end = System.nanoTime();
-        System.out.println("Time taken to read: " + (end - start) + " ns");
-
+//        start = System.nanoTime();
+//        for (int i = 0; i < 100; i++) {
+//            imageAccessor.getPixel(0);
+//        }
+//        end = System.nanoTime();
+//        System.out.println("Time taken to read: " + (end - start) + " ns");
 //        start = System.nanoTime();
 //        for (int i = 0; i < 100; i++) {
 //            imageAccessor.setPixel(0, 255, 255, 255, 255);
@@ -49,8 +48,8 @@ public class Main {
         end = System.nanoTime();
         System.out.println("Time taken to compare: " + (end - start) + " ns");
 
-        PixelGroup pixelGroup = new PixelGroup();
         start = System.nanoTime();
+        PixelGroup pixelGroup = new PixelGroup(5);
         pixelGroup.listConnectedMismatches(mismatched);
         end = System.nanoTime();
         System.out.println("Time taken to group mismatches: " + (end - start) + " ns");
