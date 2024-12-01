@@ -46,11 +46,6 @@ public class Main {
 
         start = System.nanoTime();
         boolean[][] mismatched = comparator.compare(actualImage, checkedImage);
-        for (int x=0; x<mismatched.length; x++) {
-            for (int y=0; y<mismatched[0].length; y++) {
-                if (mismatched[x][y]) System.out.println("Mismatched: " + x + " " + y);
-            }
-        }
         end = System.nanoTime();
         System.out.println("Time taken to compare: " + (end - start) + " ns");
 

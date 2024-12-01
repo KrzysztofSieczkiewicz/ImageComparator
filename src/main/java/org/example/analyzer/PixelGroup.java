@@ -1,5 +1,6 @@
 package org.example.analyzer;
 
+import java.util.Arrays;
 import java.util.Stack;
 
 public class PixelGroup {
@@ -22,13 +23,13 @@ public class PixelGroup {
                 }
             }
         }
-
         System.out.println("Mismatched islands: " + count);
     }
 
     private void searchConnected(boolean[][] matrix, boolean[][] visited, int x, int y) {
-        final int[] xNeighbours = {-1, -1, -1, 0, 0, 1, 1, 1};
-        final int[] yNeighbours = {-1, 0, 1, -1, 1, -1, 0, 1};
+        int[][] neighboursMatrix = generateNeighboursMatrix(2);
+        final int[] xNeighbours = neighboursMatrix[0];
+        final int[] yNeighbours = neighboursMatrix[1];
 
         Stack<int[]> stack = new Stack<>();
         stack.push(new int[]{x,y});
@@ -56,5 +57,24 @@ public class PixelGroup {
         int Y = matrix[0].length;
 
         return  x>=0 && y>=0 && x<X && y<Y && !visited[x][y] && matrix[x][y];
+    }
+
+    // TODO: MOVE THIS TO A SINGLE, ON-CONSTRUCTOR GENERATION BASED ON CONFIG FILE
+    private int[][] generateNeighboursMatrix(int neighbourDistance) {
+        int size = (2 * neighbourDistance + 1) * (2 * neighbourDistance + 1) - 1;
+        int[] xNeighbours = new int[size];
+        int[] yNeighbours = new int[size];
+
+        int index = 0;
+        for (int dx = -neighbourDistance; dx <= neighbourDistance; dx++) {
+            for (int dy = -neighbourDistance; dy <= neighbourDistance; dy++) {
+                if (dx == 0 && dy == 0) continue;
+                xNeighbours[index] = dx;
+                yNeighbours[index] = dy;
+                index++;
+            }
+        }
+
+        return new int[][]{xNeighbours, yNeighbours};
     }
 }
