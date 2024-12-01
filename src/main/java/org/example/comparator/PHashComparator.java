@@ -7,13 +7,13 @@ import org.example.utils.HashUtil;
 import java.awt.image.BufferedImage;
 import java.util.BitSet;
 
-public class PHashComparator implements ImageComparator {
+public class PHashComparator {
 
     // TODO: Move these values as config defaults, finally take the values from config file
     private final int size = 64;
     private final int reducedSize = 24;
 
-    @Override
+//    @Override
     public void compare(BufferedImage actual, BufferedImage expected) {
         BitSet actualHash = getImageHash(actual, size,size, reducedSize);
         BitSet checkedHash = getImageHash(expected, size,size, reducedSize);
