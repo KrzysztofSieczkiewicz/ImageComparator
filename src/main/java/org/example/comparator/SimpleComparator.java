@@ -3,9 +3,7 @@ package org.example.comparator;
 import org.example.accessor.ImageAccessor;
 import org.example.utils.PixelColorUtil;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
 
 public class SimpleComparator implements ImageComparator {
 
@@ -23,12 +21,17 @@ public class SimpleComparator implements ImageComparator {
         for (int x=0; x<actual.getWidth(); x++) {
             for (int y=0; y<actual.getHeight(); y++) {
 
-                float[] expectedHSV = PixelColorUtil.convertRGBtoHSV(expectedAccessor.getPixel(x,y));
-                float[] actualHSV = PixelColorUtil.convertRGBtoHSV(actualAccessor.getPixel(x,y));
-                double distance = PixelColorUtil.calculateDistanceHSV(expectedHSV, actualHSV);
+//                float[] expectedHSV = PixelColorUtil.convertRGBtoHSV(expectedAccessor.getPixel(x,y));
+//                float[] actualHSV = PixelColorUtil.convertRGBtoHSV(actualAccessor.getPixel(x,y));
+//                double distance = PixelColorUtil.calculateDistanceHSV(expectedHSV, actualHSV);
 
-                if (distance >= threshold)
+                int expectedRGB = expectedAccessor.getPixel(x,y);
+                int actualRGB = actualAccessor.getPixel(x,y);
+                double distance = PixelColorUtil.calculateDistanceWeightedRGB(expectedRGB, actualRGB);
+
+                if (distance >= threshold) {
                     differences[x][y] = true;
+                }
             }
         }
 

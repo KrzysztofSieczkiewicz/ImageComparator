@@ -6,9 +6,11 @@ import org.example.comparator.PHashComparator;
 import org.example.comparator.SimpleComparator;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -49,10 +51,24 @@ public class Main {
         System.out.println("Time taken to compare: " + (end - start) + " ns");
 
         start = System.nanoTime();
-        PixelGroup pixelGroup = new PixelGroup(5);
-        pixelGroup.listConnectedMismatches(mismatched);
+        PixelGroup pixelGroup = new PixelGroup(3);
+        List<int[][]> groups = pixelGroup.listConnectedMismatches(mismatched);
         end = System.nanoTime();
         System.out.println("Time taken to group mismatches: " + (end - start) + " ns");
+
+//        BufferedImage grouped = new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB);
+//        Graphics2D g2d = grouped.createGraphics();
+//        g2d.setColor(Color.BLUE);
+//        groups.forEach( group -> {
+//            int minX = group[0][0];
+//            int minY = group[0][1];
+//            int maxX = group[1][0];
+//            int maxY = group[1][1];
+//            g2d.drawRect(minX, minY, maxX-minX, maxY-minY);
+//        });
+//        g2d.dispose();
+//        File outputFile = new File("rectangle_output.png");
+//        ImageIO.write(grouped, "png", outputFile);
 
         long globalEnd = System.nanoTime();
         System.out.println("Time taken in total: " + (globalEnd - globalStart) + " ns");

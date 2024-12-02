@@ -1,5 +1,7 @@
 package org.example.analyzer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 public class PixelGroup {
@@ -9,9 +11,11 @@ public class PixelGroup {
         this.neighboursMatrix = generateNeighboursMatrix(groupingRadius);
     }
 
-    public void listConnectedMismatches(boolean[][] pixels) {
+    public List<int[][]> listConnectedMismatches(boolean[][] pixels) {
         int X = pixels.length;
         int Y = pixels[0].length;
+
+        List<int[][]> groups = new ArrayList<>();
 
         boolean[][] visited = new boolean[X][Y];
 
@@ -19,20 +23,15 @@ public class PixelGroup {
             for (int y = 0; y < pixels[0].length; y++) {
                 if (visited[x][y]) continue;
                 if (pixels[x][y]) {
-                    searchConnected(pixels, visited, x, y);
-
-                    // ADD ISLAND TO THE LIST
-                    /* consider:
-                    1. Save two corner pixels coordinates to represent group
-                    2. Save all pixels inside group
-                    3. Save four "corners" coordinates for each group
-                     */
+                    groups.add(searchDFS(pixels, visited, x, y));
                 }
             }
         }
+
+        return groups;
     }
 
-    private void searchConnected(boolean[][] matrix, boolean[][] visited, int x, int y) {
+    private int[][] searchDFS(boolean[][] matrix, boolean[][] visited, int x, int y) {
         final int[] xNeighbours = neighboursMatrix[0];
         final int[] yNeighbours = neighboursMatrix[1];
 
@@ -40,21 +39,33 @@ public class PixelGroup {
         stack.push(new int[]{x,y});
         visited[x][y] = true;
 
+        int minX = x;
+        int maxX = x;
+        int minY = y;
+        int maxY = y;
+
         while(!stack.isEmpty()) {
             int[] current = stack.pop();
             int currX = current[0];
             int currY = current[1];
 
-            for (int i=0; i<8; i++) {
+            for (int i=0; i<xNeighbours.length; i++) {
                 int newX = currX + xNeighbours[i];
                 int newY = currY + yNeighbours[i];
 
                 if (canBeSearched(matrix, visited, newX, newY)) {
+                    if (newX > maxX) maxX = newX;
+                    else if (newX < minX) minX = newX;
+                    if (newY > maxY) maxY = newY;
+                    else if (newY < minY) minY = newY;
+
                     stack.push(new int[]{newX, newY});
                     visited[newX][newY] = true;
                 }
             }
         }
+
+        return new int[][]{{minX, minY}, {maxX, maxY}};
     }
 
     private boolean canBeSearched(boolean[][] matrix, boolean[][] visited, int x, int y) {
@@ -63,6 +74,7 @@ public class PixelGroup {
 
         return  x>=0 && y>=0 && x<X && y<Y && !visited[x][y] && matrix[x][y];
     }
+
 
     /**
      * Generate index offsets for surrounding entries based on provided distance
