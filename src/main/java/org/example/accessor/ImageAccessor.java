@@ -66,10 +66,6 @@ public interface ImageAccessor {
      */
     int[][] getPixels();
 
-
-    /*
-        ALPHA CHANNEL
-     */
     /**
      * Overwrites pixel data under 1D array index
      * @param index image 1D array index
@@ -90,6 +86,7 @@ public interface ImageAccessor {
      * @param b blue value
      */
     void setPixel(int x, int y, int a, int r, int g, int b);
+
 
     /*
         ALPHA CHANNEL
