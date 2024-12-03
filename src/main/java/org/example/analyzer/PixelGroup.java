@@ -1,5 +1,6 @@
 package org.example.analyzer;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -11,11 +12,11 @@ public class PixelGroup {
         this.neighboursMatrix = generateNeighboursMatrix(groupingRadius);
     }
 
-    public List<int[][]> listConnectedMismatches(boolean[][] pixels) {
+    public List<Rectangle> listConnectedMismatches(boolean[][] pixels) {
         int X = pixels.length;
         int Y = pixels[0].length;
 
-        List<int[][]> groups = new ArrayList<>();
+        List<Rectangle> groups = new ArrayList<>();
 
         boolean[][] visited = new boolean[X][Y];
 
@@ -31,7 +32,16 @@ public class PixelGroup {
         return groups;
     }
 
-    private int[][] searchDFS(boolean[][] matrix, boolean[][] visited, int x, int y) {
+    /**
+     * Performs DFS on provided boolean[][] matrix
+     *
+     * @param matrix matrix to be searched
+     * @param visited matrix of already visited elements
+     * @param x X pixel coordinate in the image matrix
+     * @param y Y pixel coordinate in the image matrix
+     * @return minX,minY maxX,maxY points for each misma
+     */
+    private Rectangle searchDFS(boolean[][] matrix, boolean[][] visited, int x, int y) {
         final int[] xNeighbours = neighboursMatrix[0];
         final int[] yNeighbours = neighboursMatrix[1];
 
@@ -53,7 +63,7 @@ public class PixelGroup {
                 int newX = currX + xNeighbours[i];
                 int newY = currY + yNeighbours[i];
 
-                if (canBeSearched(matrix, visited, newX, newY)) {
+                if (checkElement(matrix, visited, newX, newY)) {
                     if (newX > maxX) maxX = newX;
                     else if (newX < minX) minX = newX;
                     if (newY > maxY) maxY = newY;
@@ -65,10 +75,19 @@ public class PixelGroup {
             }
         }
 
-        return new int[][]{{minX, minY}, {maxX, maxY}};
+        return new Rectangle(minX, minY, maxX-minX, maxY-minY);
     }
 
-    private boolean canBeSearched(boolean[][] matrix, boolean[][] visited, int x, int y) {
+    /**
+     * verifies if provided pixel can be searched and if contains a mismatch
+     *
+     * @param matrix matrix that is being searched through
+     * @param visited matrix of visited fields
+     * @param x X pixel coordinate in the image matrix
+     * @param y Y pixel coordinate in the image matrix
+     * @return if the pixel can be checked and is it a mismatch
+     */
+    private boolean checkElement(boolean[][] matrix, boolean[][] visited, int x, int y) {
         int X = matrix.length;
         int Y = matrix[0].length;
 

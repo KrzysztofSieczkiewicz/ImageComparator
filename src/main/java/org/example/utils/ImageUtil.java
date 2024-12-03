@@ -2,6 +2,7 @@ package org.example.utils;
 
 import org.example.accessor.ImageAccessor;
 
+import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
@@ -68,6 +69,25 @@ public class ImageUtil {
         conv.filter(image, image);
 
         return blurredImg;
+    }
+
+    /**
+     * Perform deep copy of BufferedImage
+     *
+     * @param original BufferedImage to be copied
+     * @return image deep copy
+     */
+    public static BufferedImage copy(BufferedImage original) {
+        BufferedImage copy = new BufferedImage(
+                original.getWidth(),
+                original.getHeight(),
+                original.getType());
+
+        Graphics2D g2d = copy.createGraphics();
+        g2d.drawImage(original, 0, 0, null);
+        g2d.dispose();
+
+        return copy;
     }
 
 }

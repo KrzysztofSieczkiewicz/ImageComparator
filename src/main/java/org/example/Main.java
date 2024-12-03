@@ -2,6 +2,7 @@ package org.example;
 
 import org.example.accessor.ImageAccessor;
 import org.example.analyzer.PixelGroup;
+import org.example.analyzer.RectangleDraw;
 import org.example.comparator.PHashComparator;
 import org.example.comparator.SimpleComparator;
 
@@ -52,7 +53,7 @@ public class Main {
 
         start = System.nanoTime();
         PixelGroup pixelGroup = new PixelGroup(3);
-        List<int[][]> groups = pixelGroup.listConnectedMismatches(mismatched);
+        List<Rectangle> groups = pixelGroup.listConnectedMismatches(mismatched);
         end = System.nanoTime();
         System.out.println("Time taken to group mismatches: " + (end - start) + " ns");
 
@@ -69,6 +70,15 @@ public class Main {
 //        g2d.dispose();
 //        File outputFile = new File("rectangle_output.png");
 //        ImageIO.write(grouped, "png", outputFile);
+
+
+        start = System.nanoTime();
+        RectangleDraw rectangleDraw = new RectangleDraw();
+        BufferedImage mismatchedImage = rectangleDraw.draw(groups, checkedImage);
+        File outputFile = new File("rectangle_output.png");
+        ImageIO.write(mismatchedImage, "png", outputFile);
+        end = System.nanoTime();
+        System.out.println("Time taken to draw rectangles: " + (end - start) + " ns");
 
         long globalEnd = System.nanoTime();
         System.out.println("Time taken in total: " + (globalEnd - globalStart) + " ns");
