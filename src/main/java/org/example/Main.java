@@ -16,25 +16,24 @@ public class Main {
     public static void main(String[] args) throws IOException {
         long globalStart = System.nanoTime();
 
-        String imagePath = "src/image2.png";
+//        String imagePath = "src/image2.png";
+//        long start = System.nanoTime();
+//        ImageAccessor imageAccessor = ImageAccessor.readAndCreate(imagePath);
+//        long end = System.nanoTime();
+//        System.out.println("Time taken to read image: " + (end - start) + " ns");
+//
+//        start = System.nanoTime();
+//        imageAccessor.getPixels();
+//        end = System.nanoTime();
+//        System.out.println("Time taken to read all pixels: " + (end - start) + " ns");
 
-        long start = System.nanoTime();
-        ImageAccessor imageAccessor = ImageAccessor.readAndCreate(imagePath);
-        long end = System.nanoTime();
-        System.out.println("Time taken to read image: " + (end - start) + " ns");
-
-        start = System.nanoTime();
-        imageAccessor.getPixels();
-        end = System.nanoTime();
-        System.out.println("Time taken to read all pixels: " + (end - start) + " ns");
-
-        BufferedImage actualImage = ImageIO.read(new File("src/image.png"));
-        BufferedImage checkedImage = ImageIO.read(new File("src/image2.png"));
+        BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
+        BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
         SimpleComparator comparator = new SimpleComparator();
 
-        start = System.nanoTime();
+        long start = System.nanoTime();
         boolean[][] mismatched = comparator.compare(actualImage, checkedImage);
-        end = System.nanoTime();
+        long end = System.nanoTime();
         System.out.println("Time taken to compare: " + (end - start) + " ns");
 
         start = System.nanoTime();
