@@ -21,12 +21,12 @@ public class Main {
         long start = System.nanoTime();
         ImageAccessor imageAccessor = ImageAccessor.readAndCreate(imagePath);
         long end = System.nanoTime();
-        System.out.println("Time taken to init: " + (end - start) + " ns");
+        System.out.println("Time taken to read image: " + (end - start) + " ns");
 
         start = System.nanoTime();
         imageAccessor.getPixels();
         end = System.nanoTime();
-        System.out.println("Time taken to read image: " + (end - start) + " ns");
+        System.out.println("Time taken to read all pixels: " + (end - start) + " ns");
 
         BufferedImage actualImage = ImageIO.read(new File("src/image.png"));
         BufferedImage checkedImage = ImageIO.read(new File("src/image2.png"));
@@ -38,7 +38,7 @@ public class Main {
         System.out.println("Time taken to compare: " + (end - start) + " ns");
 
         start = System.nanoTime();
-        PixelGroup pixelGroup = new PixelGroup(3);
+        PixelGroup pixelGroup = new PixelGroup(6);
         List<Rectangle> groups = pixelGroup.listConnectedMismatches(mismatched);
         end = System.nanoTime();
         System.out.println("Time taken to group mismatches: " + (end - start) + " ns");
