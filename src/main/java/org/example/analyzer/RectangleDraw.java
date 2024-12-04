@@ -1,6 +1,5 @@
 package org.example.analyzer;
 
-import org.example.accessor.ImageAccessor;
 import org.example.utils.ImageUtil;
 
 import java.awt.*;

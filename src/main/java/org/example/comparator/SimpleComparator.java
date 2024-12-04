@@ -5,7 +5,12 @@ import org.example.utils.PixelColorUtil;
 
 import java.awt.image.BufferedImage;
 
-public class SimpleComparator implements ImageComparator {
+public class SimpleComparator implements ByPixelComparator {
+
+    // TODO: IN THE CONSTRUCTOR METHOD ADD SWITCH CASE THAT WILL ASSIGN DIFFERENT DISTANCE CALCULATION METHOD BASED ON CONFIG OPTION
+    // HSV, WEIGHTED_RGB, RGB
+    // ALSO - ADD THRESHOLD AND DISTANCE NORMALISATION
+    // ALSO - SWITCH TO THRESHOLD*THRESHOLD INSTEAD OF SQRT OF EACH PIXEL
 
     @Override
     public boolean[][] compare(BufferedImage actual, BufferedImage checked) {
