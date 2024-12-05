@@ -2,59 +2,55 @@ package org.example.analyzer;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Stack;
 
-public class PixelGroup {
+public class BitSetMismatchManager {
+
+    /*
+    TODO: Move ImageWidth and ImageHeight to the global vars - it can be read once from base image and then accessed elsewhere
+     */
+
     private final int[][] neighboursMatrix;
 
-    public PixelGroup(int groupingRadius) {
+    public BitSetMismatchManager(int groupingRadius) {
         this.neighboursMatrix = generateNeighboursMatrix(groupingRadius);
     }
 
-    public List<Rectangle> listConnectedMismatches(boolean[][] pixels) {
-        int X = pixels.length;
-        int Y = pixels[0].length;
+    public List<Rectangle> groupMismatches(BitSet mismatches, int imageWidth, int imageHeight) {
 
+        boolean[] visited = new boolean[mismatches.size()];
         List<Rectangle> groups = new ArrayList<>();
 
-        boolean[][] visited = new boolean[X][Y];
+        for (int x=0; x<imageWidth; x++) {
+            for (int y=0; y<imageHeight; y++) {
+                int index = x*imageHeight + y;
+                if (visited[index]) continue;
+                if (!mismatches.get(index)) continue;
 
-        for (int x=0; x<pixels.length; x++) {
-            for (int y = 0; y < pixels[0].length; y++) {
-                if (visited[x][y]) continue;
-                if (pixels[x][y]) {
-                    groups.add(searchDFS(pixels, visited, x, y));
-                }
+                groups.add(bitDFS(mismatches, visited, imageWidth, imageHeight, x, y));
+
             }
         }
-
         return groups;
     }
 
-    /**
-     * Performs DFS on provided boolean[][] matrix
-     *
-     * @param matrix matrix to be searched
-     * @param visited matrix of already visited elements
-     * @param x X pixel coordinate in the image matrix
-     * @param y Y pixel coordinate in the image matrix
-     * @return minX,minY maxX,maxY points for each misma
-     */
-    private Rectangle searchDFS(boolean[][] matrix, boolean[][] visited, int x, int y) {
+    public Rectangle bitDFS(BitSet mismatches, boolean[] visited, int width, int height, int x, int y) {
+        int index = x*width + y;
         final int[] xNeighbours = neighboursMatrix[0];
         final int[] yNeighbours = neighboursMatrix[1];
 
         Stack<int[]> stack = new Stack<>();
         stack.push(new int[]{x,y});
-        visited[x][y] = true;
+        visited[index] = true;
 
         int minX = x;
         int maxX = x;
         int minY = y;
         int maxY = y;
 
-        while(!stack.isEmpty()) {
+        while (!stack.isEmpty()) {
             int[] current = stack.pop();
             int currX = current[0];
             int currY = current[1];
@@ -63,36 +59,26 @@ public class PixelGroup {
                 int newX = currX + xNeighbours[i];
                 int newY = currY + yNeighbours[i];
 
-                if (checkElement(matrix, visited, newX, newY)) {
+                if (checkBit(mismatches, visited, x, y, index, width, height)) {
                     if (newX > maxX) maxX = newX;
                     else if (newX < minX) minX = newX;
                     if (newY > maxY) maxY = newY;
                     else if (newY < minY) minY = newY;
 
                     stack.push(new int[]{newX, newY});
-                    visited[newX][newY] = true;
+                    visited[index] = true;
                 }
             }
         }
-
         return new Rectangle(minX, minY, maxX-minX, maxY-minY);
     }
 
-    /**
-     * verifies if provided pixel can be searched and if contains a mismatch
-     *
-     * @param matrix matrix that is being searched through
-     * @param visited matrix of visited fields
-     * @param x X pixel coordinate in the image matrix
-     * @param y Y pixel coordinate in the image matrix
-     * @return if the pixel can be checked and is it a mismatch
-     */
-    private boolean checkElement(boolean[][] matrix, boolean[][] visited, int x, int y) {
-        int X = matrix.length;
-        int Y = matrix[0].length;
 
-        return  x>=0 && y>=0 && x<X && y<Y && !visited[x][y] && matrix[x][y];
+    // TODO: POSSIBLY DISSOLVE
+    private boolean checkBit(BitSet mismatches, boolean[] visited, int x, int y, int index, int width, int height) {
+        return  x>=0 && y>=0 && x< width && y< height && !visited[index] && mismatches.get(index);
     }
+
 
 
     /**

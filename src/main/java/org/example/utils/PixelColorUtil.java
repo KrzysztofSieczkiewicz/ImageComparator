@@ -3,12 +3,15 @@ package org.example.utils;
 public class PixelColorUtil {
 
     // TODO: Ensure that HSV returned from convertRGBtHSV is returned normalized
+    // TODO: Consider distances normalization or moving them to range 0-100 instead (% of max distance)
     // meaning that H is between 0 and 360
     // S is between 0 and 1
     // V is between 0 and 1
+
     /**
      * Converts RGB space coordinates into HSV (cylindrical)
-     * @param rgb rgb integer
+     *
+     * @param rgb ARGB integer (alpha channel is ignored)
      * @return float representing HSV channels
      */
     public static float[] convertRGBtoHSV(int rgb) {
@@ -45,8 +48,7 @@ public class PixelColorUtil {
     }
 
     /**
-     * Calculates a distance between provided colors in the HSV color space.
-     * Black-White max distance is 0.003921
+     * Calculates a distance between two colors in the HSV color space.
      *
      * @return squared distance between colors in the HSV space
      */
@@ -60,7 +62,7 @@ public class PixelColorUtil {
     }
 
     /**
-     * Calculates a distance between provided colors in the RGB color space.
+     * Calculates a distance between two colors in the RGB color space.
      * Maximum distance is 441.67
      *
      * @return distance between colors in the RGB space
@@ -82,8 +84,8 @@ public class PixelColorUtil {
     }
 
     /**
-     * Calculates a distance between provided colors in the RGB color space using weighted channel values
-     * Uses fixed and increased weight for green channel as it's more important for human eye.
+     * Calculates a distance between two colors in the RGB color space using weighted channel values
+     * Uses fixed, higher weight for green channel
      * Maximum distance is 50.38
      *
      * @return distance between colors in the RGB space
