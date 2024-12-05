@@ -10,7 +10,7 @@ import java.util.function.BiFunction;
 // TODO - ADD THRESHOLD AND DISTANCE NORMALISATION
 
 public class SimpleComparator implements ByPixelComparator{
-    private BiFunction<BufferedImage, BufferedImage, boolean[][]> comparisonMethod;
+    private final BiFunction<BufferedImage, BufferedImage, boolean[][]> comparisonMethod;
 
     private final float distanceThreshold;
 
