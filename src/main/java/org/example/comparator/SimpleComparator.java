@@ -10,15 +10,13 @@ import java.util.function.BiFunction;
 // TODO - ADD THRESHOLD AND DISTANCE NORMALISATION
 
 public class SimpleComparator implements ByPixelComparator{
-    private final BiFunction<BufferedImage, BufferedImage, boolean[][]> comparisonMethod;
+    private final BiFunction<BufferedImage, BufferedImage, Mismatches> comparisonMethod;
 
-    private final float distanceThreshold;
+    private final float distanceThreshold = 5f*5f;
+    private final ColorSpace comparisonSpace = ColorSpace.RGB;
 
 
-    public SimpleComparator(ColorSpace comparisonSpace, float threshold) {
-
-        // to avoid Math.sqrt() in distance calculations
-        this.distanceThreshold = threshold*threshold;
+    public SimpleComparator() {
 
         switch (comparisonSpace) {
             case RGB -> comparisonMethod = this::compareRGB;
@@ -31,14 +29,15 @@ public class SimpleComparator implements ByPixelComparator{
     }
 
     @Override
-    public boolean[][] compare(BufferedImage actual, BufferedImage checked) {
+    public Mismatches compare(BufferedImage actual, BufferedImage checked) {
         return comparisonMethod.apply(actual,checked);
     }
 
-    public boolean[][] compareRGB(BufferedImage actual, BufferedImage checked) {
+    public Mismatches compareRGB(BufferedImage actual, BufferedImage checked) {
         ImageAccessor actualAccessor = ImageAccessor.create(actual);
         ImageAccessor checkedAccessor = ImageAccessor.create(checked);
 
+        int count = 0;
         int width = actual.getWidth();
         int height = actual.getHeight();
 
@@ -52,16 +51,18 @@ public class SimpleComparator implements ByPixelComparator{
 
                 if (distance >= distanceThreshold) {
                     mismatches[x][y] = true;
+                    count++;
                 }
             }
         }
-        return mismatches;
+        return new Mismatches(mismatches, count);
     }
 
-    public boolean[][] compareWeightedRGB(BufferedImage actual, BufferedImage checked) {
+    public Mismatches compareWeightedRGB(BufferedImage actual, BufferedImage checked) {
         ImageAccessor actualAccessor = ImageAccessor.create(actual);
         ImageAccessor checkedAccessor = ImageAccessor.create(checked);
 
+        int count = 0;
         int width = actual.getWidth();
         int height = actual.getHeight();
 
@@ -75,16 +76,18 @@ public class SimpleComparator implements ByPixelComparator{
 
                 if (distance >= distanceThreshold) {
                     mismatches[x][y] = true;
+                    count++;
                 }
             }
         }
-        return mismatches;
+        return new Mismatches(mismatches, count);
     }
 
-    public boolean[][] compareHSV(BufferedImage actual, BufferedImage checked) {
+    public Mismatches compareHSV(BufferedImage actual, BufferedImage checked) {
         ImageAccessor actualAccessor = ImageAccessor.create(actual);
         ImageAccessor checkedAccessor = ImageAccessor.create(checked);
 
+        int count = 0;
         int width = actual.getWidth();
         int height = actual.getHeight();
 
@@ -96,9 +99,11 @@ public class SimpleComparator implements ByPixelComparator{
                 double distance = PixelColorUtil.calculateDistanceHSV(actualHSV, expectedHSV);
                 if (distance >= distanceThreshold) {
                     mismatches[x][y] = true;
+                    count++;
                 }
             }
         }
-        return mismatches;
+        return new Mismatches(mismatches, count);
     }
+
 }

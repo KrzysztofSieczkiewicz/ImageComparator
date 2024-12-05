@@ -4,6 +4,6 @@ import java.awt.image.BufferedImage;
 
 public interface ByPixelComparator {
 
-    boolean[][] compare(BufferedImage actual, BufferedImage expected);
+    Mismatches compare(BufferedImage actual, BufferedImage expected);
 
 }

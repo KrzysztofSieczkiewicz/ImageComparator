@@ -2,7 +2,7 @@ package org.example.utils;
 
 import org.example.accessor.ImageAccessor;
 
-import java.awt.*;
+import java.awt.Graphics2D;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
@@ -77,7 +77,7 @@ public class ImageUtil {
      * @param original BufferedImage to be copied
      * @return image deep copy
      */
-    public static BufferedImage copy(BufferedImage original) {
+    public static BufferedImage deepCopy(BufferedImage original) {
         BufferedImage copy = new BufferedImage(
                 original.getWidth(),
                 original.getHeight(),

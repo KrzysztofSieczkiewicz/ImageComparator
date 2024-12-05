@@ -1,8 +1,13 @@
 package org.example.mismatchMarker;
 
 import org.example.accessor.ImageAccessor;
+import org.example.comparator.Mismatches;
+import org.example.utils.ImageUtil;
 
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -12,9 +17,10 @@ public class RectangleDraw {
     private int thickness = 4;
     private Color lineColor = Color.BLUE;
 
-    public BufferedImage draw(boolean[][] mismatches, BufferedImage checkedImage) {
-        List<Rectangle> groups = new MismatchManager(5).groupMismatches(mismatches);
-        Graphics2D g2d = checkedImage.createGraphics();
+    public BufferedImage draw(Mismatches mismatches, BufferedImage checkedImage) {
+        List<Rectangle> groups = new MismatchManager(5).groupMismatches(mismatches.getMismatchedPixels());
+        BufferedImage mismatchedImage = ImageUtil.deepCopy(checkedImage);
+        Graphics2D g2d = mismatchedImage.createGraphics();
 
         g2d.setColor(lineColor);
         g2d.setStroke(new BasicStroke(thickness));
@@ -28,20 +34,24 @@ public class RectangleDraw {
 
         g2d.dispose();
 
-        return checkedImage;
+        return mismatchedImage;
     }
 
-    public BufferedImage paintPixels(boolean[][] mismatches, BufferedImage checkedImage) {
-        ImageAccessor mismatchedAccessor = ImageAccessor.create(checkedImage);
-        int width = mismatches.length -1;
-        int height = mismatches[0].length -1;
+    public BufferedImage paintPixels(Mismatches mismatches, BufferedImage checkedImage) {
+        BufferedImage mismatchedImage = ImageUtil.deepCopy(checkedImage);
+        ImageAccessor mismatchedAccessor = ImageAccessor.create(mismatchedImage);
+
+        boolean[][] mismatchedMatrix = mismatches.getMismatchedPixels();
+        int width = mismatchedMatrix.length -1;
+        int height = mismatchedMatrix[0].length -1;
 
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
-                if(mismatches[x][y]) mismatchedAccessor.setPixel(x,y, 255, 0, 0, 255);
+                if(mismatchedMatrix[x][y]) mismatchedAccessor.setPixel(x,y, 255, 0, 0, 255);
             }
         }
 
         return checkedImage;
     }
+
 }
