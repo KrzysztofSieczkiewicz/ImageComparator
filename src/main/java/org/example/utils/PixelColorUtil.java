@@ -1,9 +1,6 @@
 package org.example.utils;
 
 public class PixelColorUtil {
-    // TODO: all distance methods require Math.sqrt(). Can be optimized by returning non square rooted value
-    // and using squared threshold instead (as threshold can be calculated once instead of calculating sqrt of distance)
-    // on each call - it might not be as impactful as it seems though
 
     // TODO: Ensure that HSV returned from convertRGBtHSV is returned normalized
     // meaning that H is between 0 and 360
@@ -12,7 +9,7 @@ public class PixelColorUtil {
     /**
      * Converts RGB space coordinates into HSV (cylindrical)
      * @param rgb rgb integer
-     * @return integer representing HSV
+     * @return float representing HSV channels
      */
     public static float[] convertRGBtoHSV(int rgb) {
         float H = 0;
@@ -51,30 +48,15 @@ public class PixelColorUtil {
      * Calculates a distance between provided colors in the HSV color space.
      * Black-White max distance is 0.003921
      *
-     * @return distance between colors in the HSV space
+     * @return squared distance between colors in the HSV space
      */
-    public static double calculateDistanceHSV(float[] hsv1, float[] hsv2) {
+    public static float calculateDistanceHSV(float[] hsv1, float[] hsv2) {
         float diffH = Math.abs(hsv1[0] - hsv2[0]);
         float deltaH = Math.min(diffH, 360 - diffH);
         float deltaS = hsv1[1]-hsv2[1];
         float deltaV = hsv1[2]-hsv2[2];
 
-        return Math.sqrt(deltaH*deltaH + deltaS*deltaS + deltaV*deltaV);
-    }
-
-    /**
-     * Calculates a distance between provided colors in the HSV color space.
-     * Maximum distance is 0.996
-     *
-     * @return distance between colors in the HSV space
-     */
-    public double calculateDistanceHSV(float hue1, float sat1, float val1, float hue2, float sat2, float val2) {
-        float diffH = hue1 - hue2;
-        float deltaH = Math.min(diffH, 360 - Math.abs(diffH));
-        float deltaS = sat1-sat2;
-        float deltaV = val1-val2 / 255f;
-
-        return Math.sqrt(deltaH*deltaH + deltaS*deltaS + deltaV*deltaV);
+        return deltaH*deltaH + deltaS*deltaS + deltaV*deltaV;
     }
 
     /**
@@ -83,7 +65,7 @@ public class PixelColorUtil {
      *
      * @return distance between colors in the RGB space
      */
-    public static double calculateDistanceRGB(int rgb1, int rgb2) {
+    public static float calculateDistanceRGB(int rgb1, int rgb2) {
         int r1 = (rgb1 >> 16) & 0xFF;
         int g1 = (rgb1 >> 8) & 0xFF;
         int b1 = rgb1 & 0xFF;
@@ -96,7 +78,7 @@ public class PixelColorUtil {
         int greenDiff = g1 - g2;
         int blueDiff = b1 - b2;
 
-        return Math.sqrt((redDiff * redDiff) + (greenDiff * greenDiff) + (blueDiff * blueDiff));
+        return (redDiff * redDiff) + (greenDiff * greenDiff) + (blueDiff * blueDiff);
     }
 
     /**
@@ -106,7 +88,7 @@ public class PixelColorUtil {
      *
      * @return distance between colors in the RGB space
      */
-    public static double calculateDistanceWeightedRGB(int rgb1, int rgb2) {
+    public static float calculateDistanceWeightedRGB(int rgb1, int rgb2) {
         int r1 = (rgb1 >> 16) & 0xFF;
         int g1 = (rgb1 >> 8) & 0xFF;
         int b1 = rgb1 & 0xFF;
@@ -121,13 +103,13 @@ public class PixelColorUtil {
 
         int redMean = (r1 + r2) >> 1;
 
-        // Calculated color weights (multiplied by 256 to keep them as int
+        // Calculated color weights (multiplied by 256 to keep them as int)
         int redWeight = 512 + (redMean << 1);
         int greenWeight = 1024;
         int blueWeight = 512 + ((255 - redMean) << 1);
 
         int weightedColors = (redWeight * redDiff * redDiff) + (greenWeight * greenDiff * greenDiff) + (blueWeight * blueDiff * blueDiff);
 
-        return Math.sqrt(weightedColors / 65536.0);
+        return weightedColors / 65536f;
     }
 }

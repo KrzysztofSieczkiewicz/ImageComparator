@@ -1,46 +1,105 @@
 package org.example.comparator;
 
 import org.example.accessor.ImageAccessor;
+import org.example.config.ColorSpace;
 import org.example.utils.PixelColorUtil;
 
 import java.awt.image.BufferedImage;
+import java.util.function.BiFunction;
 
-public class SimpleComparator implements ByPixelComparator {
+// TODO - ADD THRESHOLD AND DISTANCE NORMALISATION
+// TODO - SWITCH TO THRESHOLD*THRESHOLD INSTEAD OF SQRT OF EACH PIXEL
 
-    // TODO: IN THE CONSTRUCTOR METHOD ADD SWITCH CASE THAT WILL ASSIGN DIFFERENT DISTANCE CALCULATION METHOD BASED ON CONFIG OPTION
-    // HSV, WEIGHTED_RGB, RGB
-    // ALSO - ADD THRESHOLD AND DISTANCE NORMALISATION
-    // ALSO - SWITCH TO THRESHOLD*THRESHOLD INSTEAD OF SQRT OF EACH PIXEL
+public class SimpleComparator implements ByPixelComparator{
+    private BiFunction<BufferedImage, BufferedImage, boolean[][]> comparisonMethod;
+
+    private final float distanceThreshold;
+
+
+    public SimpleComparator(ColorSpace comparisonSpace, float threshold) {
+
+        // to avoid Math.sqrt() in distance calculations
+        this.distanceThreshold = threshold*threshold;
+
+        switch (comparisonSpace) {
+            case RGB -> comparisonMethod = this::compareRGB;
+            case WEIGHTED_RGB -> comparisonMethod = this::compareWeightedRGB;
+            case HSV -> comparisonMethod = this::compareHSV;
+            case CIELAB -> throw new RuntimeException("CIE-Lab isn't yet supported");
+
+            default -> comparisonMethod = this::compareRGB;
+        }
+    }
 
     @Override
     public boolean[][] compare(BufferedImage actual, BufferedImage checked) {
-        float threshold = 1f;
+        return comparisonMethod.apply(actual,checked);
+    }
 
-        ImageAccessor expectedAccessor = ImageAccessor.create(actual);
-        ImageAccessor actualAccessor = ImageAccessor.create(checked);
+    public boolean[][] compareRGB(BufferedImage actual, BufferedImage checked) {
+        ImageAccessor actualAccessor = ImageAccessor.create(actual);
+        ImageAccessor checkedAccessor = ImageAccessor.create(checked);
 
         int width = actual.getWidth();
         int height = actual.getHeight();
 
-        boolean[][] differences = new boolean[width][height];
-        for (int x=0; x<actual.getWidth(); x++) {
-            for (int y=0; y<actual.getHeight(); y++) {
+        boolean[][] mismatches = new boolean[width][height];
+        for (int x=0; x<width; x++) {
+            for (int y=0; y<height; y++) {
 
-//                float[] expectedHSV = PixelColorUtil.convertRGBtoHSV(expectedAccessor.getPixel(x,y));
-//                float[] actualHSV = PixelColorUtil.convertRGBtoHSV(actualAccessor.getPixel(x,y));
-//                double distance = PixelColorUtil.calculateDistanceHSV(expectedHSV, actualHSV);
-
-                int expectedRGB = expectedAccessor.getPixel(x,y);
                 int actualRGB = actualAccessor.getPixel(x,y);
-                double distance = PixelColorUtil.calculateDistanceWeightedRGB(expectedRGB, actualRGB);
+                int checkedRGB = checkedAccessor.getPixel(x,y);
+                double distance = PixelColorUtil.calculateDistanceRGB(actualRGB, checkedRGB);
 
-                if (distance >= threshold) {
-                    differences[x][y] = true;
+                if (distance >= distanceThreshold) {
+                    mismatches[x][y] = true;
                 }
             }
         }
-
-        return differences;
+        return mismatches;
     }
 
+    public boolean[][] compareWeightedRGB(BufferedImage actual, BufferedImage checked) {
+        ImageAccessor actualAccessor = ImageAccessor.create(actual);
+        ImageAccessor checkedAccessor = ImageAccessor.create(checked);
+
+        int width = actual.getWidth();
+        int height = actual.getHeight();
+
+        boolean[][] mismatches = new boolean[width][height];
+        for (int x=0; x<width; x++) {
+            for (int y=0; y<height; y++) {
+
+                int actualRGB = actualAccessor.getPixel(x,y);
+                int checkedRGB = checkedAccessor.getPixel(x,y);
+                double distance = PixelColorUtil.calculateDistanceWeightedRGB(actualRGB, checkedRGB);
+
+                if (distance >= distanceThreshold) {
+                    mismatches[x][y] = true;
+                }
+            }
+        }
+        return mismatches;
+    }
+
+    public boolean[][] compareHSV(BufferedImage actual, BufferedImage checked) {
+        ImageAccessor actualAccessor = ImageAccessor.create(actual);
+        ImageAccessor checkedAccessor = ImageAccessor.create(checked);
+
+        int width = actual.getWidth();
+        int height = actual.getHeight();
+
+        boolean[][] mismatches = new boolean[width][height];
+        for (int x=0; x<width; x++) {
+            for (int y=0; y<height; y++) {
+                float[] actualHSV = PixelColorUtil.convertRGBtoHSV(actualAccessor.getPixel(x,y));
+                float[] expectedHSV = PixelColorUtil.convertRGBtoHSV(checkedAccessor.getPixel(x,y));
+                double distance = PixelColorUtil.calculateDistanceHSV(actualHSV, expectedHSV);
+                if (distance >= distanceThreshold) {
+                    mismatches[x][y] = true;
+                }
+            }
+        }
+        return mismatches;
+    }
 }

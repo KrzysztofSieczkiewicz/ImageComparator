@@ -4,6 +4,7 @@ import org.example.accessor.ImageAccessor;
 import org.example.analyzer.PixelGroup;
 import org.example.analyzer.RectangleDraw;
 import org.example.comparator.SimpleComparator;
+import org.example.config.ColorSpace;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -29,7 +30,7 @@ public class Main {
 
         BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
         BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
-        SimpleComparator comparator = new SimpleComparator();
+        SimpleComparator comparator = new SimpleComparator(ColorSpace.RGB, 1f);
 
         long start = System.nanoTime();
         boolean[][] mismatched = comparator.compare(actualImage, checkedImage);
