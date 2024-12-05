@@ -8,7 +8,6 @@ import java.awt.image.BufferedImage;
 import java.util.function.BiFunction;
 
 // TODO - ADD THRESHOLD AND DISTANCE NORMALISATION
-// TODO - SWITCH TO THRESHOLD*THRESHOLD INSTEAD OF SQRT OF EACH PIXEL
 
 public class SimpleComparator implements ByPixelComparator{
     private BiFunction<BufferedImage, BufferedImage, boolean[][]> comparisonMethod;

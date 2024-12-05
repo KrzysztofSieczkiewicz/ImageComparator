@@ -1,4 +1,4 @@
-package org.example.analyzer;
+package org.example.mismatchMarker;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -7,11 +7,9 @@ import java.util.Stack;
 
 public class MismatchManager {
     private final int[][] neighboursMatrix;
-    private final int minGroupSize;
 
-    public MismatchManager(int groupingRadius, int minGroupSize) {
+    public MismatchManager(int groupingRadius) {
         this.neighboursMatrix = generateNeighboursMatrix(groupingRadius);
-        this.minGroupSize = minGroupSize;
     }
 
     public List<Rectangle> groupMismatches(boolean[][] mismatches) {
@@ -26,7 +24,6 @@ public class MismatchManager {
             for (int y = 0; y < mismatches[0].length; y++) {
                 if (visited[x][y]) continue;
                 if (!mismatches[x][y]) continue;
-                
                 groups.add(searchDFS(mismatches, visited, x, y));
             }
         }
