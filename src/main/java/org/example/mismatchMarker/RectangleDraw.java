@@ -17,12 +17,13 @@ public class RectangleDraw {
     private int thickness = 4;
     private Color lineColor = Color.BLUE;
 
-    public BufferedImage draw(Mismatches mismatches, BufferedImage checkedImage) {
-        List<Rectangle> groups = new MismatchManager(5).groupMismatches(mismatches.getMismatchedPixels());
+    // TODO: REPLACE MISMATCHES WITH BOOLEAN MATRIX, THE SAME FOR paintPixels() - ALLOW TO BE REUSED FOR EXCLUDED AREAS AND MISMATCHES
+    public BufferedImage draw(boolean[][] pixels, BufferedImage checkedImage, Color color) {
+        List<Rectangle> groups = new MismatchManager(5).groupMismatches(pixels);
         BufferedImage mismatchedImage = ImageUtil.deepCopy(checkedImage);
         Graphics2D g2d = mismatchedImage.createGraphics();
 
-        g2d.setColor(lineColor);
+        g2d.setColor(color);
         g2d.setStroke(new BasicStroke(thickness));
 
         groups.forEach( group -> g2d.drawRect(
@@ -37,21 +38,21 @@ public class RectangleDraw {
         return mismatchedImage;
     }
 
-    public BufferedImage paintPixels(Mismatches mismatches, BufferedImage checkedImage) {
+    // TODO: Move result image deep copy from this class - it should not be recopied each time sth is painted
+    public BufferedImage paintPixels(boolean[][] pixels, BufferedImage checkedImage, Color color) {
         BufferedImage mismatchedImage = ImageUtil.deepCopy(checkedImage);
         ImageAccessor mismatchedAccessor = ImageAccessor.create(mismatchedImage);
 
-        boolean[][] mismatchedMatrix = mismatches.getMismatchedPixels();
-        int width = mismatchedMatrix.length -1;
-        int height = mismatchedMatrix[0].length -1;
+        int width = pixels.length -1;
+        int height = pixels[0].length -1;
 
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
-                if(mismatchedMatrix[x][y]) mismatchedAccessor.setPixel(x,y, 255, 0, 0, 255);
+                if(pixels[x][y]) mismatchedAccessor.setPixel(x,y, 255, color.getRed(), color.getGreen(), color.getBlue());
             }
         }
 
-        return checkedImage;
+        return mismatchedImage;
     }
 
 }

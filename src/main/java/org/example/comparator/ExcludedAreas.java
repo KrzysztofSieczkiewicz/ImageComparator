@@ -5,7 +5,11 @@ import java.util.ArrayList;
 
 public class ExcludedAreas {
 
-    private boolean[][] excluded;
+    private final boolean[][] excludedPixels;
+
+    public ExcludedAreas(int imageWidth, int imageHeight) {
+        excludedPixels = new boolean[imageWidth][imageHeight];
+    }
 
     public void excludeAreas(ArrayList<Rectangle> areas) {
         areas.forEach(this::excludeArea);
@@ -17,7 +21,7 @@ public class ExcludedAreas {
 
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
-                if (pixels[x][y]) excluded[x][y] = true;
+                if (pixels[x][y]) excludedPixels[x][y] = true;
             }
         }
     }
@@ -25,7 +29,7 @@ public class ExcludedAreas {
     public void excludeArea(Rectangle area) {
         for (int x=0; x<area.width; x++) {
             for (int y=0; y<area.height; y++) {
-                excluded[area.width + x][area.height + y] = true;
+                excludedPixels[area.x + x][area.y + y] = true;
             }
         }
     }
@@ -40,7 +44,7 @@ public class ExcludedAreas {
 
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
-                if (pixels[x][y]) excluded[x][y] = true;
+                if (pixels[x][y]) excludedPixels[x][y] = false;
             }
         }
     }
@@ -48,12 +52,12 @@ public class ExcludedAreas {
     public void includeArea(Rectangle area) {
         for (int x=0; x<area.width; x++) {
             for (int y=0; y<area.height; y++) {
-                excluded[area.width + x][area.height + y] = false;
+                excludedPixels[area.x + x][area.y + y] = false;
             }
         }
     }
 
-    public boolean[][] getExcluded() {
-        return excluded;
+    public boolean[][] getPixels() {
+        return excludedPixels;
     }
 }

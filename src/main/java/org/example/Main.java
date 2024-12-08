@@ -1,11 +1,13 @@
 package org.example;
 
+import org.example.comparator.ExcludedAreas;
 import org.example.comparator.Mismatches;
 import org.example.mismatchMarker.MismatchMarker;
 import org.example.comparator.SimpleComparator;
 import org.example.validator.Validator;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +24,16 @@ public class Main {
         long end = System.nanoTime();
         System.out.println("Time taken to read file from the disk: " + (end - start) + " ns");
 
+        start = System.nanoTime();
+        ExcludedAreas excludedAreas = new ExcludedAreas(actualImage.getWidth(), actualImage.getHeight());
+        excludedAreas.excludeArea(new Rectangle(0,0,50,50));
+        excludedAreas.includeArea(new Rectangle(5,5, 40,40));
+        excludedAreas.excludeArea(new Rectangle(250,250,50,50));
+        excludedAreas.excludeArea(new Rectangle(100,250,150,200));
+        excludedAreas.excludeArea(new Rectangle(250,100,200,150));
+        end = System.nanoTime();
+        System.out.println("Time taken to exclude areas: " + (end-start) + " ns");
+
 
         start = System.nanoTime();
         SimpleComparator comparator = new SimpleComparator();
@@ -30,9 +42,14 @@ public class Main {
         System.out.println("Time taken to compare: " + (end - start) + " ns");
 
         start = System.nanoTime();
-        BufferedImage mismatchedImage = MismatchMarker.mark(mismatched, checkedImage);
+        BufferedImage mismatchedImage = MismatchMarker.markMismatches(mismatched, checkedImage);
         end = System.nanoTime();
         System.out.println("Time taken to mark mismatches: " + (end - start) + " ns");
+
+        start = System.nanoTime();
+        mismatchedImage = MismatchMarker.markExcluded(excludedAreas, mismatchedImage);
+        end = System.nanoTime();
+        System.out.println("Time taken to mark excluded areas: " + (end - start) + " ns");
 
         start = System.nanoTime();
         validator.isBelowMismatchThreshold(actualImage, mismatched);

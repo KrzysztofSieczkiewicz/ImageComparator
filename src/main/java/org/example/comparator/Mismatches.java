@@ -13,7 +13,7 @@ public class Mismatches {
         return totalMismatched;
     }
 
-    public boolean[][] getMismatchedPixels() {
+    public boolean[][] getPixels() {
         return mismatchedPixels;
     }
 
