@@ -33,11 +33,11 @@ public class PHashComparator {
     /**
      * Computes pHash representing provided image. Hash size depends on configuration (reducedSize squared)
      * Hashing is performed in steps:
-     * 1. Resize image to smaller, more manageable size </p>
-     * 2. Covert image color space into greyscale </p>
+     * 1. Resize image to smaller size </p>
+     * 2. Covert image to greyscale </p>
      * 3. Calculate discrete frequency values for the image </p>
-     * 4. Use selected comparison size to calculate average values for image </p>
-     * (the closer comparisonSize is to the imageSize, the more detailed comparison is)
+     * 4. Calculate average values for image based on comparison size
+     * (the closer comparisonSize is to the imageSize, the more detailed comparison is) </p>
      * 5. Iterate through comparison matrix and set bytes values depending on their value
      * in relation to average that was calculated in step 4. </p>
      *
