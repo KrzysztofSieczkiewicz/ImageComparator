@@ -12,19 +12,17 @@ public interface MismatchMarker {
 
     static BufferedImage markMismatches(Mismatches mismatches, BufferedImage bufferedImage) {
         // TODO: REPLACE WITH CONFIG
-        MarkingType markingType = MarkingType.PAINT_OVER;
-        
-        BufferedImage markedImage = null;
-        
+        MarkingType markingType = MarkingType.RECTANGLE;
+
         switch(markingType) {
-            case RECTANGLE -> markedImage = new RectangleDraw().draw(mismatches.getPixels(), bufferedImage, Color.BLUE);
-            case PAINT_OVER -> markedImage = new RectangleDraw().paintPixels(mismatches.getPixels(), bufferedImage, Color.BLUE);
+            case RECTANGLE -> bufferedImage = new RectangleDraw().draw(mismatches.getPixels(), bufferedImage, Color.BLUE);
+            case PAINT_OVER -> bufferedImage = new RectangleDraw().paintPixels(mismatches.getPixels(), bufferedImage, Color.BLUE);
         }
-        
-        return markedImage;
+
+        return bufferedImage;
     }
 
-    static BufferedImage markExcluded(ExcludedAreas excludedAreas, BufferedImage bufferedImage) {
-        return new RectangleDraw().paintPixels(excludedAreas.getPixels(), bufferedImage, Color.YELLOW);
-    }
+//    static BufferedImage markExcluded(ExcludedAreas excludedAreas, BufferedImage bufferedImage) {
+//        return new RectangleDraw().paintPixels(excludedAreas.getPixels(), bufferedImage, Color.YELLOW);
+//    }
 }

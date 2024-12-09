@@ -1,13 +1,10 @@
 package org.example.mismatchMarker;
 
 import org.example.accessor.ImageAccessor;
-import org.example.utils.ImageUtil;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.HashSet;
 import java.util.List;
 
 public class RectangleDraw {
@@ -17,10 +14,9 @@ public class RectangleDraw {
 
     // TODO: Move result image deep copy from this class - it should not be recopied each time sth is painted
 
-    public BufferedImage draw(boolean[][] pixels, BufferedImage checkedImage, Color lineColor) {
+    public BufferedImage draw(HashSet<int[]> pixels, BufferedImage image, Color lineColor) {
         List<Rectangle> groups = new MismatchManager(5).groupMismatches(pixels);
-        BufferedImage mismatchedImage = ImageUtil.deepCopy(checkedImage);
-        Graphics2D g2d = mismatchedImage.createGraphics();
+        Graphics2D g2d = image.createGraphics();
 
         g2d.setColor(lineColor);
         g2d.setStroke(new BasicStroke(thickness));
@@ -34,23 +30,21 @@ public class RectangleDraw {
 
         g2d.dispose();
 
-        return mismatchedImage;
+        return image;
     }
 
-    public BufferedImage paintPixels(boolean[][] pixels, BufferedImage checkedImage, Color lineColor) {
-        BufferedImage mismatchedImage = ImageUtil.deepCopy(checkedImage);
-        ImageAccessor mismatchedAccessor = ImageAccessor.create(mismatchedImage);
+    public BufferedImage paintPixels(HashSet<int[]> pixels, BufferedImage image, Color lineColor) {
+        ImageAccessor mismatchedAccessor = ImageAccessor.create(image);
 
-        int width = pixels.length -1;
-        int height = pixels[0].length -1;
+        int red = lineColor.getRed();
+        int green = lineColor.getGreen();
+        int blue = lineColor.getBlue();
 
-        for (int x=0; x<width; x++) {
-            for (int y=0; y<height; y++) {
-                if(pixels[x][y]) mismatchedAccessor.setPixel(x,y, 255, lineColor.getRed(), lineColor.getGreen(), lineColor.getBlue());
-            }
+        for (int[] pixel : pixels) {
+            mismatchedAccessor.setPixel(pixel[0], pixel[1], 255, red, green, blue);
         }
 
-        return mismatchedImage;
+        return image;
     }
 
 }

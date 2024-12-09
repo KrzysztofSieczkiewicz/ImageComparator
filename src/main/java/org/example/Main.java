@@ -4,6 +4,7 @@ import org.example.comparator.ExcludedAreas;
 import org.example.comparator.Mismatches;
 import org.example.mismatchMarker.MismatchMarker;
 import org.example.comparator.SimpleComparator;
+import org.example.utils.ImageUtil;
 import org.example.validator.Validator;
 
 import javax.imageio.ImageIO;
@@ -18,11 +19,13 @@ public class Main {
 
         long start = System.nanoTime();
         BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
-        BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
+        BufferedImage checkedImage = ImageIO.read(new File("src/image3.png"));
         Validator validator = new Validator();
         validator.enforceImagesSize(actualImage, checkedImage);
         long end = System.nanoTime();
-        System.out.println("Time taken to read file from the disk: " + (end - start) + " ns");
+        //System.out.println("Time taken to read file from the disk: " + (end - start) + " ns");
+
+        // TODO: Dlaczego "Time taken to mark mismatches" jest wysoki niezależnie od liczby mismatchy (nawet 0)?
 
         start = System.nanoTime();
         ExcludedAreas excludedAreas = new ExcludedAreas(actualImage.getWidth(), actualImage.getHeight());
@@ -32,29 +35,38 @@ public class Main {
         excludedAreas.excludeArea(new Rectangle(100,250,150,200));
         excludedAreas.excludeArea(new Rectangle(250,100,200,150));
         end = System.nanoTime();
-        System.out.println("Time taken to exclude areas: " + (end-start) + " ns");
-
+        //System.out.println("Time taken to exclude areas: " + (end-start) + " ns");
 
         start = System.nanoTime();
-        SimpleComparator comparator = new SimpleComparator(excludedAreas);
+        SimpleComparator comparator = new SimpleComparator();
         Mismatches mismatched = comparator.compare(actualImage, checkedImage);
         end = System.nanoTime();
         System.out.println("Time taken to compare: " + (end - start) + " ns");
 
         start = System.nanoTime();
-        BufferedImage mismatchedImage = MismatchMarker.markMismatches(mismatched, checkedImage);
+        BufferedImage mismatchedImage = ImageUtil.deepCopy(checkedImage);
+        end = System.nanoTime();
+        //System.out.println("Time taken to perform image deep copy: " + (end - start) + " ns");
+
+        start = System.nanoTime();
+        mismatched.excludeResults(excludedAreas.getPixels());
+        end = System.nanoTime();
+        System.out.println("Time taken to exclude areas from comparison results: " + (end - start) + " ns");
+
+        start = System.nanoTime();
+        mismatchedImage = MismatchMarker.markMismatches(mismatched, mismatchedImage);
         end = System.nanoTime();
         System.out.println("Time taken to mark mismatches: " + (end - start) + " ns");
 
-        start = System.nanoTime();
-        mismatchedImage = MismatchMarker.markExcluded(excludedAreas, mismatchedImage);
-        end = System.nanoTime();
-        System.out.println("Time taken to mark excluded areas: " + (end - start) + " ns");
+//        start = System.nanoTime();
+//        mismatchedImage = MismatchMarker.markExcluded(excludedAreas, mismatchedImage);
+//        end = System.nanoTime();
+//        System.out.println("Time taken to mark excluded areas: " + (end - start) + " ns");
 
         start = System.nanoTime();
         validator.isBelowMismatchThreshold(actualImage, mismatched);
         end = System.nanoTime();
-        System.out.println("Time taken to check mismatches percentage: " + (end - start) + " ns");
+        //System.out.println("Time taken to check mismatches percentage: " + (end - start) + " ns");
 
 
         start = System.nanoTime();
@@ -65,7 +77,7 @@ public class Main {
         File expectedFile = new File("checked_output.png");
         ImageIO.write(checkedImage, "png", expectedFile);
         end = System.nanoTime();
-        System.out.println("Time taken to write the file: " + (end - start) + " ns");
+        //System.out.println("Time taken to write the file: " + (end - start) + " ns");
 
         long globalEnd = System.nanoTime();
         System.out.println("Time taken in total: " + (globalEnd - globalStart) + " ns");
