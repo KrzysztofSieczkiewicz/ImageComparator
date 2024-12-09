@@ -26,8 +26,8 @@ public class Main {
 
         start = System.nanoTime();
         ExcludedAreas excludedAreas = new ExcludedAreas(actualImage.getWidth(), actualImage.getHeight());
-        excludedAreas.excludeArea(new Rectangle(0,0,50,50));
-        excludedAreas.includeArea(new Rectangle(5,5, 40,40));
+        excludedAreas.excludeArea(new Rectangle(0,0,50,1000));
+        //excludedAreas.includeArea(new Rectangle(5,5, 40,990));
         excludedAreas.excludeArea(new Rectangle(250,250,50,50));
         excludedAreas.excludeArea(new Rectangle(100,250,150,200));
         excludedAreas.excludeArea(new Rectangle(250,100,200,150));
@@ -36,7 +36,7 @@ public class Main {
 
 
         start = System.nanoTime();
-        SimpleComparator comparator = new SimpleComparator();
+        SimpleComparator comparator = new SimpleComparator(excludedAreas);
         Mismatches mismatched = comparator.compare(actualImage, checkedImage);
         end = System.nanoTime();
         System.out.println("Time taken to compare: " + (end - start) + " ns");
@@ -55,14 +55,6 @@ public class Main {
         validator.isBelowMismatchThreshold(actualImage, mismatched);
         end = System.nanoTime();
         System.out.println("Time taken to check mismatches percentage: " + (end - start) + " ns");
-
-
-        /*
-        TODO:
-        - HANDLE EXCLUDED AREAS - NOT EVERYTHING HAS TO BE COMPARED (PREFERABLY- FILL BOTH IMAGES WITH THE SAME COLOR IN THE EXCLUDED AREAS
-        - ADD EXCLUDED AREAS MARKING IN THE FINAL IMAGE
-        - ADD A NUMBER OF MISMATCHED PIXELS THRESHOLD TO OVERRIDE IF IMAGES ARE MISMATCHED OR NOT
-         */
 
 
         start = System.nanoTime();

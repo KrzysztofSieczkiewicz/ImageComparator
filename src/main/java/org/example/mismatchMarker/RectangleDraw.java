@@ -1,7 +1,6 @@
 package org.example.mismatchMarker;
 
 import org.example.accessor.ImageAccessor;
-import org.example.comparator.Mismatches;
 import org.example.utils.ImageUtil;
 
 import java.awt.BasicStroke;
@@ -15,15 +14,15 @@ public class RectangleDraw {
 
     private int offset = 3;
     private int thickness = 4;
-    private Color lineColor = Color.BLUE;
 
-    // TODO: REPLACE MISMATCHES WITH BOOLEAN MATRIX, THE SAME FOR paintPixels() - ALLOW TO BE REUSED FOR EXCLUDED AREAS AND MISMATCHES
-    public BufferedImage draw(boolean[][] pixels, BufferedImage checkedImage, Color color) {
+    // TODO: Move result image deep copy from this class - it should not be recopied each time sth is painted
+
+    public BufferedImage draw(boolean[][] pixels, BufferedImage checkedImage, Color lineColor) {
         List<Rectangle> groups = new MismatchManager(5).groupMismatches(pixels);
         BufferedImage mismatchedImage = ImageUtil.deepCopy(checkedImage);
         Graphics2D g2d = mismatchedImage.createGraphics();
 
-        g2d.setColor(color);
+        g2d.setColor(lineColor);
         g2d.setStroke(new BasicStroke(thickness));
 
         groups.forEach( group -> g2d.drawRect(
@@ -38,8 +37,7 @@ public class RectangleDraw {
         return mismatchedImage;
     }
 
-    // TODO: Move result image deep copy from this class - it should not be recopied each time sth is painted
-    public BufferedImage paintPixels(boolean[][] pixels, BufferedImage checkedImage, Color color) {
+    public BufferedImage paintPixels(boolean[][] pixels, BufferedImage checkedImage, Color lineColor) {
         BufferedImage mismatchedImage = ImageUtil.deepCopy(checkedImage);
         ImageAccessor mismatchedAccessor = ImageAccessor.create(mismatchedImage);
 
@@ -48,7 +46,7 @@ public class RectangleDraw {
 
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
-                if(pixels[x][y]) mismatchedAccessor.setPixel(x,y, 255, color.getRed(), color.getGreen(), color.getBlue());
+                if(pixels[x][y]) mismatchedAccessor.setPixel(x,y, 255, lineColor.getRed(), lineColor.getGreen(), lineColor.getBlue());
             }
         }
 
