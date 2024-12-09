@@ -16,14 +16,14 @@ import java.io.IOException;
 public class Main {
     public static void main(String[] args) throws IOException {
         long globalStart = System.nanoTime();
+        long start;
+        long end;
 
-        long start = System.nanoTime();
+
         BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
-        BufferedImage checkedImage = ImageIO.read(new File("src/image3.png"));
+        BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
         Validator validator = new Validator();
         validator.enforceImagesSize(actualImage, checkedImage);
-        long end = System.nanoTime();
-        //System.out.println("Time taken to read file from the disk: " + (end - start) + " ns");
 
         // TODO: Dlaczego "Time taken to mark mismatches" jest wysoki niezależnie od liczby mismatchy (nawet 0)?
 
@@ -35,7 +35,7 @@ public class Main {
         excludedAreas.excludeArea(new Rectangle(100,250,150,200));
         excludedAreas.excludeArea(new Rectangle(250,100,200,150));
         end = System.nanoTime();
-        //System.out.println("Time taken to exclude areas: " + (end-start) + " ns");
+        System.out.println("Time taken to exclude areas: " + (end-start) + " ns");
 
         start = System.nanoTime();
         SimpleComparator comparator = new SimpleComparator();

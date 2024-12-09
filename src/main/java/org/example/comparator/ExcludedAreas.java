@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 public class ExcludedAreas {
 
+    // TODO: migrate to HashSet<int[]>
     private final boolean[][] excludedPixels;
 
     public ExcludedAreas(int imageWidth, int imageHeight) {

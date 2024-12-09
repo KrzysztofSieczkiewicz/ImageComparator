@@ -4,10 +4,8 @@ import org.example.accessor.ImageAccessor;
 import org.example.config.ColorSpace;
 import org.example.utils.PixelColorUtil;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
-import java.util.TreeSet;
 import java.util.function.BiFunction;
 
 // TODO - ADD THRESHOLD AND DISTANCE NORMALISATION
@@ -16,15 +14,15 @@ public class SimpleComparator implements ByPixelComparator{
     private final BiFunction<BufferedImage, BufferedImage, Mismatches> comparisonMethod;
 
     private final float distanceThreshold = 5f*5f;
-    private final ColorSpace comparisonSpace = ColorSpace.RGB;
+    private final ColorSpace comparisonSpace = ColorSpace.HSV;
 
 
     public SimpleComparator() {
 
         switch (comparisonSpace) {
             case RGB -> comparisonMethod = this::compareRGB;
-//            case WEIGHTED_RGB -> comparisonMethod = this::compareWeightedRGB;
-//            case HSV -> comparisonMethod = this::compareHSV;
+            case WEIGHTED_RGB -> comparisonMethod = this::compareWeightedRGB;
+            case HSV -> comparisonMethod = this::compareHSV;
             case CIELAB -> throw new RuntimeException("CIE-Lab isn't yet supported");
 
             default -> comparisonMethod = this::compareRGB;
@@ -44,24 +42,6 @@ public class SimpleComparator implements ByPixelComparator{
         int width = actual.getWidth();
         int height = actual.getHeight();
 
-        /*
-        boolean[][] mismatches = new boolean[width][height];
-        for (int x=0; x<width; x++) {
-            for (int y=0; y<height; y++) {
-
-                int actualRGB = actualAccessor.getPixel(x,y);
-                int checkedRGB = checkedAccessor.getPixel(x,y);
-                double distance = PixelColorUtil.calculateDistanceRGB(actualRGB, checkedRGB);
-
-                if (distance >= distanceThreshold) {
-                    mismatches[x][y] = true;
-                    count++;
-                }
-            }
-        }
-        return new Mismatches(mismatches, count);
-        */
-
         HashSet<int[]> mismatches = new HashSet<>();
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
@@ -78,53 +58,55 @@ public class SimpleComparator implements ByPixelComparator{
         }
         return new Mismatches(mismatches, count);
     }
-//
-//    public Mismatches compareWeightedRGB(BufferedImage actual, BufferedImage checked) {
-//        ImageAccessor actualAccessor = ImageAccessor.create(actual);
-//        ImageAccessor checkedAccessor = ImageAccessor.create(checked);
-//
-//        int count = 0;
-//        int width = actual.getWidth();
-//        int height = actual.getHeight();
-//
-//        boolean[][] mismatches = new boolean[width][height];
-//        for (int x=0; x<width; x++) {
-//            for (int y=0; y<height; y++) {
-//
-//                int actualRGB = actualAccessor.getPixel(x,y);
-//                int checkedRGB = checkedAccessor.getPixel(x,y);
-//                double distance = PixelColorUtil.calculateDistanceWeightedRGB(actualRGB, checkedRGB);
-//
-//                if (distance >= distanceThreshold) {
-//                    mismatches[x][y] = true;
-//                    count++;
-//                }
-//            }
-//        }
-//        return new Mismatches(mismatches, count);
-//    }
-//
-//    public Mismatches compareHSV(BufferedImage actual, BufferedImage checked) {
-//        ImageAccessor actualAccessor = ImageAccessor.create(actual);
-//        ImageAccessor checkedAccessor = ImageAccessor.create(checked);
-//
-//        int count = 0;
-//        int width = actual.getWidth();
-//        int height = actual.getHeight();
-//
-//        boolean[][] mismatches = new boolean[width][height];
-//        for (int x=0; x<width; x++) {
-//            for (int y=0; y<height; y++) {
-//                float[] actualHSV = PixelColorUtil.convertRGBtoHSV(actualAccessor.getPixel(x,y));
-//                float[] expectedHSV = PixelColorUtil.convertRGBtoHSV(checkedAccessor.getPixel(x,y));
-//                double distance = PixelColorUtil.calculateDistanceHSV(actualHSV, expectedHSV);
-//                if (distance >= distanceThreshold) {
-//                    mismatches[x][y] = true;
-//                    count++;
-//                }
-//            }
-//        }
-//        return new Mismatches(mismatches, count);
-//    }
+
+    public Mismatches compareWeightedRGB(BufferedImage actual, BufferedImage checked) {
+        ImageAccessor actualAccessor = ImageAccessor.create(actual);
+        ImageAccessor checkedAccessor = ImageAccessor.create(checked);
+
+        int count = 0;
+        int width = actual.getWidth();
+        int height = actual.getHeight();
+
+        HashSet<int[]> mismatches = new HashSet<>();
+        for (int x=0; x<width; x++) {
+            for (int y=0; y<height; y++) {
+
+                int actualRGB = actualAccessor.getPixel(x,y);
+                int checkedRGB = checkedAccessor.getPixel(x,y);
+                double distance = PixelColorUtil.calculateDistanceWeightedRGB(actualRGB, checkedRGB);
+
+                if (distance >= distanceThreshold) {
+                    mismatches.add(new int[]{x,y});
+                    count++;
+                }
+            }
+        }
+        return new Mismatches(mismatches, count);
+    }
+
+    public Mismatches compareHSV(BufferedImage actual, BufferedImage checked) {
+        ImageAccessor actualAccessor = ImageAccessor.create(actual);
+        ImageAccessor checkedAccessor = ImageAccessor.create(checked);
+
+        int count = 0;
+        int width = actual.getWidth();
+        int height = actual.getHeight();
+
+        HashSet<int[]> mismatches = new HashSet<>();
+        for (int x=0; x<width; x++) {
+            for (int y=0; y<height; y++) {
+
+                double distance = PixelColorUtil.calculateDistanceHSV(
+                        PixelColorUtil.convertRGBtoHSV(actualAccessor.getPixel(x,y)),
+                        PixelColorUtil.convertRGBtoHSV(checkedAccessor.getPixel(x,y)) );
+
+                if (distance >= distanceThreshold) {
+                    mismatches.add(new int[]{x,y});
+                    count++;
+                }
+            }
+        }
+        return new Mismatches(mismatches, count);
+    }
 
 }

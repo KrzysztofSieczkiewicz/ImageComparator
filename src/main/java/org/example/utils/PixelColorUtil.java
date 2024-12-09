@@ -19,12 +19,12 @@ public class PixelColorUtil {
         float S = 0;
         float V;
 
-        float red_calc = ((rgb >> 16) & 0xFF) / 255f;
-        float green_calc = ((rgb >> 8) & 0xFF) / 255f;
-        float blue_calc = (rgb & 0xFF) / 255f;
+        float red = ((rgb >> 16) & 0xFF) / 255f;
+        float green = ((rgb >> 8) & 0xFF) / 255f;
+        float blue = (rgb & 0xFF) / 255f;
 
-        float min = Math.min(red_calc, Math.min(green_calc, blue_calc));
-        float max = Math.max(red_calc, Math.max(green_calc, blue_calc));
+        float min = Math.min(red, Math.min(green, blue));
+        float max = Math.max(red, Math.max(green, blue));
         float delta = max-min;
 
         V = max;
@@ -33,16 +33,14 @@ public class PixelColorUtil {
 
         S = delta/max;
 
-        float deltaR = ( (max-red_calc)/6f + (delta/2f) ) / delta;
-        float deltaG = ( (max-green_calc)/6f + (delta/2f) ) / delta;
-        float deltaB = ( (max-blue_calc)/6f + (delta/2f) ) / delta;
+        float invDelta = 1 / delta;
 
-        if (red_calc == max) H = deltaB - deltaG;
-        else if (green_calc == max) H = (1/3f) + deltaR - deltaB;
-        else if (blue_calc == max) H = (2/3f) + deltaG - deltaR;
+        if (red == max)         H = (green - blue) * invDelta;
+        else if (green == max)  H = 2 + (blue - red) * invDelta;
+        else                    H = 4 + (red - green) * invDelta;
 
-        if (H < 0) H+=1;
-        if (H > 1) H-=1;
+        H /= 6; // Normalize to [0, 1]
+        if (H < 0) H += 1;
 
         return new float[]{H,S,V};
     }
@@ -53,12 +51,11 @@ public class PixelColorUtil {
      * @return squared distance between colors in the HSV space
      */
     public static float calculateDistanceHSV(float[] hsv1, float[] hsv2) {
-        float diffH = Math.abs(hsv1[0] - hsv2[0]);
-        float deltaH = Math.min(diffH, 360 - diffH);
-        float deltaS = hsv1[1]-hsv2[1];
-        float deltaV = hsv1[2]-hsv2[2];
+        float deltaH = Math.min(Math.abs(hsv1[0] - hsv2[0]), 1 - Math.abs(hsv1[0] - hsv2[0]));
+        float deltaS = hsv1[1] - hsv2[1];
+        float deltaV = hsv1[2] - hsv2[2];
 
-        return deltaH*deltaH + deltaS*deltaS + deltaV*deltaV;
+        return deltaH * deltaH + deltaS * deltaS + deltaV * deltaV;
     }
 
     /**
