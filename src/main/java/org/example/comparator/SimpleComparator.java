@@ -2,6 +2,7 @@ package org.example.comparator;
 
 import org.example.accessor.ImageAccessor;
 import org.example.config.ColorSpace;
+import org.example.mismatchMarker.PixelPoint;
 import org.example.utils.PixelColorUtil;
 
 import java.awt.image.BufferedImage;
@@ -14,7 +15,7 @@ public class SimpleComparator implements ByPixelComparator{
     private final BiFunction<BufferedImage, BufferedImage, Mismatches> comparisonMethod;
 
     private final float distanceThreshold = 5f*5f;
-    private final ColorSpace comparisonSpace = ColorSpace.HSV;
+    private final ColorSpace comparisonSpace = ColorSpace.RGB;
 
 
     public SimpleComparator() {
@@ -42,7 +43,7 @@ public class SimpleComparator implements ByPixelComparator{
         int width = actual.getWidth();
         int height = actual.getHeight();
 
-        HashSet<int[]> mismatches = new HashSet<>();
+        HashSet<PixelPoint> mismatches = new HashSet<>();
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
 
@@ -51,7 +52,7 @@ public class SimpleComparator implements ByPixelComparator{
                 double distance = PixelColorUtil.calculateDistanceRGB(actualRGB, checkedRGB);
 
                 if (distance >= distanceThreshold) {
-                    mismatches.add(new int[]{x,y});
+                    mismatches.add(new PixelPoint(x,y));
                     count++;
                 }
             }
@@ -67,7 +68,7 @@ public class SimpleComparator implements ByPixelComparator{
         int width = actual.getWidth();
         int height = actual.getHeight();
 
-        HashSet<int[]> mismatches = new HashSet<>();
+        HashSet<PixelPoint> mismatches = new HashSet<>();
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
 
@@ -76,7 +77,7 @@ public class SimpleComparator implements ByPixelComparator{
                 double distance = PixelColorUtil.calculateDistanceWeightedRGB(actualRGB, checkedRGB);
 
                 if (distance >= distanceThreshold) {
-                    mismatches.add(new int[]{x,y});
+                    mismatches.add(new PixelPoint(x,y));
                     count++;
                 }
             }
@@ -92,7 +93,7 @@ public class SimpleComparator implements ByPixelComparator{
         int width = actual.getWidth();
         int height = actual.getHeight();
 
-        HashSet<int[]> mismatches = new HashSet<>();
+        HashSet<PixelPoint> mismatches = new HashSet<>();
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
 
@@ -101,7 +102,7 @@ public class SimpleComparator implements ByPixelComparator{
                         PixelColorUtil.convertRGBtoHSV(checkedAccessor.getPixel(x,y)) );
 
                 if (distance >= distanceThreshold) {
-                    mismatches.add(new int[]{x,y});
+                    mismatches.add(new PixelPoint(x,y));
                     count++;
                 }
             }

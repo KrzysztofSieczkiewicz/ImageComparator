@@ -1,26 +1,26 @@
 package org.example.mismatchMarker;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Stack;
-import java.util.Arrays;
 
+// TODO: FIX THIS!
 public class MismatchManager {
-    private final int[][] neighboursMatrix;
+    private final int[][] neighboursMatrix = generateNeighboursMatrix(1);
 
-    public MismatchManager(int groupingRadius) {
-        this.neighboursMatrix = generateNeighboursMatrix(groupingRadius);
-    }
-
-    public List<Rectangle> groupMismatches(HashSet<int[]> mismatches) {
+    /**
+     * Joins connected mismatched pixels into single group bound by a rectangle
+     *
+     * @param mismatches HashSet containing mismatched pixels
+     * @return List of rectangles bounding mismatched pixels groups
+     */
+    public List<Rectangle> groupMismatches(HashSet<PixelPoint> mismatches) {
         List<Rectangle> groups = new ArrayList<>();
-        HashSet<int[]> visited = new HashSet<>();
+        HashSet<PixelPoint> visited = new HashSet<>();
 
-        for (int[] mismatch : mismatches) {
-            if (contains(visited, mismatch)) continue; // check if already visited
-            groups.add(searchDFS(mismatches, visited, mismatch[0], mismatch[1]));
+        for (PixelPoint mismatch : mismatches) {
+            if (visited.contains(mismatch)) continue;
+            groups.add(searchDFS(mismatches, visited, mismatch.getX(), mismatch.getY()));
         }
 
         return groups;
@@ -35,14 +35,14 @@ public class MismatchManager {
      * @param y Y pixel coordinate
      * @return the bounding rectangle for the mismatched group
      */
-    private Rectangle searchDFS(HashSet<int[]> matrix, HashSet<int[]> visited, int x, int y) {
+    private Rectangle searchDFS(HashSet<PixelPoint> matrix, HashSet<PixelPoint> visited, int x, int y) {
         final int[] xNeighbours = neighboursMatrix[0];
         final int[] yNeighbours = neighboursMatrix[1];
 
         Stack<int[]> stack = new Stack<>();
         stack.push(new int[]{x, y});
 
-        visited.add(new int[]{x, y});
+        visited.add(new PixelPoint(x,y));
 
         int minX = x;
         int maxX = x;
@@ -58,9 +58,10 @@ public class MismatchManager {
                 int newX = currX + xNeighbours[i];
                 int newY = currY + yNeighbours[i];
                 int[] neighbour = new int[]{newX, newY};
+                PixelPoint neighbourPoint = new PixelPoint(newX, newY);
 
-                if (!matrix.contains(neighbour)) continue;
-                if (contains(visited, neighbour)) continue;
+                if (!matrix.contains(neighbourPoint)) continue;
+                if (visited.contains(neighbourPoint)) continue;
 
                 if (newX > maxX) maxX = newX;
                 else if (newX < minX) minX = newX;
@@ -68,24 +69,13 @@ public class MismatchManager {
                 else if (newY < minY) minY = newY;
 
                 stack.push(new int[]{newX, newY});
-                visited.add(new int[]{newX, newY});
+                visited.add(neighbourPoint);
             }
         }
 
         return new Rectangle(minX, minY, maxX - minX, maxY - minY);
     }
 
-    /**
-     * Checks if a HashSet contains a specific int[] based on array equality
-     */
-    private boolean contains(HashSet<int[]> set, int[] element) {
-        for (int[] e : set) {
-            if (Arrays.equals(e, element)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     /**
      * Generate index offsets for surrounding entries based on provided distance
@@ -110,11 +100,11 @@ public class MismatchManager {
 
         return new int[][]{xNeighbours, yNeighbours};
     }
+
 }
 
 
 // TODO: If sure that matrices won't return - delete everything below
-
 /*
 package org.example.mismatchMarker;
 

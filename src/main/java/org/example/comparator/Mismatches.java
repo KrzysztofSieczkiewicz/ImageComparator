@@ -1,14 +1,16 @@
 package org.example.comparator;
 
+import org.example.mismatchMarker.PixelPoint;
+
 import java.awt.*;
 import java.util.HashSet;
 
 public class Mismatches {
 
     private final int totalMismatched;
-    private HashSet<int[]> mismatchedPixels;
+    private HashSet<PixelPoint> mismatchedPixels;
 
-    public Mismatches(HashSet<int[]> mismatchedPixels, int totalMismatched) {
+    public Mismatches(HashSet<PixelPoint> mismatchedPixels, int totalMismatched) {
         this.totalMismatched = totalMismatched;
         this.mismatchedPixels = mismatchedPixels;
     }
@@ -17,15 +19,15 @@ public class Mismatches {
         return totalMismatched;
     }
 
-    public HashSet<int[]> getPixels() {
+    public HashSet<PixelPoint> getPixels() {
         return mismatchedPixels;
     }
 
-    public void setMismatchedPixels(HashSet<int[]> mismatchedPixels) {
+    public void setMismatchedPixels(HashSet<PixelPoint> mismatchedPixels) {
         this.mismatchedPixels = mismatchedPixels;
     }
 
-    public void excludeResults(boolean[][] excluded) {
-        mismatchedPixels.removeIf(pixel -> excluded[pixel[0]][pixel[1]]);
+    public void excludeResults(HashSet<PixelPoint> excluded) {
+        mismatchedPixels.removeIf(excluded::contains);
     }
 }

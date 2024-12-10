@@ -1,36 +1,26 @@
 package org.example.comparator;
 
+import org.example.mismatchMarker.PixelPoint;
+
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class ExcludedAreas {
 
-    // TODO: migrate to HashSet<int[]>
-    private final boolean[][] excludedPixels;
-
-    public ExcludedAreas(int imageWidth, int imageHeight) {
-        excludedPixels = new boolean[imageWidth][imageHeight];
-    }
+    // TODO: KEEP AS LIST OF RECTANGLES
+    // - convert to HashSet on demand - is this really necessary? - consider more efficient omission of excluded areas
+    // - convert to Polygon on demand - much faster excluded area marking
+    private final HashSet<PixelPoint> excludedPixels = new HashSet<>();
 
     public void excludeAreas(ArrayList<Rectangle> areas) {
         areas.forEach(this::excludeArea);
     }
 
-    public void excludeAreas(boolean[][] pixels) {
-        int width = pixels.length;
-        int height = pixels[0].length;
-
-        for (int x=0; x<width; x++) {
-            for (int y=0; y<height; y++) {
-                if (pixels[x][y]) excludedPixels[x][y] = true;
-            }
-        }
-    }
-
     public void excludeArea(Rectangle area) {
         for (int x=0; x<area.width; x++) {
             for (int y=0; y<area.height; y++) {
-                excludedPixels[area.x + x][area.y + y] = true;
+                excludedPixels.add(new PixelPoint(x,y));
             }
         }
     }
@@ -39,26 +29,15 @@ public class ExcludedAreas {
         areas.forEach(this::includeArea);
     }
 
-    public void includeAreas(boolean[][] pixels) {
-        int width = pixels.length;
-        int height = pixels[0].length;
-
-        for (int x=0; x<width; x++) {
-            for (int y=0; y<height; y++) {
-                if (pixels[x][y]) excludedPixels[x][y] = false;
-            }
-        }
-    }
-
     public void includeArea(Rectangle area) {
         for (int x=0; x<area.width; x++) {
             for (int y=0; y<area.height; y++) {
-                excludedPixels[area.x + x][area.y + y] = false;
+                excludedPixels.add(new PixelPoint(x,y));
             }
         }
     }
 
-    public boolean[][] getPixels() {
+    public HashSet<PixelPoint> getPixels() {
         return excludedPixels;
     }
 }

@@ -1,5 +1,6 @@
 package org.example.mismatchMarker;
 
+import org.example.comparator.ExcludedAreas;
 import org.example.comparator.Mismatches;
 import org.example.config.MarkingType;
 
@@ -21,7 +22,7 @@ public interface MismatchMarker {
         return bufferedImage;
     }
 
-//    static BufferedImage markExcluded(ExcludedAreas excludedAreas, BufferedImage bufferedImage) {
-//        return new RectangleDraw().paintPixels(excludedAreas.getPixels(), bufferedImage, Color.YELLOW);
-//    }
+    static BufferedImage markExcluded(ExcludedAreas excludedAreas, BufferedImage bufferedImage) {
+        return new RectangleDraw().draw(excludedAreas.getPixels(), bufferedImage, Color.YELLOW);
+    }
 }

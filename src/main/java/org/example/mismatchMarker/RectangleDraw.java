@@ -9,13 +9,14 @@ import java.util.List;
 
 public class RectangleDraw {
 
-    private int offset = 3;
-    private int thickness = 4;
+    private int offset = 30;
+    private int thickness = 1;
 
     // TODO: Move result image deep copy from this class - it should not be recopied each time sth is painted
 
-    public BufferedImage draw(HashSet<int[]> pixels, BufferedImage image, Color lineColor) {
-        List<Rectangle> groups = new MismatchManager(5).groupMismatches(pixels);
+    public BufferedImage draw(HashSet<PixelPoint> pixels, BufferedImage image, Color lineColor) {
+        List<Rectangle> groups = new MismatchManager().groupMismatches(pixels);
+
         Graphics2D g2d = image.createGraphics();
 
         g2d.setColor(lineColor);
@@ -33,15 +34,15 @@ public class RectangleDraw {
         return image;
     }
 
-    public BufferedImage paintPixels(HashSet<int[]> pixels, BufferedImage image, Color lineColor) {
+    public BufferedImage paintPixels(HashSet<PixelPoint> pixels, BufferedImage image, Color lineColor) {
         ImageAccessor mismatchedAccessor = ImageAccessor.create(image);
 
         int red = lineColor.getRed();
         int green = lineColor.getGreen();
         int blue = lineColor.getBlue();
 
-        for (int[] pixel : pixels) {
-            mismatchedAccessor.setPixel(pixel[0], pixel[1], 255, red, green, blue);
+        for (PixelPoint pixel : pixels) {
+            mismatchedAccessor.setPixel(pixel.getX(), pixel.getY(), 255, red, green, blue);
         }
 
         return image;

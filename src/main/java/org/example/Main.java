@@ -28,7 +28,7 @@ public class Main {
         // TODO: Dlaczego "Time taken to mark mismatches" jest wysoki niezależnie od liczby mismatchy (nawet 0)?
 
         start = System.nanoTime();
-        ExcludedAreas excludedAreas = new ExcludedAreas(actualImage.getWidth(), actualImage.getHeight());
+        ExcludedAreas excludedAreas = new ExcludedAreas();
         excludedAreas.excludeArea(new Rectangle(0,0,50,1000));
         //excludedAreas.includeArea(new Rectangle(5,5, 40,990));
         excludedAreas.excludeArea(new Rectangle(250,250,50,50));
@@ -58,10 +58,10 @@ public class Main {
         end = System.nanoTime();
         System.out.println("Time taken to mark mismatches: " + (end - start) + " ns");
 
-//        start = System.nanoTime();
-//        mismatchedImage = MismatchMarker.markExcluded(excludedAreas, mismatchedImage);
-//        end = System.nanoTime();
-//        System.out.println("Time taken to mark excluded areas: " + (end - start) + " ns");
+        start = System.nanoTime();
+        mismatchedImage = MismatchMarker.markExcluded(excludedAreas, mismatchedImage);
+        end = System.nanoTime();
+        System.out.println("Time taken to mark excluded areas: " + (end - start) + " ns");
 
         start = System.nanoTime();
         validator.isBelowMismatchThreshold(actualImage, mismatched);
