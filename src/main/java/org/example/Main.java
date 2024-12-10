@@ -30,7 +30,7 @@ public class Main {
         start = System.nanoTime();
         ExcludedAreas excludedAreas = new ExcludedAreas();
         excludedAreas.excludeArea(new Rectangle(0,0,50,1000));
-        //excludedAreas.includeArea(new Rectangle(5,5, 40,990));
+        excludedAreas.includeArea(new Rectangle(5,5, 40,990));
         excludedAreas.excludeArea(new Rectangle(250,250,50,50));
         excludedAreas.excludeArea(new Rectangle(100,250,150,200));
         excludedAreas.excludeArea(new Rectangle(250,100,200,150));
@@ -38,7 +38,7 @@ public class Main {
         System.out.println("Time taken to exclude areas: " + (end-start) + " ns");
 
         start = System.nanoTime();
-        SimpleComparator comparator = new SimpleComparator();
+        SimpleComparator comparator = new SimpleComparator(excludedAreas);
         Mismatches mismatched = comparator.compare(actualImage, checkedImage);
         end = System.nanoTime();
         System.out.println("Time taken to compare: " + (end - start) + " ns");
@@ -46,12 +46,7 @@ public class Main {
         start = System.nanoTime();
         BufferedImage mismatchedImage = ImageUtil.deepCopy(checkedImage);
         end = System.nanoTime();
-        //System.out.println("Time taken to perform image deep copy: " + (end - start) + " ns");
-
-        start = System.nanoTime();
-        mismatched.excludeResults(excludedAreas.getPixels());
-        end = System.nanoTime();
-        System.out.println("Time taken to exclude areas from comparison results: " + (end - start) + " ns");
+        System.out.println("Time taken to perform image deep copy: " + (end - start) + " ns");
 
         start = System.nanoTime();
         mismatchedImage = MismatchMarker.markMismatches(mismatched, mismatchedImage);

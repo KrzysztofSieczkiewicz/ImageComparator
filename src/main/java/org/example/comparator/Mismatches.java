@@ -8,7 +8,7 @@ import java.util.HashSet;
 public class Mismatches {
 
     private final int totalMismatched;
-    private HashSet<PixelPoint> mismatchedPixels;
+    private final HashSet<PixelPoint> mismatchedPixels;
 
     public Mismatches(HashSet<PixelPoint> mismatchedPixels, int totalMismatched) {
         this.totalMismatched = totalMismatched;
@@ -21,13 +21,5 @@ public class Mismatches {
 
     public HashSet<PixelPoint> getPixels() {
         return mismatchedPixels;
-    }
-
-    public void setMismatchedPixels(HashSet<PixelPoint> mismatchedPixels) {
-        this.mismatchedPixels = mismatchedPixels;
-    }
-
-    public void excludeResults(HashSet<PixelPoint> excluded) {
-        mismatchedPixels.removeIf(excluded::contains);
     }
 }
