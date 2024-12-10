@@ -22,7 +22,7 @@ public interface MismatchMarker {
         return bufferedImage;
     }
 
-    static BufferedImage markExcluded(ExcludedAreas excludedAreas, BufferedImage bufferedImage) {
-        return new RectangleDraw().draw(excludedAreas.getPixels(), bufferedImage, Color.YELLOW);
-    }
+//    static BufferedImage markExcluded(ExcludedAreas excludedAreas, BufferedImage bufferedImage) {
+//        return new RectangleDraw().draw(excludedAreas.getPixels(), bufferedImage, Color.YELLOW);
+//    }
 }

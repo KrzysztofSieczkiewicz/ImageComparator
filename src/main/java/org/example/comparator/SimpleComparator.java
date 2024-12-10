@@ -18,11 +18,8 @@ public class SimpleComparator implements ByPixelComparator{
     private final float distanceThreshold = 5f*5f;
     private final ColorSpace comparisonSpace = ColorSpace.RGB;
 
-    private ExcludedAreas excluded;
 
-
-    public SimpleComparator(ExcludedAreas excludedAreas) {
-        this.excluded = excludedAreas;
+    public SimpleComparator() {
         switch (comparisonSpace) {
             case RGB -> comparisonMethod = this::compareRGB;
             case WEIGHTED_RGB -> comparisonMethod = this::compareWeightedRGB;

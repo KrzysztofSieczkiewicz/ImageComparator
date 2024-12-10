@@ -37,7 +37,7 @@ public class Main {
         System.out.println("Time taken to exclude areas: " + (end-start) + " ns");
 
         start = System.nanoTime();
-        SimpleComparator comparator = new SimpleComparator(excludedAreas);
+        SimpleComparator comparator = new SimpleComparator();
         Mismatches mismatched = comparator.compare(actualImage, checkedImage);
         end = System.nanoTime();
         System.out.println("Time taken to compare: " + (end - start) + " ns");
@@ -58,7 +58,7 @@ public class Main {
         System.out.println("Time taken to mark mismatches: " + (end - start) + " ns");
 
         start = System.nanoTime();
-        mismatchedImage = MismatchMarker.markExcluded(excludedAreas, mismatchedImage);
+        //mismatchedImage = MismatchMarker.markExcluded(excludedAreas, mismatchedImage);
         end = System.nanoTime();
         System.out.println("Time taken to mark excluded areas: " + (end - start) + " ns");
 
