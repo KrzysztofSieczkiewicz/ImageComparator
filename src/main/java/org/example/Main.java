@@ -19,13 +19,12 @@ public class Main {
         long start;
         long end;
 
+        // TODO: Add optional "min group size" check - after comparison
 
         BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
         BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
         Validator validator = new Validator();
         validator.enforceImagesSize(actualImage, checkedImage);
-
-        // TODO: Dlaczego "Time taken to mark mismatches" jest wysoki niezależnie od liczby mismatchy (nawet 0)?
 
         start = System.nanoTime();
         ExcludedAreas excludedAreas = new ExcludedAreas();
@@ -49,6 +48,11 @@ public class Main {
         System.out.println("Time taken to perform image deep copy: " + (end - start) + " ns");
 
         start = System.nanoTime();
+        mismatched.excludePixels(excludedAreas);
+        end = System.nanoTime();
+        System.out.println("Time taken to exclude areas from mismatches: " + (end - start) + " ns");
+
+        start = System.nanoTime();
         mismatchedImage = MismatchMarker.markMismatches(mismatched, mismatchedImage);
         end = System.nanoTime();
         System.out.println("Time taken to mark mismatches: " + (end - start) + " ns");
@@ -61,7 +65,7 @@ public class Main {
         start = System.nanoTime();
         validator.isBelowMismatchThreshold(actualImage, mismatched);
         end = System.nanoTime();
-        //System.out.println("Time taken to check mismatches percentage: " + (end - start) + " ns");
+        System.out.println("Time taken to check mismatches percentage: " + (end - start) + " ns");
 
 
         start = System.nanoTime();

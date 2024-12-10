@@ -9,8 +9,8 @@ import java.util.List;
 
 public class RectangleDraw {
 
-    private int offset = 30;
-    private int thickness = 1;
+    private int offset = 5;
+    private int thickness = 2;
 
     // TODO: Move result image deep copy from this class - it should not be recopied each time sth is painted
 

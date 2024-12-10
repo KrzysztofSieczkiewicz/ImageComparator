@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.function.BiFunction;
 
 // TODO - ADD THRESHOLD AND DISTANCE NORMALISATION
+// TODO: Move reoccurring code to separate function - no need to repeat the same checks
 
 public class SimpleComparator implements ByPixelComparator{
     private final BiFunction<BufferedImage, BufferedImage, Mismatches> comparisonMethod;
@@ -48,13 +49,11 @@ public class SimpleComparator implements ByPixelComparator{
         HashSet<PixelPoint> mismatches = new HashSet<>();
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
-
                 int actualRGB = actualAccessor.getPixel(x,y);
                 int checkedRGB = checkedAccessor.getPixel(x,y);
                 double distance = PixelColorUtil.calculateDistanceRGB(actualRGB, checkedRGB);
 
                 if (distance >= distanceThreshold) {
-                    if (!excluded.contains(x,y)) continue;
                     mismatches.add(new PixelPoint(x,y));
                     count++;
                 }
@@ -74,7 +73,6 @@ public class SimpleComparator implements ByPixelComparator{
         HashSet<PixelPoint> mismatches = new HashSet<>();
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
-
                 int actualRGB = actualAccessor.getPixel(x,y);
                 int checkedRGB = checkedAccessor.getPixel(x,y);
                 double distance = PixelColorUtil.calculateDistanceWeightedRGB(actualRGB, checkedRGB);
@@ -99,7 +97,6 @@ public class SimpleComparator implements ByPixelComparator{
         HashSet<PixelPoint> mismatches = new HashSet<>();
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
-
                 double distance = PixelColorUtil.calculateDistanceHSV(
                         PixelColorUtil.convertRGBtoHSV(actualAccessor.getPixel(x,y)),
                         PixelColorUtil.convertRGBtoHSV(checkedAccessor.getPixel(x,y)) );

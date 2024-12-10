@@ -22,4 +22,10 @@ public class Mismatches {
     public HashSet<PixelPoint> getPixels() {
         return mismatchedPixels;
     }
+
+    public void excludePixels(ExcludedAreas excluded) {
+        mismatchedPixels.removeIf(pixelPoint -> excluded.contains(
+                pixelPoint.getX(), pixelPoint.getY()
+        ));
+    }
 }

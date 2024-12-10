@@ -57,7 +57,6 @@ public class MismatchManager {
             for (int i = 0; i < xNeighbours.length; i++) {
                 int newX = currX + xNeighbours[i];
                 int newY = currY + yNeighbours[i];
-                int[] neighbour = new int[]{newX, newY};
                 PixelPoint neighbourPoint = new PixelPoint(newX, newY);
 
                 if (!matrix.contains(neighbourPoint)) continue;
