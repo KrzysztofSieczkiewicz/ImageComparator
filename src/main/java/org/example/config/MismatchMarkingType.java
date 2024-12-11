@@ -1,6 +1,6 @@
 package org.example.config;
 
-public enum MarkingType {
+public enum MismatchMarkingType {
     RECTANGLE,
     PAINT_OVER
 }

@@ -58,7 +58,7 @@ public class Main {
         System.out.println("Time taken to mark mismatches: " + (end - start) + " ns");
 
         start = System.nanoTime();
-        //mismatchedImage = MismatchMarker.markExcluded(excludedAreas, mismatchedImage);
+        mismatchedImage = MismatchMarker.markExcluded(excludedAreas, mismatchedImage);
         end = System.nanoTime();
         System.out.println("Time taken to mark excluded areas: " + (end - start) + " ns");
 
@@ -76,10 +76,9 @@ public class Main {
         File expectedFile = new File("checked_output.png");
         ImageIO.write(checkedImage, "png", expectedFile);
         end = System.nanoTime();
-        //System.out.println("Time taken to write the file: " + (end - start) + " ns");
+        System.out.println("Time taken to write the file: " + (end - start) + " ns");
 
-        long globalEnd = System.nanoTime();
-        System.out.println("Time taken in total: " + (globalEnd - globalStart) + " ns");
+        long globalEnd = System.nanoTime();        System.out.println("Time taken in total: " + (globalEnd - globalStart) + " ns");
     }
 
 }

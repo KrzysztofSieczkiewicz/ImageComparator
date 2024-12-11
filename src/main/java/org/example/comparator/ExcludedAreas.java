@@ -25,8 +25,10 @@ public class ExcludedAreas {
         excluded.subtract(new Area(rectangle));
     }
 
-
     public boolean contains(int x, int y) {
         return excluded.contains(x,y);
+    }
+    public Area getExcluded() {
+        return excluded;
     }
 }

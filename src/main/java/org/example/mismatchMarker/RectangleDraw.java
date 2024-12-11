@@ -3,6 +3,7 @@ package org.example.mismatchMarker;
 import org.example.accessor.ImageAccessor;
 
 import java.awt.*;
+import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.List;
@@ -14,7 +15,7 @@ public class RectangleDraw {
 
     // TODO: Move result image deep copy from this class - it should not be recopied each time sth is painted
 
-    public BufferedImage draw(HashSet<PixelPoint> pixels, BufferedImage image, Color lineColor) {
+    public BufferedImage drawRectangle(HashSet<PixelPoint> pixels, BufferedImage image, Color lineColor) {
         List<Rectangle> groups = new MismatchManager().groupMismatches(pixels);
 
         Graphics2D g2d = image.createGraphics();
@@ -44,6 +45,28 @@ public class RectangleDraw {
         for (PixelPoint pixel : pixels) {
             mismatchedAccessor.setPixel(pixel.getX(), pixel.getY(), 255, red, green, blue);
         }
+
+        return image;
+    }
+
+    public BufferedImage paintPixels(Area area, BufferedImage image, Color lineColor) {
+        Graphics2D g2d = image.createGraphics();
+
+        g2d.setColor(lineColor);
+        g2d.setStroke(new BasicStroke(thickness));
+        g2d.fill(area);
+        g2d.dispose();
+
+        return image;
+    }
+
+    public BufferedImage drawShape(Area area, BufferedImage image, Color lineColor) {
+        Graphics2D g2d = image.createGraphics();
+
+        g2d.setColor(lineColor);
+        g2d.setStroke(new BasicStroke(thickness));
+        g2d.draw(area);
+        g2d.dispose();
 
         return image;
     }
