@@ -48,7 +48,7 @@ public class PixelColorUtil {
     /**
      * Calculates a distance between two colors in the HSV color space.
      *
-     * @return squared distance between colors in the HSV space
+     * @return distance between colors in the HSV space
      */
     public static float calculateDistanceHSV(float[] hsv1, float[] hsv2) {
         float deltaH = Math.min(Math.abs(hsv1[0] - hsv2[0]), 1 - Math.abs(hsv1[0] - hsv2[0]));
@@ -59,8 +59,23 @@ public class PixelColorUtil {
     }
 
     /**
+     * Calculates a normalized distance between two colors in the HSV color space.
+     *
+     * @return normalized distance [0-100] between colors in the HSV space
+     */
+    public static int normalizedDistanceHSV(float[] hsv1, float[] hsv2) {
+        float deltaH = Math.min(Math.abs(hsv1[0] - hsv2[0]), 1 - Math.abs(hsv1[0] - hsv2[0]));
+        float deltaS = hsv1[1] - hsv2[1];
+        float deltaV = hsv1[2] - hsv2[2];
+
+        float squaredDistance = deltaH * deltaH + deltaS * deltaS + deltaV * deltaV;
+        float maxSquaredDistance = 2.25f;
+
+        return Math.round( (squaredDistance / maxSquaredDistance) * 100 );
+    }
+
+    /**
      * Calculates a distance between two colors in the RGB color space.
-     * Maximum distance is 441.67
      *
      * @return distance between colors in the RGB space
      */
@@ -79,6 +94,30 @@ public class PixelColorUtil {
 
         return (redDiff * redDiff) + (greenDiff * greenDiff) + (blueDiff * blueDiff);
     }
+
+    /**
+     * Calculates a normalized distance between two colors in the RGB color space.
+     *
+     * @return normalized distance [0-100] between colors in the RGB space
+     */
+    public static int normalizedDistanceRGB(int rgb1, int rgb2) {
+        int r1 = (rgb1 >> 16) & 0xFF;
+        int g1 = (rgb1 >> 8) & 0xFF;
+        int b1 = rgb1 & 0xFF;
+
+        int r2 = (rgb2 >> 16) & 0xFF;
+        int g2 = (rgb2 >> 8) & 0xFF;
+        int b2 = rgb2 & 0xFF;
+
+        int redDiff = r1-r2;
+        int greenDiff = g1 - g2;
+        int blueDiff = b1 - b2;
+
+        int squaredDistance = (redDiff * redDiff) + (greenDiff * greenDiff) + (blueDiff * blueDiff);
+        int maxSquaredDistance = 255*255*3;
+        return (squaredDistance * 100) / maxSquaredDistance;
+    }
+
 
     /**
      * Calculates a distance between two colors in the RGB color space using weighted channel values
@@ -110,5 +149,37 @@ public class PixelColorUtil {
         int weightedColors = (redWeight * redDiff * redDiff) + (greenWeight * greenDiff * greenDiff) + (blueWeight * blueDiff * blueDiff);
 
         return weightedColors / 65536f;
+    }
+
+    /**
+     * Calculates a normalized distance between two colors in the RGB color space using weighted channel values
+     * Uses fixed, higher weight for green channel
+     *
+     * @return normalized distance [0-100] between colors in the RGB space
+     */
+    public static int normalizedDistanceWeightedRGB(int rgb1, int rgb2) {
+        int r1 = (rgb1 >> 16) & 0xFF;
+        int g1 = (rgb1 >> 8) & 0xFF;
+        int b1 = rgb1 & 0xFF;
+
+        int r2 = (rgb2 >> 16) & 0xFF;
+        int g2 = (rgb2 >> 8) & 0xFF;
+        int b2 = rgb2 & 0xFF;
+
+        int redDiff = r1-r2;
+        int greenDiff = g1 - g2;
+        int blueDiff = b1 - b2;
+
+        int redMean = (r1 + r2) >> 1;
+
+        // Calculated color weights (multiplied by 256 to keep them as int)
+        int redWeight = 512 + (redMean << 1);
+        int greenWeight = 1024;
+        int blueWeight = 512 + ((255 - redMean) << 1);
+
+        int squaredWeightedDistance = (redWeight * redDiff * redDiff) + (greenWeight * greenDiff * greenDiff) + (blueWeight * blueDiff * blueDiff);
+        int maxWeightedDistance = (1022 * 255 * 255) + (1024 * 255 * 255) + (1022 * 255 * 255);
+
+        return (squaredWeightedDistance * 100) / maxWeightedDistance;
     }
 }

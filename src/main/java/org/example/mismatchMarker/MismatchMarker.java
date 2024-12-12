@@ -24,6 +24,7 @@ public interface MismatchMarker {
     }
 
     static BufferedImage markExcluded(ExcludedAreas excludedAreas, BufferedImage bufferedImage) {
+        // TODO: REPLACE WITH CONFIG
         ExcludedMarkingType markingType = ExcludedMarkingType.OUTLINE;
 
         switch(markingType) {
