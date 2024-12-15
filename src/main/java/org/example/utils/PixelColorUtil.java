@@ -2,12 +2,6 @@ package org.example.utils;
 
 public class PixelColorUtil {
 
-    // TODO: Ensure that HSV returned from convertRGBtHSV is returned normalized
-    // TODO: Consider distances normalization or moving them to range 0-100 instead (% of max distance)
-    // meaning that H is between 0 and 360
-    // S is between 0 and 1
-    // V is between 0 and 1
-
     /**
      * Converts RGB space coordinates into HSV (cylindrical)
      *

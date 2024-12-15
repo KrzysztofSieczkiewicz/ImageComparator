@@ -9,11 +9,10 @@ import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.function.BiFunction;
 
-// TODO - ADD THRESHOLD AND DISTANCE NORMALISATION
-// TODO: Move reoccurring code to separate function - no need to repeat the same checks
-
 public class SimpleComparator {
     private final BiFunction<BufferedImage, BufferedImage, Mismatches> comparisonMethod;
+
+    // TODO: move to Config parameter
     private final int distanceThreshold = 25;
     private final ColorSpace comparisonSpace = ColorSpace.RGB;
 
@@ -73,5 +72,4 @@ public class SimpleComparator {
             return PixelColorUtil.normalizedDistanceHSV(actualHSV, checkedHSV);
         });
     }
-
 }

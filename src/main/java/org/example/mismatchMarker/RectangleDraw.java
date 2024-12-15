@@ -13,8 +13,6 @@ public class RectangleDraw {
     private int offset = 5;
     private int thickness = 2;
 
-    // TODO: Move result image deep copy from this class - it should not be recopied each time sth is painted
-
     public BufferedImage drawRectangle(HashSet<PixelPoint> pixels, BufferedImage image, Color lineColor) {
         List<Rectangle> groups = new MismatchManager().groupMismatches(pixels);
 

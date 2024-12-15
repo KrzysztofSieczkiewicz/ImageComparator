@@ -4,7 +4,6 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-// TODO: FIX THIS!
 public class MismatchManager {
     private final int[][] neighboursMatrix = generateNeighboursMatrix(1);
 
