@@ -14,6 +14,13 @@ import java.io.File;
 import java.io.IOException;
 
 public class Main {
+    // TODO: Config should be injected via Comparator constructor;
+    // Then, when a method is called - it loads its properties from the object?
+    // Or should excluded areas be moved there instead?
+    // Or comparison should be enabled via separate ComparatorObjects?
+    // ORBComparator, HashComparator and DirectComparator, all should be able to accept Config and Images
+    // Excluded areas should be accepted by "compare()" method
+
     public static void main(String[] args) throws IOException {
         long globalStart = System.nanoTime();
         long start;
@@ -78,8 +85,7 @@ public class Main {
         end = System.nanoTime();
         System.out.println("Time taken to write the file: " + (end - start) + " ns");
 
-        long globalEnd = System.nanoTime();        System.out.println("Time taken in total: " + (globalEnd - globalStart) + " ns");
+        long globalEnd = System.nanoTime();
+        System.out.println("Time taken in total: " + (globalEnd - globalStart) + " ns");
     }
-
 }
-
