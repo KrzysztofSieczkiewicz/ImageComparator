@@ -1,4 +1,4 @@
-package org.example.comparator;
+package org.example.analyzers;
 
 import java.awt.Rectangle;
 import java.awt.geom.Area;

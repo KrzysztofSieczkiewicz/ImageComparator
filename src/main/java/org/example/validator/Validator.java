@@ -1,6 +1,6 @@
 package org.example.validator;
 
-import org.example.comparator.Mismatches;
+import org.example.analyzers.Mismatches;
 
 import java.awt.image.BufferedImage;
 
@@ -24,5 +24,12 @@ public class Validator {
         int mismatchesCount = mismatches.getMismatchesCount();
 
         return mismatchesPercentageThreshold > mismatchesCount*100/imageSize;
+    }
+
+
+    public boolean isBelowLargestMismatchThreshold(Mismatches mismatches) {
+        // TODO: Move grouping method to the mismatches instead?
+        // How to avoid 
+        return false;
     }
 }

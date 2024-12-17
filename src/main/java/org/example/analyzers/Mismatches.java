@@ -1,8 +1,7 @@
-package org.example.comparator;
+package org.example.analyzers;
 
 import org.example.mismatchMarker.PixelPoint;
 
-import java.awt.*;
 import java.util.HashSet;
 
 public class Mismatches {

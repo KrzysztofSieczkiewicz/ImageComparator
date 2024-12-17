@@ -1,9 +1,10 @@
 package org.example;
 
-import org.example.comparator.ExcludedAreas;
-import org.example.comparator.Mismatches;
+import org.example.analyzers.ExcludedAreas;
+import org.example.analyzers.Mismatches;
+import org.example.config.DirectCompareConfig;
 import org.example.mismatchMarker.MismatchMarker;
-import org.example.comparator.SimpleComparator;
+import org.example.analyzers.BasicAnalyzer;
 import org.example.utils.ImageUtil;
 import org.example.validator.Validator;
 
@@ -14,17 +15,16 @@ import java.io.File;
 import java.io.IOException;
 
 public class Main {
-    // TODO: Config should be injected via Comparator constructor;
-    // Then, when a method is called - it loads its properties from the object?
-    // Or should excluded areas be moved there instead?
-    // Or comparison should be enabled via separate ComparatorObjects?
+    // TODO: Comparison should  be accessed via separate ComparatorObjects?
     // ORBComparator, HashComparator and DirectComparator, all should be able to accept Config and Images
-    // Excluded areas should be accepted by "compare()" method
+    // Excluded areas and should be accepted by "compare()" method
 
     public static void main(String[] args) throws IOException {
         long globalStart = System.nanoTime();
         long start;
         long end;
+
+        DirectCompareConfig directCompareConfig = DirectCompareConfig.defaultConfig();
 
         // TODO: Add optional "min group size" check - after comparison
 
@@ -44,7 +44,7 @@ public class Main {
         System.out.println("Time taken to exclude areas: " + (end-start) + " ns");
 
         start = System.nanoTime();
-        SimpleComparator comparator = new SimpleComparator();
+        BasicAnalyzer comparator = new BasicAnalyzer(directCompareConfig);
         Mismatches mismatched = comparator.compare(actualImage, checkedImage);
         end = System.nanoTime();
         System.out.println("Time taken to compare: " + (end - start) + " ns");

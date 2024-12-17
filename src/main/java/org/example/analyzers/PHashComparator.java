@@ -1,4 +1,4 @@
-package org.example.comparator;
+package org.example.analyzers;
 
 import org.example.accessor.ImageAccessor;
 import org.example.utils.ImageUtil;
@@ -13,21 +13,18 @@ public class PHashComparator {
     private final int size = 64;
     private final int reducedSize = 24;
 
-//    @Override
+//    public PHashComparator(HashComparisonConfig config) {
+//        this.size = config.getSize();
+//        this.reducedSize = config.getReducedSize();
+//    }
+
+
     public void compare(BufferedImage actual, BufferedImage expected) {
         BitSet actualHash = getImageHash(actual, size,size, reducedSize);
         BitSet checkedHash = getImageHash(expected, size,size, reducedSize);
 
         int hammingDistance = HashUtil.calculateHammingDistance(actualHash, checkedHash);
         double similarity = HashUtil.calculateSimilarity(hammingDistance, reducedSize);
-
-//        System.out.println(
-//                "Distance: " + hammingDistance
-//        );
-//
-//        System.out.println(
-//                "Similarity: " + similarity
-//        );
     }
 
     /**

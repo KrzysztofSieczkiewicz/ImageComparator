@@ -1,7 +1,7 @@
 package org.example.mismatchMarker;
 
-import org.example.comparator.ExcludedAreas;
-import org.example.comparator.Mismatches;
+import org.example.analyzers.ExcludedAreas;
+import org.example.analyzers.Mismatches;
 import org.example.config.ExcludedMarkingType;
 import org.example.config.MismatchMarkingType;
 
