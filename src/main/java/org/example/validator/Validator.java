@@ -1,13 +1,16 @@
 package org.example.validator;
 
 import org.example.analyzers.Mismatches;
+import org.example.config.DirectCompareConfig;
 
 import java.awt.image.BufferedImage;
 
 public class Validator {
+    final int mismatchesPercentageThreshold;
 
-    // TODO: Get from global config
-    int mismatchesPercentageThreshold = 5;
+    public Validator(DirectCompareConfig config) {
+        this.mismatchesPercentageThreshold = config.getMismatchedPercentageThreshold();
+    }
 
     // TODO: Provide custom exception
     public void enforceImagesSize(BufferedImage actual, BufferedImage checked) {
@@ -29,7 +32,7 @@ public class Validator {
 
     public boolean isBelowLargestMismatchThreshold(Mismatches mismatches) {
         // TODO: Move grouping method to the mismatches instead?
-        // How to avoid 
+        // How to avoid
         return false;
     }
 }

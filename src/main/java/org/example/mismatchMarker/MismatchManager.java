@@ -5,7 +5,8 @@ import java.util.*;
 import java.util.List;
 
 public class MismatchManager {
-    private final int[][] neighboursMatrix = generateNeighboursMatrix(1);
+    //private final int[][] neighboursMatrix = new int[][]{ {-1, 0, 1, 0}, {0, -1, 0, 1} };
+    private final int[][] neighboursMatrix = generateNeighboursMatrix(3);
 
     /**
      * Joins connected mismatched pixels into single group bound by a rectangle
@@ -112,7 +113,7 @@ import java.util.List;
 import java.util.Stack;
 
 public class MismatchManager {
-    private final int[][] neighboursMatrix;
+    private final int[][] neighboursMatrix = new int[][]{ {-1, 0, 1, 0}, {0, -1, 0, 1} };;
 
     public MismatchManager(int groupingRadius) {
         this.neighboursMatrix = generateNeighboursMatrix(groupingRadius);

@@ -30,7 +30,7 @@ public class Main {
 
         BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
         BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
-        Validator validator = new Validator();
+        Validator validator = new Validator(directCompareConfig);
         validator.enforceImagesSize(actualImage, checkedImage);
 
         start = System.nanoTime();
@@ -49,15 +49,18 @@ public class Main {
         end = System.nanoTime();
         System.out.println("Time taken to compare: " + (end - start) + " ns");
 
-        start = System.nanoTime();
-        BufferedImage mismatchedImage = ImageUtil.deepCopy(checkedImage);
-        end = System.nanoTime();
-        System.out.println("Time taken to perform image deep copy: " + (end - start) + " ns");
+        System.out.println("Mismatched count: " + mismatched.getMismatchesCount());
+        System.out.println("Mismatched pixels size: " + mismatched.getPixels().size());
 
         start = System.nanoTime();
         mismatched.excludePixels(excludedAreas);
         end = System.nanoTime();
         System.out.println("Time taken to exclude areas from mismatches: " + (end - start) + " ns");
+
+        start = System.nanoTime();
+        BufferedImage mismatchedImage = ImageUtil.deepCopy(checkedImage);
+        end = System.nanoTime();
+        System.out.println("Time taken to perform image deep copy: " + (end - start) + " ns");
 
         start = System.nanoTime();
         mismatchedImage = MismatchMarker.markMismatches(mismatched, mismatchedImage);

@@ -10,7 +10,6 @@ import java.awt.image.BufferedImage;
 
 public interface MismatchMarker {
 
-
     static BufferedImage markMismatches(Mismatches mismatches, BufferedImage bufferedImage) {
         // TODO: REPLACE WITH CONFIG
         MismatchMarkingType markingType = MismatchMarkingType.RECTANGLE;

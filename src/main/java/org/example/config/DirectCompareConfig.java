@@ -56,7 +56,7 @@ public class DirectCompareConfig {
 
     public static class DirectCompareConfigBuilder {
         private ColorSpace colorSpace = ColorSpace.RGB;
-        private int colorDistanceThreshold = 0;
+        private int colorDistanceThreshold = 1;
 
         private int mismatchedPercentageThreshold = 0;
         private int minimalMismatchedGroupSize = 0;

@@ -15,7 +15,6 @@ public class RectangleDraw {
 
     public BufferedImage drawRectangle(HashSet<PixelPoint> pixels, BufferedImage image, Color lineColor) {
         List<Rectangle> groups = new MismatchManager().groupMismatches(pixels);
-
         Graphics2D g2d = image.createGraphics();
 
         g2d.setColor(lineColor);
