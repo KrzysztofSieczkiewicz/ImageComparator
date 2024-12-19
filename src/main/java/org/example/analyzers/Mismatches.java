@@ -2,7 +2,6 @@ package org.example.analyzers;
 
 import org.example.mismatchMarker.PixelPoint;
 
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -38,18 +37,19 @@ public class Mismatches {
     }
 
     /**
-     * Joins connected mismatched pixels into single group bound by a rectangle
+     * Joins connected mismatched pixels into single group. Range by which pixels are treated as grouped is
+     * determined in the Config.
      *
-     * @param mismatches ArrayList containing mismatched pixels
      * @return List of rectangles bounding mismatched pixels groups
      */
-    public List<Rectangle> groupMismatches(ArrayList<PixelPoint> mismatches) {
-        List<Rectangle> groups = new ArrayList<>();
+    public List<MismatchesGroup> groupMismatches() {
+        List<MismatchesGroup> groups = new ArrayList<>();
         ArrayList<PixelPoint> visited = new ArrayList<>();
 
-        for (PixelPoint mismatch : mismatches) {
+        for (PixelPoint mismatch : mismatchedPixels) {
             if (visited.contains(mismatch)) continue;
-            groups.add(searchDFS(mismatches, visited, mismatch.getX(), mismatch.getY()));
+            MismatchesGroup group = searchDFS(mismatchedPixels, visited, mismatch.getX(), mismatch.getY());
+            groups.add(group);
         }
 
         return groups;
@@ -64,9 +64,11 @@ public class Mismatches {
      * @param y Y pixel coordinate
      * @return the bounding rectangle for the mismatched group
      */
-    private Rectangle searchDFS(ArrayList<PixelPoint> matrix, ArrayList<PixelPoint> visited, int x, int y) {
+    private MismatchesGroup searchDFS(ArrayList<PixelPoint> matrix, ArrayList<PixelPoint> visited, int x, int y) {
         final int[] xNeighbours = neighboursMatrix[0];
         final int[] yNeighbours = neighboursMatrix[1];
+
+        int groupSize = 1;
 
         Stack<int[]> stack = new Stack<>();
         stack.push(new int[]{x, y});
@@ -91,6 +93,8 @@ public class Mismatches {
                 if (!matrix.contains(neighbourPoint)) continue;
                 if (visited.contains(neighbourPoint)) continue;
 
+                groupSize++;
+
                 if (newX > maxX) maxX = newX;
                 else if (newX < minX) minX = newX;
                 if (newY > maxY) maxY = newY;
@@ -101,7 +105,7 @@ public class Mismatches {
             }
         }
 
-        return new Rectangle(minX, minY, maxX - minX, maxY - minY);
+        return new MismatchesGroup(groupSize, minX, maxX, minY, maxY);
     }
 
 

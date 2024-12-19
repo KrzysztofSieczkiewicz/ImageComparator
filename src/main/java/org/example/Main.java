@@ -59,12 +59,12 @@ public class Main {
         System.out.println("Time taken to perform image deep copy: " + (end - start) + " ns");
 
         start = System.nanoTime();
-        mismatchedImage = MismatchMarker.markMismatches(mismatched, mismatchedImage);
+        mismatchedImage = MismatchMarker.markMismatches(mismatched, mismatchedImage, directCompareConfig);
         end = System.nanoTime();
         System.out.println("Time taken to mark mismatches: " + (end - start) + " ns");
 
         start = System.nanoTime();
-        mismatchedImage = MismatchMarker.markExcluded(excludedAreas, mismatchedImage);
+        mismatchedImage = MismatchMarker.markExcluded(excludedAreas, mismatchedImage, directCompareConfig);
         end = System.nanoTime();
         System.out.println("Time taken to mark excluded areas: " + (end - start) + " ns");
 
@@ -89,7 +89,7 @@ public class Main {
     }
 
 
-    public void directCompare(BufferedImage actualImage, BufferedImage checkedImage) {
+    public BufferedImage directCompare(BufferedImage actualImage, BufferedImage checkedImage) {
         DirectCompareConfig directCompareConfig = DirectCompareConfig.defaultConfig();
 
         ExcludedAreas excludedAreas = new ExcludedAreas();
@@ -109,13 +109,14 @@ public class Main {
         mismatches.excludePixels(excludedAreas);
 
         // MARK MISMATCHES
-        mismatchedImage = MismatchMarker.markMismatches(mismatches, mismatchedImage);
+        mismatchedImage = MismatchMarker.markMismatches(mismatches, mismatchedImage, directCompareConfig);
 
         // MARK EXCLUDED AREAS
-        mismatchedImage = MismatchMarker.markExcluded(excludedAreas, mismatchedImage);
+        mismatchedImage = MismatchMarker.markExcluded(excludedAreas, mismatchedImage, directCompareConfig);
 
         // VALIDATE MISMATCH THRESHOLD
         validator.isBelowMismatchThreshold(actualImage, mismatches);
 
+        return mismatchedImage;
     }
 }

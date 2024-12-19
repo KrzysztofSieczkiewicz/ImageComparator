@@ -13,8 +13,7 @@ public class RectangleDraw {
     private int offset = 5;
     private int thickness = 2;
 
-    public BufferedImage drawRectangle(ArrayList<PixelPoint> pixels, BufferedImage image, Color lineColor) {
-        List<Rectangle> groups = new MismatchManager().groupMismatches(pixels);
+    public BufferedImage drawRectangles(Rectangle[] rectangles, BufferedImage image, Color lineColor) {
         Graphics2D g2d = image.createGraphics();
 
         g2d.setColor(lineColor);
