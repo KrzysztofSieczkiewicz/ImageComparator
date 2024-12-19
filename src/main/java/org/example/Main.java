@@ -26,10 +26,9 @@ public class Main {
 
         DirectCompareConfig directCompareConfig = DirectCompareConfig.defaultConfig();
 
-        // TODO: Add optional "min group size" check - after comparison
-
         BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
         BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
+
         Validator validator = new Validator(directCompareConfig);
         validator.enforceImagesSize(actualImage, checkedImage);
 
@@ -87,5 +86,36 @@ public class Main {
 
         long globalEnd = System.nanoTime();
         System.out.println("Time taken in total: " + (globalEnd - globalStart) + " ns");
+    }
+
+
+    public void directCompare(BufferedImage actualImage, BufferedImage checkedImage) {
+        DirectCompareConfig directCompareConfig = DirectCompareConfig.defaultConfig();
+
+        ExcludedAreas excludedAreas = new ExcludedAreas();
+        BasicAnalyzer comparator = new BasicAnalyzer(directCompareConfig);
+        Validator validator = new Validator(directCompareConfig);
+
+        // VALIDATE IMAGE SIZES
+        validator.enforceImagesSize(actualImage, checkedImage);
+
+        // COPY ACTUAL IMAGE
+        BufferedImage mismatchedImage = ImageUtil.deepCopy(checkedImage);
+
+        // PERFORM COMPARISON
+        Mismatches mismatches = comparator.compare(actualImage, checkedImage);
+
+        // EXCLUDE FROM MISMATCHES
+        mismatches.excludePixels(excludedAreas);
+
+        // MARK MISMATCHES
+        mismatchedImage = MismatchMarker.markMismatches(mismatches, mismatchedImage);
+
+        // MARK EXCLUDED AREAS
+        mismatchedImage = MismatchMarker.markExcluded(excludedAreas, mismatchedImage);
+
+        // VALIDATE MISMATCH THRESHOLD
+        validator.isBelowMismatchThreshold(actualImage, mismatches);
+
     }
 }

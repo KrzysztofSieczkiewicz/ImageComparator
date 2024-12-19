@@ -5,6 +5,7 @@ import org.example.config.DirectCompareConfig;
 
 import java.awt.image.BufferedImage;
 
+// TODO: Move to validation util?
 public class Validator {
     final int mismatchesPercentageThreshold;
 

@@ -37,7 +37,6 @@ public class BasicAnalyzer {
         ImageAccessor actualAccessor = ImageAccessor.create(actual);
         ImageAccessor checkedAccessor = ImageAccessor.create(checked);
 
-        int count = 0;
         int width = actual.getWidth();
         int height = actual.getHeight();
 
@@ -50,11 +49,10 @@ public class BasicAnalyzer {
 
                 if (distance > distanceThreshold) {
                     mismatches.add(new PixelPoint(x, y));
-                    count++;
                 }
             }
         }
-        return new Mismatches(mismatches, count);
+        return new Mismatches(mismatches);
     }
 
     public Mismatches compareRGB(BufferedImage actual, BufferedImage checked) {

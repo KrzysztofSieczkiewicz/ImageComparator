@@ -13,8 +13,8 @@ public class Mismatches {
     private final int totalMismatched;
     private final ArrayList<PixelPoint> mismatchedPixels;
 
-    public Mismatches(ArrayList<PixelPoint> mismatchedPixels, int totalMismatched) {
-        this.totalMismatched = totalMismatched;
+    public Mismatches(ArrayList<PixelPoint> mismatchedPixels) {
+        this.totalMismatched = mismatchedPixels.size() -1;
         this.mismatchedPixels = mismatchedPixels;
     }
 
@@ -25,7 +25,6 @@ public class Mismatches {
     public int getMismatchesCount() {
         return totalMismatched;
     }
-
 
     /**
      * Excludes provided area from mismatches
