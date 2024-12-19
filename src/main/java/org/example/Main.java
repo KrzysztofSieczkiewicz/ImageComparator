@@ -49,9 +49,6 @@ public class Main {
         end = System.nanoTime();
         System.out.println("Time taken to compare: " + (end - start) + " ns");
 
-        System.out.println("Mismatched count: " + mismatched.getMismatchesCount());
-        System.out.println("Mismatched pixels size: " + mismatched.getPixels().size());
-
         start = System.nanoTime();
         mismatched.excludePixels(excludedAreas);
         end = System.nanoTime();

@@ -7,7 +7,7 @@ import org.example.mismatchMarker.PixelPoint;
 import org.example.utils.PixelColorUtil;
 
 import java.awt.image.BufferedImage;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.function.BiFunction;
 
 public class BasicAnalyzer {
@@ -41,14 +41,14 @@ public class BasicAnalyzer {
         int width = actual.getWidth();
         int height = actual.getHeight();
 
-        HashSet<PixelPoint> mismatches = new HashSet<>();
+        ArrayList<PixelPoint> mismatches = new ArrayList<>();
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 int actualRGB = actualAccessor.getPixel(x, y);
                 int checkedRGB = checkedAccessor.getPixel(x, y);
                 int distance = distanceCalculator.apply(actualRGB, checkedRGB);
 
-                if (distance >= distanceThreshold) {
+                if (distance > distanceThreshold) {
                     mismatches.add(new PixelPoint(x, y));
                     count++;
                 }

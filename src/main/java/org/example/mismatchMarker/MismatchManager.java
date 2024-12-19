@@ -1,22 +1,22 @@
 package org.example.mismatchMarker;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Stack;
 import java.util.List;
 
 public class MismatchManager {
-    //private final int[][] neighboursMatrix = new int[][]{ {-1, 0, 1, 0}, {0, -1, 0, 1} };
     private final int[][] neighboursMatrix = generateNeighboursMatrix(3);
 
     /**
      * Joins connected mismatched pixels into single group bound by a rectangle
      *
-     * @param mismatches HashSet containing mismatched pixels
+     * @param mismatches ArrayList containing mismatched pixels
      * @return List of rectangles bounding mismatched pixels groups
      */
-    public List<Rectangle> groupMismatches(HashSet<PixelPoint> mismatches) {
+    public List<Rectangle> groupMismatches(ArrayList<PixelPoint> mismatches) {
         List<Rectangle> groups = new ArrayList<>();
-        HashSet<PixelPoint> visited = new HashSet<>();
+        ArrayList<PixelPoint> visited = new ArrayList<>();
 
         for (PixelPoint mismatch : mismatches) {
             if (visited.contains(mismatch)) continue;
@@ -27,15 +27,15 @@ public class MismatchManager {
     }
 
     /**
-     * Performs DFS on provided HashSet of mismatches
+     * Performs DFS on provided ArrayList of PixelPoints
      *
-     * @param matrix HashSet of points to be searched
-     * @param visited HashSet of already visited elements
+     * @param matrix ArrayList of points to be searched
+     * @param visited ArrayList of already visited elements
      * @param x X pixel coordinate
      * @param y Y pixel coordinate
      * @return the bounding rectangle for the mismatched group
      */
-    private Rectangle searchDFS(HashSet<PixelPoint> matrix, HashSet<PixelPoint> visited, int x, int y) {
+    private Rectangle searchDFS(ArrayList<PixelPoint> matrix, ArrayList<PixelPoint> visited, int x, int y) {
         final int[] xNeighbours = neighboursMatrix[0];
         final int[] yNeighbours = neighboursMatrix[1];
 
