@@ -1,12 +1,17 @@
 package org.example.config;
 
+import java.awt.*;
+
 public class DirectCompareConfig {
     private final ColorSpace colorSpace;
     private final int colorDistanceThreshold;
     private final int mismatchedPercentageThreshold;
-    private final int minimalMismatchedGroupSize;
     private final ExcludedMarkingType excludedAreasMarking;
+    private final Color excludedMarkingColor;
     private final MismatchMarkingType mismatchedAreasMarking;
+    private final Color mismatchMarkingColor;
+    private final int rectangleMarkingOffset;
+    private final int markingLineThickness;
 
 
     public ColorSpace getColorSpace() {
@@ -21,32 +26,47 @@ public class DirectCompareConfig {
         return mismatchedPercentageThreshold;
     }
 
-    public int getMinimalMismatchedGroupSize() {
-        return minimalMismatchedGroupSize;
-    }
-
     public ExcludedMarkingType getExcludedAreasMarking() {
         return excludedAreasMarking;
+    }
+    public Color getExcludedMarkingColor() {
+        return excludedMarkingColor;
     }
 
     public MismatchMarkingType getMismatchedAreasMarking() {
         return mismatchedAreasMarking;
     }
 
+    public Color getMismatchMarkingColor() {
+        return mismatchMarkingColor;
+    }
+
+    public int getRectangleMarkingOffset() {
+        return rectangleMarkingOffset;
+    }
+
+    public int getMarkingLineThickness() { return markingLineThickness; }
+
     public DirectCompareConfig(
             ColorSpace colorSpace,
             int colorDistanceThreshold,
             int mismatchedPercentageThreshold,
-            int minimalMismatchedGroupSize,
             ExcludedMarkingType excludedAreasMarking,
-            MismatchMarkingType mismatchedAreasMarking ) {
+            Color excludedMarkingColor,
+            MismatchMarkingType mismatchedAreasMarking,
+            Color mismatchMarkingColor,
+            int rectangleMarkingOffset,
+            int markingLineThickness ) {
 
         this.colorSpace = colorSpace;
         this.colorDistanceThreshold = colorDistanceThreshold;
         this.mismatchedPercentageThreshold = mismatchedPercentageThreshold;
-        this.minimalMismatchedGroupSize = minimalMismatchedGroupSize;
         this.excludedAreasMarking = excludedAreasMarking;
+        this.excludedMarkingColor = excludedMarkingColor;
         this.mismatchedAreasMarking = mismatchedAreasMarking;
+        this.mismatchMarkingColor = mismatchMarkingColor;
+        this.rectangleMarkingOffset = rectangleMarkingOffset;
+        this.markingLineThickness = markingLineThickness;
     }
 
     public static DirectCompareConfig defaultConfig() {
@@ -59,10 +79,12 @@ public class DirectCompareConfig {
         private int colorDistanceThreshold = 1;
 
         private int mismatchedPercentageThreshold = 0;
-        private int minimalMismatchedGroupSize = 0;
-
         private ExcludedMarkingType excludedAreasMarking = ExcludedMarkingType.OUTLINE;
+        private Color excludedMarkingColor = Color.GREEN;
         private MismatchMarkingType mismatchedAreasMarking = MismatchMarkingType.RECTANGLE;
+        private Color mismatchedMarkingColor = Color.RED;
+        private int rectangleMarkingOffset = 3;
+        private int markingLineThickness = 3;
 
 
         public DirectCompareConfigBuilder colorSpace(ColorSpace colorSpace) {
@@ -86,16 +108,13 @@ public class DirectCompareConfig {
             return this;
         }
 
-        public DirectCompareConfigBuilder minimalMismatchedGroupSize(int size) {
-            if (size < 0) {
-                throw new IllegalArgumentException("Size must be larger than 0");
-            }
-            this.minimalMismatchedGroupSize = size;
+        public DirectCompareConfigBuilder excludedAreasMarking(ExcludedMarkingType type) {
+            this.excludedAreasMarking = type;
             return this;
         }
 
-        public DirectCompareConfigBuilder excludedAreasMarking(ExcludedMarkingType type) {
-            this.excludedAreasMarking = type;
+        public DirectCompareConfigBuilder excludedMarkingColor(Color color) {
+            this.excludedMarkingColor = color;
             return this;
         }
 
@@ -104,14 +123,36 @@ public class DirectCompareConfig {
             return this;
         }
 
+        public DirectCompareConfigBuilder mismatchedMarkingColor(Color color) {
+            this.mismatchedMarkingColor = color;
+            return this;
+        }
+
+        public DirectCompareConfigBuilder rectangleMarkingOffset(int offset) {
+            this.rectangleMarkingOffset = offset;
+            return this;
+        }
+
+        public DirectCompareConfigBuilder markingLineThickness(int thickness) {
+            if (thickness < 1) {
+                throw new IllegalArgumentException("Line thickness must be at least 1");
+            }
+
+            this.markingLineThickness = thickness;
+            return this;
+        }
+
         public DirectCompareConfig build() {
             return new DirectCompareConfig(
                     colorSpace,
                     colorDistanceThreshold,
                     mismatchedPercentageThreshold,
-                    minimalMismatchedGroupSize,
                     excludedAreasMarking,
-                    mismatchedAreasMarking
+                    excludedMarkingColor,
+                    mismatchedAreasMarking,
+                    mismatchedMarkingColor,
+                    rectangleMarkingOffset,
+                    markingLineThickness
             );
         }
     }

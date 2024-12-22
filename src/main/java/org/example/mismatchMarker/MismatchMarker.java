@@ -13,13 +13,32 @@ import java.awt.image.BufferedImage;
 // TODO: CONSIDER CHANGING THIS FROM INTERFACE TO A CLASS WITH CONSTRUCTOR THAT ACCEPTS CONFIG INSTEAD
 // MIGHT LOOK LESS PROFESSIONAL, BUT THERE IS NO POINT IN ADDING AN ABSTRACTION AND PROVIDING CONFIG TO EACH METHOD CALL
 // METHODS HAVE NO REASON TO BE STATIC AS WELL
-public interface MismatchMarker {
+public class MismatchMarker {
 
-    static BufferedImage markMismatches(Mismatches mismatches, BufferedImage bufferedImage, DirectCompareConfig config) {
-        MismatchMarkingType markingType = config.getMismatchedAreasMarking();
-        //int offset = 3; // TODO: ADD TO A CONFIG
+    // Rectangle and Shape drawing
+    private final int rectangleOffset;
+    private final int lineThickness;
 
-        switch(markingType) {
+    MismatchMarkingType mismatchMarkingType;
+    Color mismatchMarkingColor;
+
+    ExcludedMarkingType excludedMarkingType;
+    Color excludedMarkingColor;
+
+    public MismatchMarker(DirectCompareConfig config) {
+        this.rectangleOffset = config.getRectangleMarkingOffset();
+        this.lineThickness = config.getMarkingLineThickness();
+
+        this.mismatchMarkingType = config.getMismatchedAreasMarking();
+        this.mismatchMarkingColor = config.getMismatchMarkingColor();
+
+        this.excludedMarkingType = config.getExcludedAreasMarking();
+        this.excludedMarkingColor = config.getExcludedMarkingColor();
+    }
+
+    public BufferedImage markMismatches(Mismatches mismatches, BufferedImage bufferedImage, DirectCompareConfig config) {
+
+        switch(mismatchMarkingType) {
             case RECTANGLE -> {
                 Rectangle[] boundingRectangles = mismatches
                         .groupMismatches()
@@ -27,23 +46,24 @@ public interface MismatchMarker {
                         .map(MismatchesGroup::getBoundingRectangle)
                         .toArray(Rectangle[]::new);
 
-                // TODO - CURRENT -> no need to move offset calculation logic from rectangleDraw (without that it's a single line call)
-                // But You can consider moving offset variable to this class and provide it as an argument?
+                // TODO - CURRENT
+                //  no need to move offset calculation logic from rectangleDraw (without that it's a single line call)
+                //  this class can accept config input in the constructor
+                //  dissolve RectangleDraw class and move the methods here - drop a layer
 
-                bufferedImage = new RectangleDraw().drawRectangles(boundingRectangles, bufferedImage, Color.BLUE);
+                bufferedImage = new RectangleDraw().drawRectangles(boundingRectangles, bufferedImage, mismatchMarkingColor, rectangleOffset, lineThickness);
             }
-            case PAINT_OVER -> bufferedImage = new RectangleDraw().paintPixels(mismatches.getPixels(), bufferedImage, Color.BLUE);
+            case PAINT_OVER -> bufferedImage = new RectangleDraw().paintPixels(mismatches.getPixels(), bufferedImage, mismatchMarkingColor);
         }
 
         return bufferedImage;
     }
 
-    static BufferedImage markExcluded(ExcludedAreas excludedAreas, BufferedImage bufferedImage, DirectCompareConfig config) {
-        ExcludedMarkingType markingType = config.getExcludedAreasMarking();
+    public BufferedImage markExcluded(ExcludedAreas excludedAreas, BufferedImage bufferedImage) {
 
-        switch(markingType) {
-            case OUTLINE -> bufferedImage = new RectangleDraw().drawShape(excludedAreas.getExcluded(), bufferedImage, Color.YELLOW);
-            case PAINT_OVER -> bufferedImage = new RectangleDraw().paintPixels(excludedAreas.getExcluded(), bufferedImage, Color.YELLOW);
+        switch(excludedMarkingType) {
+            case OUTLINE -> bufferedImage = new RectangleDraw().drawShape(excludedAreas.getExcluded(), bufferedImage, excludedMarkingColor, lineThickness);
+            case PAINT_OVER -> bufferedImage = new RectangleDraw().paintPixels(excludedAreas.getExcluded(), bufferedImage, excludedMarkingColor, lineThickness);
         }
 
         return bufferedImage;

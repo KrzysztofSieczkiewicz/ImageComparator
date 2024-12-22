@@ -6,25 +6,23 @@ import java.awt.*;
 import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.List;
 
 public class RectangleDraw {
 
-    private int offset = 5;
-    private int thickness = 2;
-
-    public BufferedImage drawRectangles(Rectangle[] rectangles, BufferedImage image, Color lineColor) {
+    public BufferedImage drawRectangles(Rectangle[] rectangles, BufferedImage image, Color lineColor, int offset, int lineThickness) {
         Graphics2D g2d = image.createGraphics();
 
         g2d.setColor(lineColor);
-        g2d.setStroke(new BasicStroke(thickness));
+        g2d.setStroke(new BasicStroke(lineThickness));
 
-        groups.forEach( group -> g2d.drawRect(
-                    group.x-offset,
-                    group.y-offset,
-                    group.width+2*offset,
-                    group.height+2*offset)
-        );
+        for (Rectangle rectangle : rectangles) {
+            g2d.drawRect(
+                    rectangle.x - offset,
+                    rectangle.y - offset,
+                    rectangle.width + 2 * offset,
+                    rectangle.height + 2 * offset
+            );
+        }
 
         g2d.dispose();
 
@@ -45,22 +43,22 @@ public class RectangleDraw {
         return image;
     }
 
-    public BufferedImage paintPixels(Area area, BufferedImage image, Color lineColor) {
+    public BufferedImage paintPixels(Area area, BufferedImage image, Color lineColor, int lineThickness) {
         Graphics2D g2d = image.createGraphics();
 
         g2d.setColor(lineColor);
-        g2d.setStroke(new BasicStroke(thickness));
+        g2d.setStroke(new BasicStroke(lineThickness));
         g2d.fill(area);
         g2d.dispose();
 
         return image;
     }
 
-    public BufferedImage drawShape(Area area, BufferedImage image, Color lineColor) {
+    public BufferedImage drawShape(Area area, BufferedImage image, Color lineColor, int lineThickness) {
         Graphics2D g2d = image.createGraphics();
 
         g2d.setColor(lineColor);
-        g2d.setStroke(new BasicStroke(thickness));
+        g2d.setStroke(new BasicStroke(lineThickness));
         g2d.draw(area);
         g2d.dispose();
 

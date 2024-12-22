@@ -15,7 +15,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class Main {
-    // TODO: Comparison should  be accessed via separate ComparatorObjects?
+    // TODO: Comparison should  be accessed via separate ComparatorObjects
     // ORBComparator, HashComparator and DirectComparator, all should be able to accept Config and Images
     // Excluded areas and should be accepted by "compare()" method
 
@@ -26,9 +26,13 @@ public class Main {
 
         DirectCompareConfig directCompareConfig = DirectCompareConfig.defaultConfig();
 
+        start = System.nanoTime();
         BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
         BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
+        end = System.nanoTime();
+        System.out.println("Time taken to load images: " + (end-start) + " ns");
 
+        MismatchMarker mismatchMarker = new MismatchMarker(directCompareConfig);
         Validator validator = new Validator(directCompareConfig);
         validator.enforceImagesSize(actualImage, checkedImage);
 
@@ -59,12 +63,12 @@ public class Main {
         System.out.println("Time taken to perform image deep copy: " + (end - start) + " ns");
 
         start = System.nanoTime();
-        mismatchedImage = MismatchMarker.markMismatches(mismatched, mismatchedImage, directCompareConfig);
+        mismatchedImage = mismatchMarker.markMismatches(mismatched, mismatchedImage, directCompareConfig);
         end = System.nanoTime();
         System.out.println("Time taken to mark mismatches: " + (end - start) + " ns");
 
         start = System.nanoTime();
-        mismatchedImage = MismatchMarker.markExcluded(excludedAreas, mismatchedImage, directCompareConfig);
+        mismatchedImage = mismatchMarker.markExcluded(excludedAreas, mismatchedImage);
         end = System.nanoTime();
         System.out.println("Time taken to mark excluded areas: " + (end - start) + " ns");
 
@@ -95,6 +99,7 @@ public class Main {
         ExcludedAreas excludedAreas = new ExcludedAreas();
         BasicAnalyzer comparator = new BasicAnalyzer(directCompareConfig);
         Validator validator = new Validator(directCompareConfig);
+        MismatchMarker mismatchMarker = new MismatchMarker(directCompareConfig);
 
         // VALIDATE IMAGE SIZES
         validator.enforceImagesSize(actualImage, checkedImage);
@@ -109,10 +114,10 @@ public class Main {
         mismatches.excludePixels(excludedAreas);
 
         // MARK MISMATCHES
-        mismatchedImage = MismatchMarker.markMismatches(mismatches, mismatchedImage, directCompareConfig);
+        mismatchedImage = mismatchMarker.markMismatches(mismatches, mismatchedImage, directCompareConfig);
 
         // MARK EXCLUDED AREAS
-        mismatchedImage = MismatchMarker.markExcluded(excludedAreas, mismatchedImage, directCompareConfig);
+        mismatchedImage = mismatchMarker.markExcluded(excludedAreas, mismatchedImage);
 
         // VALIDATE MISMATCH THRESHOLD
         validator.isBelowMismatchThreshold(actualImage, mismatches);
