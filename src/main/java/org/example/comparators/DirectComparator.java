@@ -52,7 +52,7 @@ public class DirectComparator {
         return resultsImage;
     }
 
-    public BufferedImage fastCompare(BufferedImage actualImage, BufferedImage checkedImage, ExcludedAreas excludedAreas, int mutliplier) {
+    public BufferedImage fastCompare(BufferedImage actualImage, BufferedImage checkedImage, ExcludedAreas excludedAreas, int pixelGap) {
         BasicAnalyzer analyzer = new BasicAnalyzer(config);
         ImageValidator imageValidator = new ImageValidator(config);
         ImageMarker imageMarker = new ImageMarker(config);
@@ -64,7 +64,7 @@ public class DirectComparator {
         imageValidator.enforceImagesSize(actualImage, checkedImage);
 
         // COMPARE
-        Mismatches mismatches = analyzer.compareEveryN(actualImage, checkedImage, mutliplier);
+        Mismatches mismatches = analyzer.compareEveryNth(actualImage, checkedImage, pixelGap);
 
         // EXCLUDE FROM MISMATCHES
         mismatches.excludeResults(excludedAreas);
