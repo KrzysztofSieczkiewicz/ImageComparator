@@ -1,6 +1,6 @@
 package org.example.analyzers;
 
-import org.example.accessor.ImageAccessor;
+import org.example.utils.accessor.ImageAccessor;
 import org.example.utils.ImageUtil;
 import org.example.utils.HashUtil;
 

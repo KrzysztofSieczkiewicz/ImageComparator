@@ -1,6 +1,6 @@
 package org.example.utils;
 
-import org.example.accessor.ImageAccessor;
+import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.Graphics2D;
 import java.awt.color.ColorSpace;

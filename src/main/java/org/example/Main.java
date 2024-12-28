@@ -3,10 +3,10 @@ package org.example;
 import org.example.analyzers.ExcludedAreas;
 import org.example.analyzers.Mismatches;
 import org.example.config.DirectCompareConfig;
-import org.example.mismatchMarker.MismatchMarker;
+import org.example.mismatchMarker.ImageMarker;
 import org.example.analyzers.BasicAnalyzer;
 import org.example.utils.ImageUtil;
-import org.example.validator.Validator;
+import org.example.analyzers.ImageValidator;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -32,9 +32,9 @@ public class Main {
         end = System.nanoTime();
         System.out.println("Time taken to load images: " + (end-start) + " ns");
 
-        MismatchMarker mismatchMarker = new MismatchMarker(directCompareConfig);
-        Validator validator = new Validator(directCompareConfig);
-        validator.enforceImagesSize(actualImage, checkedImage);
+        ImageMarker imageMarker = new ImageMarker(directCompareConfig);
+        ImageValidator imageValidator = new ImageValidator(directCompareConfig);
+        imageValidator.enforceImagesSize(actualImage, checkedImage);
 
         start = System.nanoTime();
         ExcludedAreas excludedAreas = new ExcludedAreas();
@@ -53,7 +53,7 @@ public class Main {
         System.out.println("Time taken to compare: " + (end - start) + " ns");
 
         start = System.nanoTime();
-        mismatched.excludePixels(excludedAreas);
+        mismatched.excludeResults(excludedAreas);
         end = System.nanoTime();
         System.out.println("Time taken to exclude areas from mismatches: " + (end - start) + " ns");
 
@@ -63,17 +63,17 @@ public class Main {
         System.out.println("Time taken to perform image deep copy: " + (end - start) + " ns");
 
         start = System.nanoTime();
-        mismatchedImage = mismatchMarker.markMismatches(mismatched, mismatchedImage);
+        mismatchedImage = imageMarker.mark(mismatchedImage, mismatched);
         end = System.nanoTime();
         System.out.println("Time taken to mark mismatches: " + (end - start) + " ns");
 
         start = System.nanoTime();
-        mismatchedImage = mismatchMarker.markExcluded(excludedAreas, mismatchedImage);
+        mismatchedImage = imageMarker.mark(mismatchedImage, excludedAreas);
         end = System.nanoTime();
         System.out.println("Time taken to mark excluded areas: " + (end - start) + " ns");
 
         start = System.nanoTime();
-        validator.isBelowMismatchThreshold(actualImage, mismatched);
+        imageValidator.isBelowMismatchThreshold(actualImage, mismatched);
         end = System.nanoTime();
         System.out.println("Time taken to check mismatches percentage: " + (end - start) + " ns");
 
@@ -90,38 +90,5 @@ public class Main {
 
         long globalEnd = System.nanoTime();
         System.out.println("Time taken in total: " + (globalEnd - globalStart) + " ns");
-    }
-
-
-    public BufferedImage directCompare(BufferedImage actualImage, BufferedImage checkedImage) {
-        DirectCompareConfig directCompareConfig = DirectCompareConfig.defaultConfig();
-
-        ExcludedAreas excludedAreas = new ExcludedAreas();
-        BasicAnalyzer comparator = new BasicAnalyzer(directCompareConfig);
-        Validator validator = new Validator(directCompareConfig);
-        MismatchMarker mismatchMarker = new MismatchMarker(directCompareConfig);
-
-        // VALIDATE IMAGE SIZES
-        validator.enforceImagesSize(actualImage, checkedImage);
-
-        // COPY ACTUAL IMAGE
-        BufferedImage mismatchedImage = ImageUtil.deepCopy(checkedImage);
-
-        // PERFORM COMPARISON
-        Mismatches mismatches = comparator.compare(actualImage, checkedImage);
-
-        // EXCLUDE FROM MISMATCHES
-        mismatches.excludePixels(excludedAreas);
-
-        // MARK MISMATCHES
-        mismatchedImage = mismatchMarker.markMismatches(mismatches, mismatchedImage);
-
-        // MARK EXCLUDED AREAS
-        mismatchedImage = mismatchMarker.markExcluded(excludedAreas, mismatchedImage);
-
-        // VALIDATE MISMATCH THRESHOLD
-        validator.isBelowMismatchThreshold(actualImage, mismatches);
-
-        return mismatchedImage;
     }
 }

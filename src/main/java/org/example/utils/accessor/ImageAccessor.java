@@ -1,4 +1,4 @@
-package org.example.accessor;
+package org.example.utils.accessor;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

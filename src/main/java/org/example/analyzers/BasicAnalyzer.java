@@ -1,6 +1,6 @@
 package org.example.analyzers;
 
-import org.example.accessor.ImageAccessor;
+import org.example.utils.accessor.ImageAccessor;
 import org.example.config.ColorSpace;
 import org.example.config.DirectCompareConfig;
 import org.example.mismatchMarker.PixelPoint;
@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.function.BiFunction;
 
+// TODO: ADD A "FAST COMPARE" method that checks every n-other pixels instead of everything
 public class BasicAnalyzer {
     private BiFunction<BufferedImage, BufferedImage, Mismatches> comparisonMethod = this::compareRGB;
 

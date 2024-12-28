@@ -1,6 +1,6 @@
 package org.example.mismatchMarker;
 
-import org.example.accessor.ImageAccessor;
+import org.example.utils.accessor.ImageAccessor;
 import org.example.analyzers.ExcludedAreas;
 import org.example.analyzers.Mismatches;
 import org.example.analyzers.MismatchesGroup;
@@ -14,7 +14,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 
-public class MismatchMarker {
+public class ImageMarker {
     private final int rectangleOffset;
     private final int lineThickness;
 
@@ -24,7 +24,7 @@ public class MismatchMarker {
     ExcludedMarkingType excludedMarkingType;
     Color excludedMarkingColor;
 
-    public MismatchMarker(DirectCompareConfig config) {
+    public ImageMarker(DirectCompareConfig config) {
         this.rectangleOffset = config.getRectangleMarkingOffset();
         this.lineThickness = config.getMarkingLineThickness();
 
@@ -35,7 +35,7 @@ public class MismatchMarker {
         this.excludedMarkingColor = config.getExcludedMarkingColor();
     }
 
-    public BufferedImage markMismatches(Mismatches mismatches, BufferedImage bufferedImage) {
+    public BufferedImage mark(BufferedImage bufferedImage, Mismatches mismatches) {
 
         switch(mismatchMarkingType) {
             case RECTANGLE -> {
@@ -55,7 +55,7 @@ public class MismatchMarker {
         return bufferedImage;
     }
 
-    public BufferedImage markExcluded(ExcludedAreas excludedAreas, BufferedImage bufferedImage) {
+    public BufferedImage mark(BufferedImage bufferedImage, ExcludedAreas excludedAreas) {
 
         switch(excludedMarkingType) {
             case OUTLINE -> drawShape(excludedAreas.getExcluded(), bufferedImage, excludedMarkingColor, lineThickness);

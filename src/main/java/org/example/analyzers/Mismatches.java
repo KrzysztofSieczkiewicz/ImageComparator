@@ -30,7 +30,7 @@ public class Mismatches {
      *
      * @param excluded ExcludedAreas object
      */
-    public void excludePixels(ExcludedAreas excluded) {
+    public void excludeResults(ExcludedAreas excluded) {
         mismatchedPixels.removeIf(pixelPoint -> excluded.contains(
                 pixelPoint.getX(), pixelPoint.getY()
         ));

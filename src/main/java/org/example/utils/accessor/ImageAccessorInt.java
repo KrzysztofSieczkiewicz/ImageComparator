@@ -1,4 +1,4 @@
-package org.example.accessor;
+package org.example.utils.accessor;
 
 import org.example.utils.BitOperationsUtil;
 

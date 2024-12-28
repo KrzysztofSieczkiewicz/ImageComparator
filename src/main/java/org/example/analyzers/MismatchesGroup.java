@@ -3,12 +3,12 @@ package org.example.analyzers;
 import java.awt.*;
 
 public class MismatchesGroup {
-    private int size;
+    private final int size;
 
-    private int minX;
-    private int maxX;
-    private int minY;
-    private int maxY;
+    private final int minX;
+    private final int maxX;
+    private final int minY;
+    private final int maxY;
 
     public MismatchesGroup(int size, int minX, int maxX, int minY, int maxY) {
         this.size = size;
