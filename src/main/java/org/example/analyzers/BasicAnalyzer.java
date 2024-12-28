@@ -2,7 +2,7 @@ package org.example.analyzers;
 
 import org.example.utils.accessor.ImageAccessor;
 import org.example.config.ColorSpace;
-import org.example.config.DirectCompareConfig;
+import org.example.config.DirectComparatorConfig;
 import org.example.mismatchMarker.PixelPoint;
 import org.example.utils.PixelColorUtil;
 
@@ -17,7 +17,7 @@ public class BasicAnalyzer {
     private final int distanceThreshold;
 
 
-    public BasicAnalyzer(DirectCompareConfig config) {
+    public BasicAnalyzer(DirectComparatorConfig config) {
         this.distanceThreshold = config.getColorDistanceThreshold();
         ColorSpace comparisonSpace = config.getColorSpace();
 

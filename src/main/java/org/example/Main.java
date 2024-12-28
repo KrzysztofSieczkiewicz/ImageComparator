@@ -2,7 +2,7 @@ package org.example;
 
 import org.example.analyzers.ExcludedAreas;
 import org.example.analyzers.Mismatches;
-import org.example.config.DirectCompareConfig;
+import org.example.config.DirectComparatorConfig;
 import org.example.mismatchMarker.ImageMarker;
 import org.example.analyzers.BasicAnalyzer;
 import org.example.utils.ImageUtil;
@@ -24,7 +24,7 @@ public class Main {
         long start;
         long end;
 
-        DirectCompareConfig directCompareConfig = DirectCompareConfig.defaultConfig();
+        DirectComparatorConfig directComparatorConfig = DirectComparatorConfig.defaultConfig();
 
         start = System.nanoTime();
         BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
@@ -32,8 +32,8 @@ public class Main {
         end = System.nanoTime();
         System.out.println("Time taken to load images: " + (end-start) + " ns");
 
-        ImageMarker imageMarker = new ImageMarker(directCompareConfig);
-        ImageValidator imageValidator = new ImageValidator(directCompareConfig);
+        ImageMarker imageMarker = new ImageMarker(directComparatorConfig);
+        ImageValidator imageValidator = new ImageValidator(directComparatorConfig);
         imageValidator.enforceImagesSize(actualImage, checkedImage);
 
         start = System.nanoTime();
@@ -47,7 +47,7 @@ public class Main {
         System.out.println("Time taken to exclude areas: " + (end-start) + " ns");
 
         start = System.nanoTime();
-        BasicAnalyzer comparator = new BasicAnalyzer(directCompareConfig);
+        BasicAnalyzer comparator = new BasicAnalyzer(directComparatorConfig);
         Mismatches mismatched = comparator.compare(actualImage, checkedImage);
         end = System.nanoTime();
         System.out.println("Time taken to compare: " + (end - start) + " ns");

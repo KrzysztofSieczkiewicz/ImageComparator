@@ -1,13 +1,13 @@
 package org.example.analyzers;
 
-import org.example.config.DirectCompareConfig;
+import org.example.config.DirectComparatorConfig;
 
 import java.awt.image.BufferedImage;
 
 public class ImageValidator {
     final int mismatchesPercentageThreshold;
 
-    public ImageValidator(DirectCompareConfig config) {
+    public ImageValidator(DirectComparatorConfig config) {
         this.mismatchesPercentageThreshold = config.getMismatchedPercentageThreshold();
     }
     public void enforceImagesSize(BufferedImage actual, BufferedImage checked) {

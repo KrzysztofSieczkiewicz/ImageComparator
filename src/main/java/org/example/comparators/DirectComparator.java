@@ -4,7 +4,7 @@ import org.example.analyzers.BasicAnalyzer;
 import org.example.analyzers.ExcludedAreas;
 import org.example.analyzers.Mismatches;
 import org.example.analyzers.ImageValidator;
-import org.example.config.DirectCompareConfig;
+import org.example.config.DirectComparatorConfig;
 import org.example.mismatchMarker.ImageMarker;
 import org.example.utils.ImageUtil;
 
@@ -12,14 +12,14 @@ import java.awt.image.BufferedImage;
 
 
 public class DirectComparator {
-    private final DirectCompareConfig config;
+    private final DirectComparatorConfig config;
 
-    public DirectComparator(DirectCompareConfig config) {
+    public DirectComparator(DirectComparatorConfig config) {
         this.config = config;
     }
 
     public DirectComparator() {
-        this.config = DirectCompareConfig.defaultConfig();
+        this.config = DirectComparatorConfig.defaultConfig();
     }
 
     // TODO: MAKE a DirectComparisonResult class to return comparison result, resulting image and "statistics"

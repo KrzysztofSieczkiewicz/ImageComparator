@@ -4,9 +4,8 @@ import org.example.utils.accessor.ImageAccessor;
 import org.example.analyzers.ExcludedAreas;
 import org.example.analyzers.Mismatches;
 import org.example.analyzers.MismatchesGroup;
-import org.example.config.DirectCompareConfig;
-import org.example.config.ExcludedMarkingType;
-import org.example.config.MismatchMarkingType;
+import org.example.config.DirectComparatorConfig;
+import org.example.config.MarkingType;
 
 import java.awt.*;
 import java.awt.geom.Area;
@@ -18,17 +17,17 @@ public class ImageMarker {
     private final int rectangleOffset;
     private final int lineThickness;
 
-    MismatchMarkingType mismatchMarkingType;
+    MarkingType mismatchedMarkingType;
     Color mismatchMarkingColor;
 
-    ExcludedMarkingType excludedMarkingType;
+    MarkingType excludedMarkingType;
     Color excludedMarkingColor;
 
-    public ImageMarker(DirectCompareConfig config) {
+    public ImageMarker(DirectComparatorConfig config) {
         this.rectangleOffset = config.getRectangleMarkingOffset();
         this.lineThickness = config.getMarkingLineThickness();
 
-        this.mismatchMarkingType = config.getMismatchedAreasMarking();
+        this.mismatchedMarkingType = config.getMismatchedAreasMarking();
         this.mismatchMarkingColor = config.getMismatchMarkingColor();
 
         this.excludedMarkingType = config.getExcludedAreasMarking();
@@ -37,8 +36,8 @@ public class ImageMarker {
 
     public BufferedImage mark(BufferedImage bufferedImage, Mismatches mismatches) {
 
-        switch(mismatchMarkingType) {
-            case RECTANGLE -> {
+        switch(mismatchedMarkingType) {
+            case OUTLINE -> {
                 Rectangle[] boundingRectangles = mismatches
                         .groupMismatches()
                         .stream()
