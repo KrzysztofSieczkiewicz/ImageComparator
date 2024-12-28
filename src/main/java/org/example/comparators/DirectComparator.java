@@ -51,4 +51,33 @@ public class DirectComparator {
 
         return resultsImage;
     }
+
+    public BufferedImage fastCompare(BufferedImage actualImage, BufferedImage checkedImage, ExcludedAreas excludedAreas, int mutliplier) {
+        BasicAnalyzer analyzer = new BasicAnalyzer(config);
+        ImageValidator imageValidator = new ImageValidator(config);
+        ImageMarker imageMarker = new ImageMarker(config);
+
+        // CREATE RESULT IMAGE
+        BufferedImage resultsImage = ImageUtil.deepCopy(checkedImage);
+
+        // VALIDATE IMAGE SIZES
+        imageValidator.enforceImagesSize(actualImage, checkedImage);
+
+        // COMPARE
+        Mismatches mismatches = analyzer.compareEveryN(actualImage, checkedImage, mutliplier);
+
+        // EXCLUDE FROM MISMATCHES
+        mismatches.excludeResults(excludedAreas);
+
+        // MARK MISMATCHES
+        resultsImage = imageMarker.mark(resultsImage, mismatches);
+
+        // MARK EXCLUDED AREAS
+        resultsImage = imageMarker.mark(resultsImage, excludedAreas);
+
+        // VALIDATE MISMATCH THRESHOLD
+        imageValidator.isBelowMismatchThreshold(actualImage, mismatches);
+
+        return resultsImage;
+    }
 }

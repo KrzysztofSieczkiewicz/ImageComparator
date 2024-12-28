@@ -9,7 +9,7 @@ import java.util.Stack;
 public class Mismatches {
     private final int[][] neighboursMatrix = generateNeighboursMatrix(3);
 
-    private final int totalMismatched;
+    private int totalMismatched;
     private final ArrayList<PixelPoint> mismatchedPixels;
 
     public Mismatches(ArrayList<PixelPoint> mismatchedPixels) {
@@ -23,6 +23,10 @@ public class Mismatches {
 
     public int getMismatchesCount() {
         return totalMismatched;
+    }
+
+    public void setMismatchesCount(int count) {
+        this.totalMismatched = count;
     }
 
     /**

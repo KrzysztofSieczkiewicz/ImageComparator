@@ -12,7 +12,7 @@ import java.util.function.BiFunction;
 
 // TODO: ADD A "FAST COMPARE" method that checks every n-other pixels instead of everything
 public class BasicAnalyzer {
-    private BiFunction<BufferedImage, BufferedImage, Mismatches> comparisonMethod = this::compareRGB;
+    private BiFunction<BufferedImage, BufferedImage, Mismatches> comparisonMethod;
 
     private final int distanceThreshold;
 
