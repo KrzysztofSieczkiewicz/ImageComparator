@@ -63,7 +63,7 @@ public class Main {
         System.out.println("Time taken to perform image deep copy: " + (end - start) + " ns");
 
         start = System.nanoTime();
-        mismatchedImage = mismatchMarker.markMismatches(mismatched, mismatchedImage, directCompareConfig);
+        mismatchedImage = mismatchMarker.markMismatches(mismatched, mismatchedImage);
         end = System.nanoTime();
         System.out.println("Time taken to mark mismatches: " + (end - start) + " ns");
 
@@ -114,7 +114,7 @@ public class Main {
         mismatches.excludePixels(excludedAreas);
 
         // MARK MISMATCHES
-        mismatchedImage = mismatchMarker.markMismatches(mismatches, mismatchedImage, directCompareConfig);
+        mismatchedImage = mismatchMarker.markMismatches(mismatches, mismatchedImage);
 
         // MARK EXCLUDED AREAS
         mismatchedImage = mismatchMarker.markExcluded(excludedAreas, mismatchedImage);

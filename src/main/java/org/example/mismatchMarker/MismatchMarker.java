@@ -1,5 +1,6 @@
 package org.example.mismatchMarker;
 
+import org.example.accessor.ImageAccessor;
 import org.example.analyzers.ExcludedAreas;
 import org.example.analyzers.Mismatches;
 import org.example.analyzers.MismatchesGroup;
@@ -8,14 +9,12 @@ import org.example.config.ExcludedMarkingType;
 import org.example.config.MismatchMarkingType;
 
 import java.awt.*;
+import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
-// TODO: CONSIDER CHANGING THIS FROM INTERFACE TO A CLASS WITH CONSTRUCTOR THAT ACCEPTS CONFIG INSTEAD
-// MIGHT LOOK LESS PROFESSIONAL, BUT THERE IS NO POINT IN ADDING AN ABSTRACTION AND PROVIDING CONFIG TO EACH METHOD CALL
-// METHODS HAVE NO REASON TO BE STATIC AS WELL
+
 public class MismatchMarker {
-
-    // Rectangle and Shape drawing
     private final int rectangleOffset;
     private final int lineThickness;
 
@@ -36,7 +35,7 @@ public class MismatchMarker {
         this.excludedMarkingColor = config.getExcludedMarkingColor();
     }
 
-    public BufferedImage markMismatches(Mismatches mismatches, BufferedImage bufferedImage, DirectCompareConfig config) {
+    public BufferedImage markMismatches(Mismatches mismatches, BufferedImage bufferedImage) {
 
         switch(mismatchMarkingType) {
             case RECTANGLE -> {
@@ -46,14 +45,11 @@ public class MismatchMarker {
                         .map(MismatchesGroup::getBoundingRectangle)
                         .toArray(Rectangle[]::new);
 
-                // TODO - CURRENT
-                //  no need to move offset calculation logic from rectangleDraw (without that it's a single line call)
-                //  this class can accept config input in the constructor
-                //  dissolve RectangleDraw class and move the methods here - drop a layer
-
-                bufferedImage = new RectangleDraw().drawRectangles(boundingRectangles, bufferedImage, mismatchMarkingColor, rectangleOffset, lineThickness);
+                drawRectangles(boundingRectangles, bufferedImage, mismatchMarkingColor, rectangleOffset, lineThickness);
             }
-            case PAINT_OVER -> bufferedImage = new RectangleDraw().paintPixels(mismatches.getPixels(), bufferedImage, mismatchMarkingColor);
+            case PAINT_OVER -> {
+                paintPixels(mismatches.getPixels(), bufferedImage, mismatchMarkingColor);
+            }
         }
 
         return bufferedImage;
@@ -62,10 +58,58 @@ public class MismatchMarker {
     public BufferedImage markExcluded(ExcludedAreas excludedAreas, BufferedImage bufferedImage) {
 
         switch(excludedMarkingType) {
-            case OUTLINE -> bufferedImage = new RectangleDraw().drawShape(excludedAreas.getExcluded(), bufferedImage, excludedMarkingColor, lineThickness);
-            case PAINT_OVER -> bufferedImage = new RectangleDraw().paintPixels(excludedAreas.getExcluded(), bufferedImage, excludedMarkingColor, lineThickness);
+            case OUTLINE -> drawShape(excludedAreas.getExcluded(), bufferedImage, excludedMarkingColor, lineThickness);
+            case PAINT_OVER -> paintPixels(excludedAreas.getExcluded(), bufferedImage, excludedMarkingColor, lineThickness);
         }
 
         return bufferedImage;
+    }
+
+
+    private void drawRectangles(Rectangle[] rectangles, BufferedImage image, Color lineColor, int offset, int lineThickness) {
+        Graphics2D g2d = image.createGraphics();
+
+        g2d.setColor(lineColor);
+        g2d.setStroke(new BasicStroke(lineThickness));
+
+        for (Rectangle rectangle : rectangles) {
+            g2d.drawRect(
+                    rectangle.x - offset,
+                    rectangle.y - offset,
+                    rectangle.width + 2 * offset,
+                    rectangle.height + 2 * offset
+            );
+        }
+        g2d.dispose();
+    }
+
+    private void paintPixels(ArrayList<PixelPoint> pixels, BufferedImage image, Color lineColor) {
+        ImageAccessor mismatchedAccessor = ImageAccessor.create(image);
+
+        int red = lineColor.getRed();
+        int green = lineColor.getGreen();
+        int blue = lineColor.getBlue();
+
+        for (PixelPoint pixel : pixels) {
+            mismatchedAccessor.setPixel(pixel.getX(), pixel.getY(), 255, red, green, blue);
+        }
+    }
+
+    private void paintPixels(Area area, BufferedImage image, Color lineColor, int lineThickness) {
+        Graphics2D g2d = image.createGraphics();
+
+        g2d.setColor(lineColor);
+        g2d.setStroke(new BasicStroke(lineThickness));
+        g2d.fill(area);
+        g2d.dispose();
+    }
+
+    private void drawShape(Area area, BufferedImage image, Color lineColor, int lineThickness) {
+        Graphics2D g2d = image.createGraphics();
+
+        g2d.setColor(lineColor);
+        g2d.setStroke(new BasicStroke(lineThickness));
+        g2d.draw(area);
+        g2d.dispose();
     }
 }
