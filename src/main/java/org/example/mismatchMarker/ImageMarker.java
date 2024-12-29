@@ -7,7 +7,10 @@ import org.example.analyzers.MismatchesGroup;
 import org.example.config.DirectComparatorConfig;
 import org.example.config.MarkingType;
 
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;

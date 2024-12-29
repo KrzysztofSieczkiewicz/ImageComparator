@@ -15,10 +15,13 @@ public class BasicAnalyzer {
     private BiFunction<Integer, Integer, Integer> distanceCalculationMethod;
 
     private final int distanceThreshold;
+    private final int pixelGap;
 
 
     public BasicAnalyzer(DirectComparatorConfig config) {
         this.distanceThreshold = config.getColorDistanceThreshold();
+        this.pixelGap = config.getPixelsSkip();
+
         ColorSpace comparisonSpace = config.getColorSpace();
 
         switch (comparisonSpace) {
@@ -63,18 +66,18 @@ public class BasicAnalyzer {
         return new Mismatches(mismatches);
     }
 
-    public Mismatches compareEveryNth(BufferedImage actual, BufferedImage checked, int pixelGap) {
+    public Mismatches compareEveryNth(BufferedImage actual, BufferedImage checked) {
         ImageAccessor actualAccessor = ImageAccessor.create(actual);
         ImageAccessor checkedAccessor = ImageAccessor.create(checked);
 
         int width = actual.getWidth();
         int height = actual.getHeight();
 
-        pixelGap+=1;
+        int increment = pixelGap + 1;
 
         ArrayList<PixelPoint> mismatches = new ArrayList<>();
-        for (int x = 0; x < width; x+=pixelGap) {
-            for (int y = 0; y < height; y+=pixelGap) {
+        for (int x = 0; x < width; x=x+increment) {
+            for (int y = 0; y < height; y=y+increment) {
                 int actualRGB = actualAccessor.getPixel(x, y);
                 int checkedRGB = checkedAccessor.getPixel(x, y);
                 int distance = distanceCalculationMethod.apply(actualRGB, checkedRGB);

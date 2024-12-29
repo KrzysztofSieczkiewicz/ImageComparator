@@ -2,6 +2,8 @@ package org.example.config;
 
 import java.awt.*;
 
+// TODO: drop builder pattern - seems to be a bit too complex for the required solution
+//  make simple object with chained setters, default values and no-args constructor
 public class DirectComparatorConfig {
     private final ColorSpace colorSpace;
     private final int colorDistanceThreshold;
@@ -12,6 +14,8 @@ public class DirectComparatorConfig {
     private final Color mismatchMarkingColor;
     private final int rectangleMarkingOffset;
     private final int markingLineThickness;
+
+    private int pixelsSkip;
 
 
     public ColorSpace getColorSpace() {
@@ -29,6 +33,7 @@ public class DirectComparatorConfig {
     public MarkingType getExcludedAreasMarking() {
         return excludedAreasMarking;
     }
+
     public Color getExcludedMarkingColor() {
         return excludedMarkingColor;
     }
@@ -47,6 +52,10 @@ public class DirectComparatorConfig {
 
     public int getMarkingLineThickness() { return markingLineThickness; }
 
+    public int getPixelsSkip() {
+        return pixelsSkip;
+    }
+
     public DirectComparatorConfig(
             ColorSpace colorSpace,
             int colorDistanceThreshold,
@@ -56,7 +65,8 @@ public class DirectComparatorConfig {
             MarkingType mismatchedAreasMarking,
             Color mismatchMarkingColor,
             int rectangleMarkingOffset,
-            int markingLineThickness ) {
+            int markingLineThickness,
+            int pixelsSkip) {
 
         this.colorSpace = colorSpace;
         this.colorDistanceThreshold = colorDistanceThreshold;
@@ -67,6 +77,7 @@ public class DirectComparatorConfig {
         this.mismatchMarkingColor = mismatchMarkingColor;
         this.rectangleMarkingOffset = rectangleMarkingOffset;
         this.markingLineThickness = markingLineThickness;
+        this.pixelsSkip = pixelsSkip;
     }
 
     public static DirectComparatorConfig defaultConfig() {
@@ -85,6 +96,8 @@ public class DirectComparatorConfig {
         private Color mismatchedMarkingColor = Color.RED;
         private int rectangleMarkingOffset = 3;
         private int markingLineThickness = 3;
+
+        private int pixelsSkip = 1;
 
 
         public DirectCompareConfigBuilder colorSpace(ColorSpace colorSpace) {
@@ -142,6 +155,15 @@ public class DirectComparatorConfig {
             return this;
         }
 
+        public DirectCompareConfigBuilder pixelsSkip(int number) {
+            if (number<0) {
+                throw new IllegalArgumentException("Cannot set pixel gap to lower than 0");
+            }
+
+            this.pixelsSkip = number;
+            return this;
+        }
+
         public DirectComparatorConfig build() {
             return new DirectComparatorConfig(
                     colorSpace,
@@ -152,7 +174,8 @@ public class DirectComparatorConfig {
                     mismatchedAreasMarking,
                     mismatchedMarkingColor,
                     rectangleMarkingOffset,
-                    markingLineThickness
+                    markingLineThickness,
+                    pixelsSkip
             );
         }
     }

@@ -22,14 +22,10 @@ public class DirectComparator {
         this.config = DirectComparatorConfig.defaultConfig();
     }
 
-    // TODO: MAKE a DirectComparisonResult class to return comparison result, resulting image and "statistics"
-    public BufferedImage compare(BufferedImage actualImage, BufferedImage checkedImage, ExcludedAreas excludedAreas) {
+    public DirectComparisonResult compare(BufferedImage actualImage, BufferedImage checkedImage, ExcludedAreas excludedAreas) {
         BasicAnalyzer analyzer = new BasicAnalyzer(config);
         ImageValidator imageValidator = new ImageValidator(config);
         ImageMarker imageMarker = new ImageMarker(config);
-
-        // CREATE RESULT IMAGE
-        BufferedImage resultsImage = ImageUtil.deepCopy(checkedImage);
 
         // VALIDATE IMAGE SIZES
         imageValidator.enforceImagesSize(actualImage, checkedImage);
@@ -40,44 +36,53 @@ public class DirectComparator {
         // EXCLUDE FROM MISMATCHES
         mismatches.excludeResults(excludedAreas);
 
-        // MARK MISMATCHES
+        // CREATE RESULT IMAGE
+        BufferedImage resultsImage = ImageUtil.deepCopy(checkedImage);
+
+        // MARK MISMATCHES ON THE RESULT IMAGE
         resultsImage = imageMarker.mark(resultsImage, mismatches);
 
-        // MARK EXCLUDED AREAS
+        // MARK EXCLUDED AREAS ON THE RESULT IMAGE
         resultsImage = imageMarker.mark(resultsImage, excludedAreas);
 
         // VALIDATE MISMATCH THRESHOLD
-        imageValidator.isBelowMismatchThreshold(actualImage, mismatches);
+        boolean isMatching = imageValidator.isBelowMismatchThreshold(actualImage, mismatches);
 
-        return resultsImage;
+        return new DirectComparisonResult(
+                resultsImage,
+                isMatching
+        );
     }
 
-    public BufferedImage fastCompare(BufferedImage actualImage, BufferedImage checkedImage, ExcludedAreas excludedAreas, int pixelGap) {
+    public DirectComparisonResult fastCompare(BufferedImage actualImage, BufferedImage checkedImage, ExcludedAreas excludedAreas) {
         BasicAnalyzer analyzer = new BasicAnalyzer(config);
         ImageValidator imageValidator = new ImageValidator(config);
         ImageMarker imageMarker = new ImageMarker(config);
-
-        // CREATE RESULT IMAGE
-        BufferedImage resultsImage = ImageUtil.deepCopy(checkedImage);
 
         // VALIDATE IMAGE SIZES
         imageValidator.enforceImagesSize(actualImage, checkedImage);
 
         // COMPARE
-        Mismatches mismatches = analyzer.compareEveryNth(actualImage, checkedImage, pixelGap);
+        Mismatches mismatches = analyzer.compareEveryNth(actualImage, checkedImage);
 
-        // EXCLUDE FROM MISMATCHES
+        // EXCLUDE FROM MISMATCHES ON THE RESULT IMAGE
         mismatches.excludeResults(excludedAreas);
 
-        // MARK MISMATCHES
+        // CREATE RESULT IMAGE
+        BufferedImage resultsImage = ImageUtil.deepCopy(checkedImage);
+
+        // MARK MISMATCHES ON THE RESULT IMAGE
         resultsImage = imageMarker.mark(resultsImage, mismatches);
 
         // MARK EXCLUDED AREAS
         resultsImage = imageMarker.mark(resultsImage, excludedAreas);
 
         // VALIDATE MISMATCH THRESHOLD
-        imageValidator.isBelowMismatchThreshold(actualImage, mismatches);
+        boolean isMatching = imageValidator.isBelowMismatchThreshold(actualImage, mismatches);
 
-        return resultsImage;
+        return new DirectComparisonResult(
+                resultsImage,
+                isMatching
+        );
     }
 }

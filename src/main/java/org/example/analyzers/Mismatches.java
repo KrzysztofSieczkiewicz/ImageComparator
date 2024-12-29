@@ -6,7 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+// TODO: MAYBE RENAME TO THE basicAnalysisResult or sth?
 public class Mismatches {
+
+    // TODO: ADD TO THE CONFIG CLASS?
     private final int[][] neighboursMatrix = generateNeighboursMatrix(3);
 
     private int totalMismatched;
@@ -30,9 +33,7 @@ public class Mismatches {
     }
 
     /**
-     * Excludes provided area from mismatches
-     *
-     * @param excluded ExcludedAreas object
+     * Removes areas excluded from comparison from mismatches list
      */
     public void excludeResults(ExcludedAreas excluded) {
         mismatchedPixels.removeIf(pixelPoint -> excluded.contains(
@@ -42,7 +43,7 @@ public class Mismatches {
 
     /**
      * Joins connected mismatched pixels into single group. Range by which pixels are treated as grouped is
-     * determined in the Config.
+     * determined in the Config class .
      *
      * @return List of rectangles bounding mismatched pixels groups
      */
