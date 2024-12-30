@@ -7,7 +7,9 @@ import java.awt.*;
 public class DirectComparatorConfig {
     private final ColorSpace colorSpace;
     private final int colorDistanceThreshold;
+
     private final int mismatchedPercentageThreshold;
+
     private final MarkingType excludedAreasMarking;
     private final Color excludedMarkingColor;
     private final MarkingType mismatchedAreasMarking;
@@ -15,7 +17,8 @@ public class DirectComparatorConfig {
     private final int rectangleMarkingOffset;
     private final int markingLineThickness;
 
-    private int pixelsSkip;
+    private final int pixelsSkip;
+    private final int mismatchesGroupingRadius;
 
 
     public ColorSpace getColorSpace() {
@@ -55,6 +58,9 @@ public class DirectComparatorConfig {
     public int getPixelsSkip() {
         return pixelsSkip;
     }
+    public int getMismatchesGroupingRadius() {
+        return mismatchesGroupingRadius;
+    }
 
     public DirectComparatorConfig(
             ColorSpace colorSpace,
@@ -66,7 +72,8 @@ public class DirectComparatorConfig {
             Color mismatchMarkingColor,
             int rectangleMarkingOffset,
             int markingLineThickness,
-            int pixelsSkip) {
+            int pixelsSkip,
+            int mismatchesGroupingRadius) {
 
         this.colorSpace = colorSpace;
         this.colorDistanceThreshold = colorDistanceThreshold;
@@ -78,6 +85,7 @@ public class DirectComparatorConfig {
         this.rectangleMarkingOffset = rectangleMarkingOffset;
         this.markingLineThickness = markingLineThickness;
         this.pixelsSkip = pixelsSkip;
+        this.mismatchesGroupingRadius = mismatchesGroupingRadius;
     }
 
     public static DirectComparatorConfig defaultConfig() {
@@ -98,6 +106,7 @@ public class DirectComparatorConfig {
         private int markingLineThickness = 3;
 
         private int pixelsSkip = 1;
+        private int mismatchesGroupingRadius = 3;
 
 
         public DirectCompareConfigBuilder colorSpace(ColorSpace colorSpace) {
@@ -164,6 +173,15 @@ public class DirectComparatorConfig {
             return this;
         }
 
+        public DirectCompareConfigBuilder mismatchesGroupingRadius(int radius) {
+            if (radius<1) {
+                throw new IllegalArgumentException("Cannot set grouping radius to lower than 1");
+            }
+
+            this.mismatchesGroupingRadius = radius;
+            return this;
+        }
+
         public DirectComparatorConfig build() {
             return new DirectComparatorConfig(
                     colorSpace,
@@ -175,7 +193,8 @@ public class DirectComparatorConfig {
                     mismatchedMarkingColor,
                     rectangleMarkingOffset,
                     markingLineThickness,
-                    pixelsSkip
+                    pixelsSkip,
+                    mismatchesGroupingRadius
             );
         }
     }

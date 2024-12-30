@@ -10,17 +10,18 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.function.BiFunction;
 
-// TODO: ADD A "FAST COMPARE" method that checks every n-other pixels instead of everything
 public class BasicAnalyzer {
     private BiFunction<Integer, Integer, Integer> distanceCalculationMethod;
 
     private final int distanceThreshold;
     private final int pixelGap;
+    private final int groupingRadius;
 
 
     public BasicAnalyzer(DirectComparatorConfig config) {
         this.distanceThreshold = config.getColorDistanceThreshold();
         this.pixelGap = config.getPixelsSkip();
+        this.groupingRadius = config.getMismatchesGroupingRadius();
 
         ColorSpace comparisonSpace = config.getColorSpace();
 
@@ -63,7 +64,7 @@ public class BasicAnalyzer {
                 }
             }
         }
-        return new Mismatches(mismatches);
+        return new Mismatches(mismatches, groupingRadius);
     }
 
     public Mismatches compareEveryNth(BufferedImage actual, BufferedImage checked) {
@@ -87,7 +88,7 @@ public class BasicAnalyzer {
                 }
             }
         }
-        return new Mismatches(mismatches);
+        return new Mismatches(mismatches, groupingRadius);
     }
 
 }

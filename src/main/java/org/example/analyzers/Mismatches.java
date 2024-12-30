@@ -9,15 +9,15 @@ import java.util.Stack;
 // TODO: MAYBE RENAME TO THE basicAnalysisResult or sth?
 public class Mismatches {
 
-    // TODO: ADD TO THE CONFIG CLASS?
-    private final int[][] neighboursMatrix = generateNeighboursMatrix(3);
+    private final int[][] neighboursMatrix;
 
     private int totalMismatched;
     private final ArrayList<PixelPoint> mismatchedPixels;
 
-    public Mismatches(ArrayList<PixelPoint> mismatchedPixels) {
+    public Mismatches(ArrayList<PixelPoint> mismatchedPixels, int groupingRadius) {
         this.totalMismatched = mismatchedPixels.size() -1;
         this.mismatchedPixels = mismatchedPixels;
+        this.neighboursMatrix = generateNeighboursMatrix(groupingRadius);
     }
 
     public ArrayList<PixelPoint> getPixels() {

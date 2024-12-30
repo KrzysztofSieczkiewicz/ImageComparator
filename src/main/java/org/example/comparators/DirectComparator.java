@@ -14,6 +14,7 @@ import java.awt.image.BufferedImage;
 public class DirectComparator {
     private final DirectComparatorConfig config;
 
+
     public DirectComparator(DirectComparatorConfig config) {
         this.config = config;
     }
@@ -21,6 +22,7 @@ public class DirectComparator {
     public DirectComparator() {
         this.config = DirectComparatorConfig.defaultConfig();
     }
+
 
     public DirectComparisonResult compare(BufferedImage actualImage, BufferedImage checkedImage, ExcludedAreas excludedAreas) {
         BasicAnalyzer analyzer = new BasicAnalyzer(config);
@@ -65,7 +67,7 @@ public class DirectComparator {
         // COMPARE
         Mismatches mismatches = analyzer.compareEveryNth(actualImage, checkedImage);
 
-        // EXCLUDE FROM MISMATCHES ON THE RESULT IMAGE
+        // EXCLUDE FROM MISMATCHES
         mismatches.excludeResults(excludedAreas);
 
         // CREATE RESULT IMAGE
@@ -74,7 +76,7 @@ public class DirectComparator {
         // MARK MISMATCHES ON THE RESULT IMAGE
         resultsImage = imageMarker.mark(resultsImage, mismatches);
 
-        // MARK EXCLUDED AREAS
+        // MARK EXCLUDED AREAS ON THE RESULT IMAGE
         resultsImage = imageMarker.mark(resultsImage, excludedAreas);
 
         // VALIDATE MISMATCH THRESHOLD
