@@ -1,10 +1,10 @@
 package org.example;
 
 import org.example.analyzers.ExcludedAreas;
-import org.example.analyzers.Mismatches;
+import org.example.mismatchMarker.Mismatches;
 import org.example.config.DirectComparatorConfig;
 import org.example.mismatchMarker.ImageMarker;
-import org.example.analyzers.BasicAnalyzer;
+import org.example.analyzers.DirectAnalyzer;
 import org.example.utils.ImageUtil;
 import org.example.analyzers.ImageValidator;
 
@@ -16,8 +16,8 @@ import java.io.IOException;
 
 public class Main {
     // TODO: Comparison should  be accessed via separate ComparatorObjects
-    // ORBComparator, HashComparator and DirectComparator, all should be able to accept Config and Images
-    // Excluded areas and should be accepted by "compare()" method
+    //  ORBComparator, HashComparator and DirectComparator, all should be able to accept Config and Images
+    //  Excluded areas and should be accepted by "compare()" method
 
     public static void main(String[] args) throws IOException {
         long globalStart = System.nanoTime();
@@ -47,7 +47,7 @@ public class Main {
         System.out.println("Time taken to exclude areas: " + (end-start) + " ns");
 
         start = System.nanoTime();
-        BasicAnalyzer comparator = new BasicAnalyzer(directComparatorConfig);
+        DirectAnalyzer comparator = new DirectAnalyzer(directComparatorConfig);
         Mismatches mismatched = comparator.compare(actualImage, checkedImage);
         end = System.nanoTime();
         System.out.println("Time taken to compare: " + (end - start) + " ns");

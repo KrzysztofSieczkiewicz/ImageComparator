@@ -1,5 +1,6 @@
 package org.example.analyzers;
 
+import org.example.mismatchMarker.Mismatches;
 import org.example.utils.accessor.ImageAccessor;
 import org.example.config.ColorSpace;
 import org.example.config.DirectComparatorConfig;
@@ -10,7 +11,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.function.BiFunction;
 
-public class BasicAnalyzer {
+public class DirectAnalyzer {
     private BiFunction<Integer, Integer, Integer> distanceCalculationMethod;
 
     private final int distanceThreshold;
@@ -18,7 +19,7 @@ public class BasicAnalyzer {
     private final int groupingRadius;
 
 
-    public BasicAnalyzer(DirectComparatorConfig config) {
+    public DirectAnalyzer(DirectComparatorConfig config) {
         this.distanceThreshold = config.getColorDistanceThreshold();
         this.pixelGap = config.getPixelsSkip();
         this.groupingRadius = config.getMismatchesGroupingRadius();

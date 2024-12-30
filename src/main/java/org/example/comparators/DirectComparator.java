@@ -1,8 +1,8 @@
 package org.example.comparators;
 
-import org.example.analyzers.BasicAnalyzer;
+import org.example.analyzers.DirectAnalyzer;
 import org.example.analyzers.ExcludedAreas;
-import org.example.analyzers.Mismatches;
+import org.example.mismatchMarker.Mismatches;
 import org.example.analyzers.ImageValidator;
 import org.example.config.DirectComparatorConfig;
 import org.example.mismatchMarker.ImageMarker;
@@ -25,7 +25,7 @@ public class DirectComparator {
 
 
     public DirectComparisonResult compare(BufferedImage actualImage, BufferedImage checkedImage, ExcludedAreas excludedAreas) {
-        BasicAnalyzer analyzer = new BasicAnalyzer(config);
+        DirectAnalyzer analyzer = new DirectAnalyzer(config);
         ImageValidator imageValidator = new ImageValidator(config);
         ImageMarker imageMarker = new ImageMarker(config);
 
@@ -57,7 +57,7 @@ public class DirectComparator {
     }
 
     public DirectComparisonResult fastCompare(BufferedImage actualImage, BufferedImage checkedImage, ExcludedAreas excludedAreas) {
-        BasicAnalyzer analyzer = new BasicAnalyzer(config);
+        DirectAnalyzer analyzer = new DirectAnalyzer(config);
         ImageValidator imageValidator = new ImageValidator(config);
         ImageMarker imageMarker = new ImageMarker(config);
 

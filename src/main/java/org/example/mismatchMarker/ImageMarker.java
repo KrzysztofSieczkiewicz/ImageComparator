@@ -2,8 +2,6 @@ package org.example.mismatchMarker;
 
 import org.example.utils.accessor.ImageAccessor;
 import org.example.analyzers.ExcludedAreas;
-import org.example.analyzers.Mismatches;
-import org.example.analyzers.MismatchesGroup;
 import org.example.config.DirectComparatorConfig;
 import org.example.config.MarkingType;
 

@@ -7,7 +7,7 @@ import org.example.utils.HashUtil;
 import java.awt.image.BufferedImage;
 import java.util.BitSet;
 
-public class PHashComparator {
+public class PHashAnalyzer {
 
     // TODO: Move these values as config defaults, finally take the values from config file
     private final int size = 64;

@@ -1,6 +1,6 @@
-package org.example.analyzers;
+package org.example.mismatchMarker;
 
-import org.example.mismatchMarker.PixelPoint;
+import org.example.analyzers.ExcludedAreas;
 
 import java.util.ArrayList;
 import java.util.List;
