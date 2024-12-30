@@ -24,7 +24,13 @@ public class DirectComparator {
     }
 
 
-    // TODO: ADD "should i write output file" flag to the config and make a condition to perform deep copy and mark results
+    public DirectComparisonResult compare(BufferedImage actualImage, BufferedImage checkedImage) {
+        return compare(
+                actualImage,
+                checkedImage,
+                new ExcludedAreas()
+        );
+    }
 
     public DirectComparisonResult compare(BufferedImage actualImage, BufferedImage checkedImage, ExcludedAreas excludedAreas) {
         DirectAnalyzer analyzer = new DirectAnalyzer(config);
@@ -36,20 +42,13 @@ public class DirectComparator {
 
         // COMPARE
         Mismatches mismatches = analyzer.compare(actualImage, checkedImage);
-
-        // EXCLUDE FROM MISMATCHES
         mismatches.excludeResults(excludedAreas);
 
         BufferedImage resultsImage = null;
 
         if(config.isProduceOutputImage() ) {
-            // CREATE RESULT IMAGE
             resultsImage = ImageUtil.deepCopy(checkedImage);
-
-            // MARK MISMATCHES ON THE RESULT IMAGE
             resultsImage = imageMarker.mark(resultsImage, mismatches);
-
-            // MARK EXCLUDED AREAS ON THE RESULT IMAGE
             resultsImage = imageMarker.mark(resultsImage, excludedAreas);
         }
 
@@ -59,6 +58,14 @@ public class DirectComparator {
         return new DirectComparisonResult(
                 resultsImage,
                 isMatching
+        );
+    }
+
+    public DirectComparisonResult fastCompare(BufferedImage actualImage, BufferedImage checkedImage) {
+        return fastCompare(
+                actualImage,
+                checkedImage,
+                new ExcludedAreas()
         );
     }
 
@@ -72,18 +79,15 @@ public class DirectComparator {
 
         // COMPARE
         Mismatches mismatches = analyzer.compareEveryNth(actualImage, checkedImage);
-
-        // EXCLUDE FROM MISMATCHES
         mismatches.excludeResults(excludedAreas);
 
-        // CREATE RESULT IMAGE
-        BufferedImage resultsImage = ImageUtil.deepCopy(checkedImage);
+        BufferedImage resultsImage = null;
 
-        // MARK MISMATCHES ON THE RESULT IMAGE
-        resultsImage = imageMarker.mark(resultsImage, mismatches);
-
-        // MARK EXCLUDED AREAS ON THE RESULT IMAGE
-        resultsImage = imageMarker.mark(resultsImage, excludedAreas);
+        if(config.isProduceOutputImage() ) {
+            resultsImage = ImageUtil.deepCopy(checkedImage);
+            resultsImage = imageMarker.mark(resultsImage, mismatches);
+            resultsImage = imageMarker.mark(resultsImage, excludedAreas);
+        }
 
         // VALIDATE MISMATCH THRESHOLD
         boolean isMatching = imageValidator.isBelowMismatchThreshold(actualImage, mismatches);
