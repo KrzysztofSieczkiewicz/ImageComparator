@@ -10,6 +10,7 @@ public class DirectComparatorConfig {
 
     private final int mismatchedPercentageThreshold;
 
+    private final boolean produceOutputImage;
     private final MarkingType excludedAreasMarking;
     private final Color excludedMarkingColor;
     private final MarkingType mismatchedAreasMarking;
@@ -31,6 +32,10 @@ public class DirectComparatorConfig {
 
     public int getMismatchedPercentageThreshold() {
         return mismatchedPercentageThreshold;
+    }
+
+    public boolean isProduceOutputImage() {
+        return produceOutputImage;
     }
 
     public MarkingType getExcludedAreasMarking() {
@@ -66,6 +71,7 @@ public class DirectComparatorConfig {
             ColorSpace colorSpace,
             int colorDistanceThreshold,
             int mismatchedPercentageThreshold,
+            boolean produceOutputImage,
             MarkingType excludedAreasMarking,
             Color excludedMarkingColor,
             MarkingType mismatchedAreasMarking,
@@ -78,6 +84,7 @@ public class DirectComparatorConfig {
         this.colorSpace = colorSpace;
         this.colorDistanceThreshold = colorDistanceThreshold;
         this.mismatchedPercentageThreshold = mismatchedPercentageThreshold;
+        this.produceOutputImage = produceOutputImage;
         this.excludedAreasMarking = excludedAreasMarking;
         this.excludedMarkingColor = excludedMarkingColor;
         this.mismatchedAreasMarking = mismatchedAreasMarking;
@@ -98,6 +105,8 @@ public class DirectComparatorConfig {
         private int colorDistanceThreshold = 1;
 
         private int mismatchedPercentageThreshold = 0;
+
+        private boolean produceOutputImage = true;
         private MarkingType excludedAreasMarking = MarkingType.OUTLINE;
         private Color excludedMarkingColor = Color.GREEN;
         private MarkingType mismatchedAreasMarking = MarkingType.OUTLINE;
@@ -127,6 +136,11 @@ public class DirectComparatorConfig {
                 throw new IllegalArgumentException("Threshold must be between 0 and 100");
             }
             this.mismatchedPercentageThreshold = threshold;
+            return this;
+        }
+
+        public DirectCompareConfigBuilder produceOutputImage(boolean shouldProduce) {
+            this.produceOutputImage = shouldProduce;
             return this;
         }
 
@@ -187,6 +201,7 @@ public class DirectComparatorConfig {
                     colorSpace,
                     colorDistanceThreshold,
                     mismatchedPercentageThreshold,
+                    produceOutputImage,
                     excludedAreasMarking,
                     excludedMarkingColor,
                     mismatchedAreasMarking,

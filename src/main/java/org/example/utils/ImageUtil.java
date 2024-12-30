@@ -74,17 +74,13 @@ public class ImageUtil {
      * @param original BufferedImage to be copied
      * @return image deep copy
      */
-    // TODO: implement "resized output image" config and allow for reduced output image size
     public static BufferedImage deepCopy(BufferedImage original) {
         BufferedImage copy = new BufferedImage(
-//                original.getWidth()/2,
-//                original.getHeight()/2,
                 original.getWidth(),
                 original.getHeight(),
                 original.getType());
 
         Graphics2D g2d = copy.createGraphics();
-        //g2d.scale(0.5, 0.5);
         g2d.drawImage(original, 0, 0, null);
         g2d.dispose();
 

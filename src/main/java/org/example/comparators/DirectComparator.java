@@ -24,6 +24,8 @@ public class DirectComparator {
     }
 
 
+    // TODO: ADD "should i write output file" flag to the config and make a condition to perform deep copy and mark results
+
     public DirectComparisonResult compare(BufferedImage actualImage, BufferedImage checkedImage, ExcludedAreas excludedAreas) {
         DirectAnalyzer analyzer = new DirectAnalyzer(config);
         ImageValidator imageValidator = new ImageValidator(config);
@@ -38,14 +40,18 @@ public class DirectComparator {
         // EXCLUDE FROM MISMATCHES
         mismatches.excludeResults(excludedAreas);
 
-        // CREATE RESULT IMAGE
-        BufferedImage resultsImage = ImageUtil.deepCopy(checkedImage);
+        BufferedImage resultsImage = null;
 
-        // MARK MISMATCHES ON THE RESULT IMAGE
-        resultsImage = imageMarker.mark(resultsImage, mismatches);
+        if(config.isProduceOutputImage() ) {
+            // CREATE RESULT IMAGE
+            resultsImage = ImageUtil.deepCopy(checkedImage);
 
-        // MARK EXCLUDED AREAS ON THE RESULT IMAGE
-        resultsImage = imageMarker.mark(resultsImage, excludedAreas);
+            // MARK MISMATCHES ON THE RESULT IMAGE
+            resultsImage = imageMarker.mark(resultsImage, mismatches);
+
+            // MARK EXCLUDED AREAS ON THE RESULT IMAGE
+            resultsImage = imageMarker.mark(resultsImage, excludedAreas);
+        }
 
         // VALIDATE MISMATCH THRESHOLD
         boolean isMatching = imageValidator.isBelowMismatchThreshold(actualImage, mismatches);
