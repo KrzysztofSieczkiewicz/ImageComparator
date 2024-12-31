@@ -1,11 +1,11 @@
 package org.example.comparators;
 
-import org.example.analyzers.DirectAnalyzer;
+import org.example.analyzers.direct.DirectAnalyzer;
 import org.example.analyzers.ExcludedAreas;
-import org.example.mismatchMarker.Mismatches;
+import org.example.analyzers.direct.Mismatches;
 import org.example.analyzers.ImageValidator;
 import org.example.config.DirectComparatorConfig;
-import org.example.mismatchMarker.ImageMarker;
+import org.example.analyzers.direct.ImageMarker;
 import org.example.utils.ImageUtil;
 
 import java.awt.image.BufferedImage;

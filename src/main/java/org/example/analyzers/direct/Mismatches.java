@@ -1,4 +1,4 @@
-package org.example.mismatchMarker;
+package org.example.analyzers.direct;
 
 import org.example.analyzers.ExcludedAreas;
 
@@ -15,7 +15,7 @@ public class Mismatches {
     private final ArrayList<PixelPoint> mismatchedPixels;
 
     public Mismatches(ArrayList<PixelPoint> mismatchedPixels, int groupingRadius) {
-        this.totalMismatched = mismatchedPixels.size() -1;
+        this.totalMismatched = mismatchedPixels.size() - 1;
         this.mismatchedPixels = mismatchedPixels;
         this.neighboursMatrix = generateNeighboursMatrix(groupingRadius);
     }

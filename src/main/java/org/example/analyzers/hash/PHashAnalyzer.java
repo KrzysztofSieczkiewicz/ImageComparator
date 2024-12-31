@@ -1,4 +1,4 @@
-package org.example.analyzers;
+package org.example.analyzers.hash;
 
 import org.example.config.HashComparatorConfig;
 import org.example.utils.accessor.ImageAccessor;
@@ -8,6 +8,7 @@ import org.example.utils.HashUtil;
 import java.awt.image.BufferedImage;
 import java.util.BitSet;
 
+// TODO: research pHash and add all necessary steps to have this as a complete method
 public class PHashAnalyzer {
     private final int size;
     private final int reducedSize;
@@ -24,7 +25,7 @@ public class PHashAnalyzer {
         int hammingDistance = HashUtil.calculateHammingDistance(actualHash, checkedHash);
         double similarity = HashUtil.calculateSimilarity(hammingDistance, reducedSize);
     }
-    
+
     /**
      * Computes pHash representing provided image. Hash size depends on configuration (reducedSize squared)
      * Hashing is performed in steps:
