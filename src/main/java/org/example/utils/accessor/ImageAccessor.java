@@ -67,6 +67,13 @@ public interface ImageAccessor {
     int[][] getPixels();
 
     /**
+     * Returns a 1D array of RGB values representing the entire image. Uses TYPE_INT_ARGB color model
+     *
+     * @return a 1D array of ARGB integers of the entire image
+     */
+    int[] getPixelsArray();
+
+    /**
      * Overwrites pixel data under 1D array index
      * @param index image 1D array index
      * @param a alpha value

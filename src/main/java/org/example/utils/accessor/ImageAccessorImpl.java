@@ -66,6 +66,22 @@ public abstract class ImageAccessorImpl implements ImageAccessor {
     }
 
     /**
+     * Returns RGB values for an entire image.
+     *
+     * @return 1D array of ARGB integers for the entire image
+     */
+    @Override
+    public int[] getPixelsArray() {
+        int[] pixels = new int[width * height];
+
+        int index = 0;
+        for (int i = 0; i < width * height; i++) {
+            pixels[index++] = getPixel(i);
+        }
+        return pixels;
+    }
+
+    /**
      * Overwrites pixel data under 1D array index
      * @param index image 1D array index
      * @param a alpha value

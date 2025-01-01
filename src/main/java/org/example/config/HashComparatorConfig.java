@@ -1,19 +1,19 @@
 package org.example.config;
 
 public class HashComparatorConfig {
-    private int size = 64;
+    private int reducedImageSize = 64;
     private int reducedSize = 24;
 
-    public int getSize() {
-        return size;
+    public int getReducedImageSize() {
+        return reducedImageSize;
     }
 
     public int getReducedSize() {
         return reducedSize;
     }
 
-    public void setSize(int size) {
-        this.size = size;
+    public void setReducedImageSize(int reducedImageSize) {
+        this.reducedImageSize = reducedImageSize;
     }
 
     public void setReducedSize(int reducedSize) {

@@ -14,7 +14,7 @@ public class PHashAnalyzer {
     private final int reducedSize;
 
     public PHashAnalyzer(HashComparatorConfig config) {
-        this.size = config.getSize();
+        this.size = config.getReducedImageSize();
         this.reducedSize = config.getReducedSize();
     }
 
