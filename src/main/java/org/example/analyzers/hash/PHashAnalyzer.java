@@ -8,7 +8,7 @@ import org.example.utils.HashUtil;
 import java.awt.image.BufferedImage;
 import java.util.BitSet;
 
-// TODO: research pHash and add all necessary steps to have this as a complete method
+// TODO: research pHash and add all necessary steps to have this as a complete class
 public class PHashAnalyzer {
     private final int size;
     private final int reducedSize;
