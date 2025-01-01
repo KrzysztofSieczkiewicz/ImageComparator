@@ -89,7 +89,7 @@ public class ImageAccessorByte extends ImageAccessorImpl {
     }
 
     @Override
-    public int[][] getAlpha() {
+    public int[][] getAlphaMatrix() {
         int[][] imageAlpha = new int[width][height];
 
         if (!hasAlpha) return imageAlpha;

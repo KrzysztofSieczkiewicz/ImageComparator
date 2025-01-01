@@ -1,7 +1,9 @@
 package org.example;
 
+import org.example.analyzers.hash.AHashAnalyzer;
 import org.example.analyzers.hash.PHashAnalyzer;
 import org.example.config.HashComparatorConfig;
+import org.example.utils.HashUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -18,9 +20,18 @@ public class Main {
         BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
 
         long start = System.nanoTime();
-        HashComparatorConfig config = new HashComparatorConfig();
-        new PHashAnalyzer(config).compare(actualImage, checkedImage);
+        AHashAnalyzer analyzer = new AHashAnalyzer(64);
+        var hash1 = analyzer.aHash(actualImage);
+        var hash2 = analyzer.aHash(checkedImage);
+
+        int hammingDistance = HashUtil.calculateHammingDistance(hash1, hash2);
+        double similarity = HashUtil.calculateSimilarity(hammingDistance, 64);
+
+//        HashComparatorConfig config = new HashComparatorConfig();
+//        double similarity = new PHashAnalyzer(config).compare(actualImage, checkedImage);
         long end = System.nanoTime();
+
+        System.out.println("SIMILARITY: " + similarity);
 
         System.out.println("Time taken to compare: " + (end-start) + "ns");
 

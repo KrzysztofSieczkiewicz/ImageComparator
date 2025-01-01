@@ -18,12 +18,12 @@ public class PHashAnalyzer {
         this.reducedSize = config.getReducedSize();
     }
 
-    public void compare(BufferedImage actual, BufferedImage expected) {
+    public double compare(BufferedImage actual, BufferedImage expected) {
         BitSet actualHash = getImageHash(actual, size,size, reducedSize);
         BitSet checkedHash = getImageHash(expected, size,size, reducedSize);
 
         int hammingDistance = HashUtil.calculateHammingDistance(actualHash, checkedHash);
-        double similarity = HashUtil.calculateSimilarity(hammingDistance, reducedSize);
+        return HashUtil.calculateSimilarity(hammingDistance, reducedSize);
     }
 
     /**
@@ -48,7 +48,7 @@ public class PHashAnalyzer {
         img = ImageUtil.greyscale(img);
 
         ImageAccessor imageAccessor = ImageAccessor.create(img);
-        int[][] blueValues = imageAccessor.getBlue();
+        int[][] blueValues = imageAccessor.getBlueMatrix();
 
         double[][] freqDomainValues = HashUtil.generateFrequencyDomain(blueValues);
         double total = 0.0;

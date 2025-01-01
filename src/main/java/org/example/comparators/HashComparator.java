@@ -4,6 +4,8 @@ import org.example.config.HashComparatorConfig;
 
 import java.awt.image.BufferedImage;
 
+// TODO: hashing requires creating greyscale
+//  when You're using accessor getPixels - check if they read proper greyscale intensity
 public class HashComparator {
     private final HashComparatorConfig config;
 

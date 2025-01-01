@@ -119,7 +119,14 @@ public interface ImageAccessor {
      *
      * @return Alpha values (or null if Alpha is not supported in the image format)
      */
-    int[][] getAlpha();
+    int[][] getAlphaMatrix();
+
+    /**
+     * Returns a 1D array of alpha values
+     *
+     * @return a 1D array of alpha integers for the entire image
+     */
+    int[] getAlphaArray();
 
     /**
      * Sets the alpha channel value under given 1D array index
@@ -163,7 +170,14 @@ public interface ImageAccessor {
      *
      * @return Red values (int32) array of the pixel
      */
-    int[][] getRed();
+    int[][] getRedMatrix();
+
+    /**
+     * Returns a 1D array of red values
+     *
+     * @return a 1D array of red integers for the entire image
+     */
+    int[] getRedArray();
 
     /**
      * Sets the red channel value under given 1D array index
@@ -207,7 +221,14 @@ public interface ImageAccessor {
      *
      * @return Green values (int32) array of the pixel
      */
-    int[][] getGreen();
+    int[][] getGreenMatrix();
+
+    /**
+     * Returns a 1D array of green values
+     *
+     * @return a 1D array of green integers for the entire image
+     */
+    int[] getGreenArray();
 
     /**
      * Sets the green channel value under given 1D array index
@@ -251,7 +272,14 @@ public interface ImageAccessor {
      *
      * @return Blue values (int32) array of the pixel
      */
-    int[][] getBlue();
+    int[][] getBlueMatrix();
+
+    /**
+     * Returns a 1D array of blue values
+     *
+     * @return a 1D array of blue integers for the entire image
+     */
+    int[] getBlueArray();
 
     /**
      * Sets the blue channel value under given 1D array index
