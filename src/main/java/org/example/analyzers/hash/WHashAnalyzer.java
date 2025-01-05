@@ -9,7 +9,7 @@ import java.util.BitSet;
 public class WHashAnalyzer {
 
 
-    public WHashAnalyzer(int size) {
+    public WHashAnalyzer() {
     }
 
 
@@ -18,50 +18,74 @@ public class WHashAnalyzer {
 
         ImageAccessor accessor = ImageAccessor.create(greyscaled);
 
-        return new BitSet();
+        int[][] imageMatrix = accessor.getBlueMatrix();
+        int[][] transformedMatrix = calculateHaarWaveletTransform(imageMatrix);
+
+        int mean = calculateCoefficientsMean(transformedMatrix);
+
+        BitSet hash = new BitSet();
+        int bitIndex = 0;
+        for (int[] row : transformedMatrix) {
+            for (int coeff : row) {
+                if (coeff > mean) hash.set(bitIndex);
+                bitIndex++;
+            }
+        }
+
+        return hash;
     }
 
-    public void calculateHaarWaveletTransform(int[][] matrix) {
+    /**
+     * Performs Haar wavelet transformation on provided matrix.
+     *
+     * @param matrix containing pixel color data
+     * @return new matrix containing haar transformed data
+     */
+    private int[][] calculateHaarWaveletTransform(int[][] matrix) {
         int rows = matrix.length;
         int cols = matrix[0].length;
 
-        int[][] temp = new int[rows][cols];
+        int[][] transformedMatrix = new int[rows][cols];
 
         while (rows > 1 || cols > 1) {
+            if (cols > 1) {
+                for (int i = 0; i < rows; i++) {
+                    int halfColLen = cols / 2;
+                    for (int j = 0; j < halfColLen; j++) {
+                        transformedMatrix[i][j] = (matrix[i][2 * j] + matrix[i][2 * j + 1]) / 2;
+                        transformedMatrix[i][halfColLen + j] = (matrix[i][2 * j] - matrix[i][2 * j + 1]) / 2;
+                    }
+                }
+                cols /= 2;
+            }
+
             if (rows > 1) {
-                for (int i = 0; i < cols; i++) {
-                    transformRow(matrix, temp, rows, i);
+                for (int j = 0; j < cols; j++) {
+                    int halfRowLen = rows / 2;
+                    for (int i = 0; i < halfRowLen; i++) {
+                        transformedMatrix[i][j] = (matrix[2 * i][j] + matrix[2 * i + 1][j]) / 2;
+                        transformedMatrix[halfRowLen + i][j] = (matrix[2 * i][j] - matrix[2 * i + 1][j]) / 2;
+                    }
                 }
                 rows /= 2;
             }
+        }
 
-            if (cols > 1) {
-                for (int i = 0; i < rows; i++) {
-                    transformColumn(matrix, temp, cols, i);
-                }
-                cols /= 2;
-                cols /= 2;
+        return transformedMatrix;
+    }
+
+    private int calculateCoefficientsMean(int[][] matrix) {
+        double sum = 0;
+        int count = 0;
+        for (int[] row : matrix) {
+            for (int value : row) {
+                sum += value;
+                count++;
             }
         }
 
+        return (int) (sum / count);
     }
 
-    private void transformRow(int[][] matrix, int[][] temp, int rowLen, int rowIndex) {
-        int halfRowLen = rowLen / 2;
-
-        for (int j = 0; j < halfRowLen; j++) {
-            temp[rowIndex][j] = (matrix[rowIndex][2 * j] + matrix[rowIndex][2 * j + 1]) / 2; // Approximation
-            temp[rowIndex][halfRowLen + j] = (matrix[rowIndex][2 * j] - matrix[rowIndex][2 * j + 1]) / 2; // Detail
-        }
-    }
-
-    private void transformColumn(int[][] matrix, int[][] temp, int colLen, int colIndex) {
-        int halfColLen = colLen / 2;
-
-        for (int i = 0; i < halfColLen; i++) {
-            temp[i][colIndex] = (matrix[2 * i][colIndex] + matrix[2 * i + 1][colIndex]) / 2; // Approximation
-            temp[halfColLen + i][colIndex] = (matrix[2 * i][colIndex] - matrix[2 * i + 1][colIndex]) / 2; // Detail
-        }
-    }
 
 }

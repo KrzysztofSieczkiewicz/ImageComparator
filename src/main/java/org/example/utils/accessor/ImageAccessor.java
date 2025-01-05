@@ -115,16 +115,12 @@ public interface ImageAccessor {
     int getAlpha(int x, int y);
 
     /**
-     * Gets the alpha channel of the entire image mapped to a 2d array representing image pixel coordinates
-     *
-     * @return Alpha values (or null if Alpha is not supported in the image format)
+     * Retrieves all pixels alpha channel value represented as a 2D array
      */
     int[][] getAlphaMatrix();
 
     /**
-     * Returns a 1D array of alpha values
-     *
-     * @return a 1D array of alpha integers for the entire image
+     * Retrieves all pixels alpha values represented as an 1D array
      */
     int[] getAlphaArray();
 
@@ -166,16 +162,12 @@ public interface ImageAccessor {
     int getRed(int x, int y);
 
     /**
-     * Gets the red channel of the entire image mapped to a 2d array representing image pixel coordinates
-     *
-     * @return Red values (int32) array of the pixel
+     * Retrieves all pixels red channel value represented as a 2D array
      */
     int[][] getRedMatrix();
 
     /**
-     * Returns a 1D array of red values
-     *
-     * @return a 1D array of red integers for the entire image
+     * Retrieves all pixels red values represented as an 1D array
      */
     int[] getRedArray();
 
@@ -217,16 +209,12 @@ public interface ImageAccessor {
     int getGreen(int x, int y);
 
     /**
-     * Gets the green channel of the entire image mapped to a 2d array representing image pixel coordinates
-     *
-     * @return Green values (int32) array of the pixel
+     * Retrieves all pixels green channel value represented as a 2D array
      */
     int[][] getGreenMatrix();
 
     /**
-     * Returns a 1D array of green values
-     *
-     * @return a 1D array of green integers for the entire image
+     * Retrieves all pixels green channel values represented as an 1D array
      */
     int[] getGreenArray();
 
@@ -268,16 +256,12 @@ public interface ImageAccessor {
     int getBlue(int x, int y);
 
     /**
-     * Gets the blue channel of the entire image mapped to a 2d array representing image pixel coordinates
-     *
-     * @return Blue values (int32) array of the pixel
+     * Retrieves all pixels blue channel value represented as a 2D array
      */
     int[][] getBlueMatrix();
 
     /**
-     * Returns a 1D array of blue values
-     *
-     * @return a 1D array of blue integers for the entire image
+     * Retrieves all pixels blue channel values represented as an 1D array
      */
     int[] getBlueArray();
 

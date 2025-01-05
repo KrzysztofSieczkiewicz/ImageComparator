@@ -24,7 +24,7 @@ public class DHashAnalyzer {
         int length = values.length;
 
         BitSet hash = new BitSet(length);
-        for (int i = 0; i < length-1; i++) {
+        for (int i = 0; i < length; i++) {
             hash.set(i, values[i] >= values[i+1]);
         }
 
