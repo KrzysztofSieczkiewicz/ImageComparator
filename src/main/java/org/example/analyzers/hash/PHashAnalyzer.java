@@ -19,32 +19,28 @@ public class PHashAnalyzer {
     }
 
     public double compare(BufferedImage actual, BufferedImage expected) {
-        BitSet actualHash = getImageHash(actual, size,size, reducedSize);
-        BitSet checkedHash = getImageHash(expected, size,size, reducedSize);
+        BitSet actualHash = pHash(actual);
+        BitSet checkedHash = pHash(expected);
 
         int hammingDistance = HashUtil.calculateHammingDistance(actualHash, checkedHash);
         return HashUtil.calculateSimilarity(hammingDistance, reducedSize);
     }
 
     /**
-     * Computes pHash representing provided image. Hash size depends on configuration (reducedSize squared)
+     * Computes pHash representing provided image.
      * Hashing is performed in steps:
      * 1. Resize image to smaller size </p>
      * 2. Covert image to greyscale </p>
      * 3. Calculate discrete frequency values for the image </p>
      * 4. Calculate average values for image based on comparison size </p>
      * (the closer comparisonSize is to the imageSize, the more detailed comparison is) </p>
-     * 5. Iterate through comparison matrix and set bytes values depending on their value
-     * in relation to average that was calculated in step 4. </p>
+     * 5. Iterate through comparison matrix and set hash bytes if value exceeds calculated mean
      *
      * @param img BufferedImage to be hashed
-     * @param targetWidth width to which image will be scaled before being hashed
-     * @param targetHeight height to which image will be scaled before being hashed
-     * @param comparisonSize hash matrix size
      * @return BitSet containing image hash
      */
-    private BitSet getImageHash(BufferedImage img, int targetWidth, int targetHeight, int comparisonSize) {
-        img = ImageUtil.resize(img, targetWidth, targetHeight);
+    public BitSet pHash(BufferedImage img) {
+        img = ImageUtil.resize(img, size, size);
         img = ImageUtil.greyscale(img);
 
         ImageAccessor imageAccessor = ImageAccessor.create(img);
@@ -52,19 +48,19 @@ public class PHashAnalyzer {
 
         double[][] freqDomainValues = HashUtil.generateFrequencyDomain(blueValues);
         double total = 0.0;
-        for (int x=0; x<comparisonSize; x++) {
-            for (int y=0; y<comparisonSize; y++) {
+        for (int x=0; x<reducedSize; x++) {
+            for (int y=0; y<reducedSize; y++) {
                 total += freqDomainValues[x][y];
             }
         }
         total -= freqDomainValues[0][0];
-        double average = total/ (double) (comparisonSize*comparisonSize -1);
+        double average = total/ (double) (reducedSize*reducedSize -1);
 
         BitSet bits = new BitSet();
-        for (int x=0; x<comparisonSize; x++) {
-            for (int y=0; y<comparisonSize; y++) {
+        for (int x=0; x<reducedSize; x++) {
+            for (int y=0; y<reducedSize; y++) {
                 bits.set(
-                        (y * comparisonSize) + x,
+                        (y * reducedSize) + x,
                         freqDomainValues[x][y] > average
                 );
             }

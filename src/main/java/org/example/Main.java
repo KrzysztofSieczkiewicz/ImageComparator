@@ -3,6 +3,7 @@ package org.example;
 import org.example.analyzers.hash.AHashAnalyzer;
 import org.example.analyzers.hash.DHashAnalyzer;
 import org.example.analyzers.hash.PHashAnalyzer;
+import org.example.analyzers.hash.WHashAnalyzer;
 import org.example.config.HashComparatorConfig;
 import org.example.utils.HashUtil;
 
@@ -21,12 +22,13 @@ public class Main {
         BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
 
         long start = System.nanoTime();
-        DHashAnalyzer analyzer = new DHashAnalyzer(64);
-        var hash1 = analyzer.dHash(actualImage);
-        var hash2 = analyzer.dHash(checkedImage);
+        HashComparatorConfig config = new HashComparatorConfig();
+        WHashAnalyzer analyzer = new WHashAnalyzer();
+        var hash1 = analyzer.wHash(actualImage);
+        var hash2 = analyzer.wHash(checkedImage);
 
         int hammingDistance = HashUtil.calculateHammingDistance(hash1, hash2);
-        double similarity = HashUtil.calculateSimilarity(hammingDistance, 64);
+        double similarity = HashUtil.calculateSimilarity(hammingDistance, hash1.size());
 
 //        HashComparatorConfig config = new HashComparatorConfig();
 //        double similarity = new PHashAnalyzer(config).compare(actualImage, checkedImage);

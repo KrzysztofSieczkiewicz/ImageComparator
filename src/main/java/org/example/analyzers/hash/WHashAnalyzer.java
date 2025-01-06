@@ -8,52 +8,41 @@ import java.util.BitSet;
 
 public class WHashAnalyzer {
 
-
-    public WHashAnalyzer() {
-    }
-
-
+    /**
+     * Computes wHash representing provided image.
+     * Hashing is performed in steps:
+     * 1. Covert image to greyscale </p>
+     * 2. Perform Haar wavelet transformation </p>
+     * 3. Calculate average values for wavelet coefficients </p>
+     * 4. Iterate through comparison matrix and set hash bytes if the coefficient exceeds mean
+     *
+     * @param image BufferedImage to be hashed
+     * @return BitSet containing image hash
+     */
     public BitSet wHash(BufferedImage image) {
         BufferedImage greyscaled = ImageUtil.greyscale(image);
-
         ImageAccessor accessor = ImageAccessor.create(greyscaled);
 
         int[][] imageMatrix = accessor.getBlueMatrix();
-        int[][] transformedMatrix = calculateHaarWaveletTransform(imageMatrix);
+        performHaarWaveletTransform(imageMatrix);
 
-        int mean = calculateCoefficientsMean(transformedMatrix);
+        int mean = calculateCoefficientsMean(imageMatrix);
 
-        BitSet hash = new BitSet();
-        int bitIndex = 0;
-        for (int[] row : transformedMatrix) {
-            for (int coeff : row) {
-                if (coeff > mean) hash.set(bitIndex);
-                bitIndex++;
-            }
-        }
-
-        return hash;
+        return calculateHash(imageMatrix, mean);
     }
 
-    /**
-     * Performs Haar wavelet transformation on provided matrix.
-     *
-     * @param matrix containing pixel color data
-     * @return new matrix containing haar transformed data
-     */
-    private int[][] calculateHaarWaveletTransform(int[][] matrix) {
+    private void performHaarWaveletTransform(int[][] matrix) {
         int rows = matrix.length;
         int cols = matrix[0].length;
-
-        int[][] transformedMatrix = new int[rows][cols];
 
         while (rows > 1 || cols > 1) {
             if (cols > 1) {
                 for (int i = 0; i < rows; i++) {
-                    int halfColLen = cols / 2;
-                    for (int j = 0; j < halfColLen; j++) {
-                        transformedMatrix[i][j] = (matrix[i][2 * j] + matrix[i][2 * j + 1]) / 2;
-                        transformedMatrix[i][halfColLen + j] = (matrix[i][2 * j] - matrix[i][2 * j + 1]) / 2;
+                    for (int j = 0; j < cols / 2; j++) {
+                        int sum = matrix[i][2 * j] + matrix[i][2 * j + 1];
+                        int diff = matrix[i][2 * j] - matrix[i][2 * j + 1];
+                        matrix[i][j] = sum / 2;
+                        matrix[i][cols / 2 + j] = diff / 2;
                     }
                 }
                 cols /= 2;
@@ -61,31 +50,50 @@ public class WHashAnalyzer {
 
             if (rows > 1) {
                 for (int j = 0; j < cols; j++) {
-                    int halfRowLen = rows / 2;
-                    for (int i = 0; i < halfRowLen; i++) {
-                        transformedMatrix[i][j] = (matrix[2 * i][j] + matrix[2 * i + 1][j]) / 2;
-                        transformedMatrix[halfRowLen + i][j] = (matrix[2 * i][j] - matrix[2 * i + 1][j]) / 2;
+                    for (int i = 0; i < rows / 2; i++) {
+                        int sum = matrix[2 * i][j] + matrix[2 * i + 1][j];
+                        int diff = matrix[2 * i][j] - matrix[2 * i + 1][j];
+                        matrix[i][j] = sum / 2;
+                        matrix[rows / 2 + i][j] = diff / 2;
                     }
                 }
                 rows /= 2;
             }
         }
-
-        return transformedMatrix;
     }
 
     private int calculateCoefficientsMean(int[][] matrix) {
         double sum = 0;
         int count = 0;
-        for (int[] row : matrix) {
-            for (int value : row) {
-                sum += value;
+
+        int size = matrix.length / 2;
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                sum += matrix[i][j];
                 count++;
             }
         }
 
         return (int) (sum / count);
     }
+
+    private BitSet calculateHash(int[][] matrix, int mean) {
+        BitSet hash = new BitSet();
+        int bitIndex = 0;
+
+        int size = matrix.length / 2;
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (matrix[i][j] > mean) {
+                    hash.set(bitIndex);
+                }
+                bitIndex++;
+            }
+        }
+
+        return hash;
+    }
+
 
 
 }
