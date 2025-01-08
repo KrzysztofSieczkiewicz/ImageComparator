@@ -15,6 +15,16 @@ public class AHashAnalyzer {
     }
 
 
+    /**
+     * Computes aHash representing provided image.
+     * Hashing is performed in steps:
+     * 1. Convert image to greyscale </p>
+     * 2. Calculate average pixel intensity </p>
+     * 3. Iterate through all pixels of the resized image. If value exceeds average, set hash bit to 1 </p>
+     *
+     * @param image to hash
+     * @return BitSet containing image hash
+     */
     public BitSet aHash(BufferedImage image) {
         BufferedImage resized = ImageUtil.resize(image, reducedImageSize, reducedImageSize);
         BufferedImage greyscaled = ImageUtil.greyscale(resized);

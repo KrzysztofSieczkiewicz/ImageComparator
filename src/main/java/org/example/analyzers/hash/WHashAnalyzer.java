@@ -11,12 +11,12 @@ public class WHashAnalyzer {
     /**
      * Computes wHash representing provided image.
      * Hashing is performed in steps:
-     * 1. Covert image to greyscale </p>
+     * 1. Convert image to greyscale </p>
      * 2. Perform Haar wavelet transformation </p>
      * 3. Calculate average values for wavelet coefficients </p>
      * 4. Iterate through comparison matrix and set hash bytes if the coefficient exceeds mean
      *
-     * @param image BufferedImage to be hashed
+     * @param image to hash
      * @return BitSet containing image hash
      */
     public BitSet wHash(BufferedImage image) {
@@ -35,6 +35,7 @@ public class WHashAnalyzer {
         int rows = matrix.length;
         int cols = matrix[0].length;
 
+        int iterations = 2;
         while (rows > 1 || cols > 1) {
             if (cols > 1) {
                 for (int i = 0; i < rows; i++) {
@@ -78,12 +79,13 @@ public class WHashAnalyzer {
     }
 
     private BitSet calculateHash(int[][] matrix, int mean) {
-        BitSet hash = new BitSet();
-        int bitIndex = 0;
+        int hashSize = matrix.length / 2;
 
-        int size = matrix.length / 2;
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
+        BitSet hash = new BitSet(hashSize * hashSize);
+
+        int bitIndex = 0;
+        for (int i = 0; i < hashSize; i++) {
+            for (int j = 0; j < hashSize; j++) {
                 if (matrix[i][j] > mean) {
                     hash.set(bitIndex);
                 }

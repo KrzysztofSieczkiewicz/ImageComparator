@@ -15,24 +15,25 @@ public class DHashAnalyzer {
 
 
     /**
-     * Computes pHash representing provided image.
+     * Computes dHash representing provided image.
      * Hashing is performed in steps:
-     * 1. Resize image to smaller size </p>
-     * 2. Covert image to greyscale </p>
-     * 3. Calculate difference between horizontally neighbouring pixels </p>
-     * 4. if difference is > 1 set hash bit to 1. </p>
+     * 1. Convert image to greyscale </p>
+     * 2. Calculate difference between horizontally neighbouring pixels </p>
+     * 3. if difference is > 1 set hash bit to 1. </p>
      *
+     * @param image to hash
      * @return BitSet containing image hash
      */
     public BitSet dHash(BufferedImage image) {
-        BufferedImage resized = ImageUtil.resize(image, reducedImageSize+1, reducedImageSize);
+        int width = reducedImageSize + 1;
+        int height = reducedImageSize;
+
+        BufferedImage resized = ImageUtil.resize(image, width, height);
         BufferedImage greyscaled = ImageUtil.greyscale(resized);
 
         ImageAccessor accessor = ImageAccessor.create(greyscaled);
 
         int[] values = accessor.getBlueArray();
-        int width = reducedImageSize + 1;
-        int height = reducedImageSize;
 
         BitSet hash = new BitSet(reducedImageSize * reducedImageSize);
         int index = 0;
