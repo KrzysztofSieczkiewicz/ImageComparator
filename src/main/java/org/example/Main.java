@@ -6,6 +6,7 @@ import org.example.analyzers.hash.PHashAnalyzer;
 import org.example.analyzers.hash.WHashAnalyzer;
 import org.example.config.HashComparatorConfig;
 import org.example.utils.HashUtil;
+import org.example.utils.ImageUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -20,7 +21,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
         BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
-
+        
         long start = System.nanoTime();
         HashComparatorConfig config = new HashComparatorConfig();
         WHashAnalyzer analyzer = new WHashAnalyzer();

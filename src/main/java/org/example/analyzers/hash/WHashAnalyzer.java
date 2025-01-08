@@ -93,7 +93,4 @@ public class WHashAnalyzer {
 
         return hash;
     }
-
-
-
 }
