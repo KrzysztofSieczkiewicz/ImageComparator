@@ -1,4 +1,4 @@
-package org.example.mismatchMarker;
+package org.example.analyzers.direct;
 
 import org.example.utils.accessor.ImageAccessor;
 import org.example.analyzers.ExcludedAreas;

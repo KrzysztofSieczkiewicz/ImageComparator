@@ -66,6 +66,22 @@ public abstract class ImageAccessorImpl implements ImageAccessor {
     }
 
     /**
+     * Returns RGB values for an entire image.
+     *
+     * @return 1D array of ARGB integers for the entire image
+     */
+    @Override
+    public int[] getPixelsArray() {
+        int[] pixels = new int[width * height];
+
+        int index = 0;
+        for (int i = 0; i < width * height; i++) {
+            pixels[index++] = getPixel(i);
+        }
+        return pixels;
+    }
+
+    /**
      * Overwrites pixel data under 1D array index
      * @param index image 1D array index
      * @param a alpha value
@@ -109,7 +125,7 @@ public abstract class ImageAccessorImpl implements ImageAccessor {
     }
 
     @Override
-    public int[][] getAlpha() {
+    public int[][] getAlphaMatrix() {
         int[][] imageAlpha = new int[width][height];
 
         if (!hasAlpha) return imageAlpha;
@@ -118,6 +134,15 @@ public abstract class ImageAccessorImpl implements ImageAccessor {
             int x = i % width;
             int y = i / width;
             imageAlpha[x][y] = getAlpha(x,y);
+        }
+        return imageAlpha;
+    }
+
+    @Override
+    public int[] getAlphaArray() {
+        int[] imageAlpha = new int[width*height];
+        for (int i=0; i<width*height; i++) {
+            imageAlpha[i] = getAlpha(i);
         }
         return imageAlpha;
     }
@@ -137,12 +162,21 @@ public abstract class ImageAccessorImpl implements ImageAccessor {
     }
 
     @Override
-    public final int[][] getRed() {
+    public final int[][] getRedMatrix() {
         int[][] imageRed = new int[width][height];
         for (int i=0; i<width*height; i++) {
             int x = i % width;
             int y = i / width;
             imageRed[x][y] = getRed(x,y);
+        }
+        return imageRed;
+    }
+
+    @Override
+    public int[] getRedArray() {
+        int[] imageRed = new int[width*height];
+        for (int i=0; i<width*height; i++) {
+            imageRed[i] = getRed(i);
         }
         return imageRed;
     }
@@ -162,12 +196,21 @@ public abstract class ImageAccessorImpl implements ImageAccessor {
     }
 
     @Override
-    public final int[][] getGreen() {
+    public final int[][] getGreenMatrix() {
         int[][] imageGreen = new int[width][height];
         for (int i=0; i<width*height; i++) {
             int x = i % width;
             int y = i / width;
             imageGreen[x][y] = getGreen(x,y);
+        }
+        return imageGreen;
+    }
+
+    @Override
+    public int[] getGreenArray() {
+        int[] imageGreen = new int[width*height];
+        for (int i=0; i<width*height; i++) {
+            imageGreen[i] = getGreen(i);
         }
         return imageGreen;
     }
@@ -187,12 +230,21 @@ public abstract class ImageAccessorImpl implements ImageAccessor {
     }
 
     @Override
-    public final int[][] getBlue() {
+    public final int[][] getBlueMatrix() {
         int[][] imageBlue = new int[width][height];
         for (int i=0; i<width*height; i++) {
             int x = i % width;
             int y = i / width;
             imageBlue[x][y] = getBlue(x,y);
+        }
+        return imageBlue;
+    }
+
+    @Override
+    public int[] getBlueArray() {
+        int[] imageBlue = new int[width*height];
+        for (int i=0; i<width*height; i++) {
+            imageBlue[i] = getBlue(i);
         }
         return imageBlue;
     }

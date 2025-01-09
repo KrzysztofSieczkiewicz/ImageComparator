@@ -72,13 +72,24 @@ public class ImageAccessorByte extends ImageAccessorImpl {
     }
 
     @Override
+    public int[] getPixelsArray() {
+        int[] pixels = new int[width * height];
+
+        int index = 0;
+        for (int i = 0; i < imageDataBytes.length; i = i + bytesPerColor) {
+            pixels[index++] = getPixel(i);
+        }
+        return pixels;
+    }
+
+    @Override
     public int getAlpha(int index) {
         if (!hasAlpha) return 255;
         return imageDataBytes[index] & 0xFF;
     }
 
     @Override
-    public int[][] getAlpha() {
+    public int[][] getAlphaMatrix() {
         int[][] imageAlpha = new int[width][height];
 
         if (!hasAlpha) return imageAlpha;

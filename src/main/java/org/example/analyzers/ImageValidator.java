@@ -1,10 +1,13 @@
 package org.example.analyzers;
 
 import org.example.config.DirectComparatorConfig;
-import org.example.mismatchMarker.Mismatches;
+import org.example.analyzers.direct.Mismatches;
 
 import java.awt.image.BufferedImage;
 
+// TODO
+//  decide later - as for now this class seems to have potential to be shared across different comparators/analyzers
+//  and that might be unwanted connection - if not - convert the class to util
 public class ImageValidator {
     final int mismatchesPercentageThreshold;
 
@@ -19,6 +22,7 @@ public class ImageValidator {
         }
     }
 
+    // TODO: move this to the DirectAnalyzer as private method?
     public boolean isBelowMismatchThreshold(BufferedImage actualImage, Mismatches mismatches) {
         int imageSize = actualImage.getWidth() * actualImage.getHeight();
         int mismatchesCount = mismatches.getMismatchesCount();

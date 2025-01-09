@@ -1,11 +1,11 @@
 package org.example.comparators;
 
-import org.example.analyzers.DirectAnalyzer;
+import org.example.analyzers.direct.DirectAnalyzer;
 import org.example.analyzers.ExcludedAreas;
-import org.example.mismatchMarker.Mismatches;
+import org.example.analyzers.direct.Mismatches;
 import org.example.analyzers.ImageValidator;
 import org.example.config.DirectComparatorConfig;
-import org.example.mismatchMarker.ImageMarker;
+import org.example.analyzers.direct.ImageMarker;
 import org.example.utils.ImageUtil;
 
 import java.awt.image.BufferedImage;
@@ -37,10 +37,8 @@ public class DirectComparator {
         ImageValidator imageValidator = new ImageValidator(config);
         ImageMarker imageMarker = new ImageMarker(config);
 
-        // VALIDATE IMAGE SIZES
         imageValidator.enforceImagesSize(actualImage, checkedImage);
 
-        // COMPARE
         Mismatches mismatches = analyzer.compare(actualImage, checkedImage);
         mismatches.excludeResults(excludedAreas);
 
@@ -52,7 +50,6 @@ public class DirectComparator {
             resultsImage = imageMarker.mark(resultsImage, excludedAreas);
         }
 
-        // VALIDATE MISMATCH THRESHOLD
         boolean isMatching = imageValidator.isBelowMismatchThreshold(actualImage, mismatches);
 
         return new DirectComparisonResult(
@@ -74,10 +71,8 @@ public class DirectComparator {
         ImageValidator imageValidator = new ImageValidator(config);
         ImageMarker imageMarker = new ImageMarker(config);
 
-        // VALIDATE IMAGE SIZES
         imageValidator.enforceImagesSize(actualImage, checkedImage);
 
-        // COMPARE
         Mismatches mismatches = analyzer.compareEveryNth(actualImage, checkedImage);
         mismatches.excludeResults(excludedAreas);
 
@@ -89,7 +84,6 @@ public class DirectComparator {
             resultsImage = imageMarker.mark(resultsImage, excludedAreas);
         }
 
-        // VALIDATE MISMATCH THRESHOLD
         boolean isMatching = imageValidator.isBelowMismatchThreshold(actualImage, mismatches);
 
         return new DirectComparisonResult(

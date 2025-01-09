@@ -2,9 +2,11 @@ package org.example.utils;
 
 import org.example.utils.accessor.ImageAccessor;
 
+import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.color.ColorSpace;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 
 public class ImageUtil {
 
@@ -34,16 +36,17 @@ public class ImageUtil {
     }
 
     /**
-     * Converts image to greyscale color space using ColorConvertOp
+     * Converts image to greyscale color space using TYPE_BYTE_GRAY
      * @param image BufferedImage to be converted
      * @return new BuffedImage containing image in greyscale color space
      */
     public static BufferedImage greyscale(BufferedImage image) {
-        ColorConvertOp colorConvert = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), null);
+        BufferedImage greyscaleImg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
 
-        BufferedImage greyscaleImg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics g = greyscaleImg.getGraphics();
+        g.drawImage(image, 0, 0, null);
+        g.dispose();
 
-        colorConvert.filter(image, greyscaleImg);
         return greyscaleImg;
     }
 
