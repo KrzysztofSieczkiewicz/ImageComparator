@@ -24,32 +24,7 @@ public class Main {
 
         long start = System.nanoTime();
 
-//        HashComparatorConfig config = new HashComparatorConfig();
-//        PHashAnalyzer analyzer = new PHashAnalyzer(config);
-//        var hash1 = analyzer.pHash(actualImage);
-//        var hash2 = analyzer.pHash(checkedImage);
-//
-//        System.out.println("HASH LENGTH: " + hash1.size());
-//
-//        int hammingDistance = HashUtil.calculateHammingDistance(hash1, hash2);
-//        double similarity = HashUtil.calculateSimilarity(hammingDistance, hash1.size());
-
-//        HashComparatorConfig config = new HashComparatorConfig();
-//        double similarity = new PHashAnalyzer(config).compare(actualImage, checkedImage);
         long end = System.nanoTime();
-
-        //System.out.println("SIMILARITY: " + similarity);
-
         System.out.println("Time taken to compare: " + (end-start) + "ns");
-
-//        DirectComparatorConfig directComparatorConfig = DirectComparatorConfig.defaultConfig();
-//
-//        ExcludedAreas excludedAreas = new ExcludedAreas();
-//        excludedAreas.excludeArea(new Rectangle(0,0,50,1000));
-//        excludedAreas.includeArea(new Rectangle(5,5, 40,990));
-//
-//        DirectComparisonResult result = new DirectComparator(config).compare(actualImage, checkedImage, excludedAres);
-//        File outputFile = new File("rectangle_output.png");
-//        ImageIO.write(result.getResultImage(), "png", outputFile);
     }
 }

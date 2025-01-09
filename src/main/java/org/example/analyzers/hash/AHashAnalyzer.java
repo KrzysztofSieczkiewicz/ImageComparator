@@ -7,13 +7,6 @@ import java.awt.image.BufferedImage;
 import java.util.BitSet;
 
 public class AHashAnalyzer {
-    private final int reducedImageSize;
-
-
-    public AHashAnalyzer(int reducedImageSize) {
-        this.reducedImageSize = reducedImageSize;
-    }
-
 
     /**
      * Computes aHash representing provided image.
@@ -26,14 +19,12 @@ public class AHashAnalyzer {
      * @return BitSet containing image hash
      */
     public BitSet aHash(BufferedImage image) {
-        BufferedImage resized = ImageUtil.resize(image, reducedImageSize, reducedImageSize);
-        BufferedImage greyscaled = ImageUtil.greyscale(resized);
-
+        BufferedImage greyscaled = ImageUtil.greyscale(image);
         ImageAccessor accessor = ImageAccessor.create(greyscaled);
 
         int[] values = accessor.getBlueArray();
-        int length = values.length;
         int averageValue = calculateAverage(values);
+        int length = values.length;
 
         BitSet hash = new BitSet(length);
         for (int i = 0; i < length; i++) {

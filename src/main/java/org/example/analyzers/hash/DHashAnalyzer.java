@@ -1,5 +1,6 @@
 package org.example.analyzers.hash;
 
+import org.example.config.HashComparatorConfig;
 import org.example.utils.ImageUtil;
 import org.example.utils.accessor.ImageAccessor;
 
@@ -7,12 +8,6 @@ import java.awt.image.BufferedImage;
 import java.util.BitSet;
 
 public class DHashAnalyzer {
-        private int reducedImageSize;
-
-    public DHashAnalyzer(int size) {
-        this.reducedImageSize = size;
-    }
-
 
     /**
      * Computes dHash representing provided image.
@@ -25,19 +20,16 @@ public class DHashAnalyzer {
      * @return BitSet containing image hash
      */
     public BitSet dHash(BufferedImage image) {
-        int width = reducedImageSize + 1;
-        int height = reducedImageSize;
+        int width = image.getWidth();
+        int height = image.getHeight();
 
-        BufferedImage resized = ImageUtil.resize(image, width, height);
-        BufferedImage greyscaled = ImageUtil.greyscale(resized);
-
+        BufferedImage greyscaled = ImageUtil.greyscale(image);
         ImageAccessor accessor = ImageAccessor.create(greyscaled);
 
         int[] values = accessor.getBlueArray();
+        BitSet hash = new BitSet(width * height);
 
-        BitSet hash = new BitSet(reducedImageSize * reducedImageSize);
         int index = 0;
-
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width - 1; x++) {
                 int current = values[y * width + x];

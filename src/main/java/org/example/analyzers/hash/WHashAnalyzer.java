@@ -8,6 +8,12 @@ import java.util.BitSet;
 
 public class WHashAnalyzer {
 
+    private final double hashSizeCoefficient;
+
+    public WHashAnalyzer(double hashSizeCoefficient) {
+        this.hashSizeCoefficient = hashSizeCoefficient;
+    }
+
     /**
      * Computes wHash representing provided image.
      * Hashing is performed in steps:
@@ -35,7 +41,6 @@ public class WHashAnalyzer {
         int rows = matrix.length;
         int cols = matrix[0].length;
 
-        int iterations = 2;
         while (rows > 1 || cols > 1) {
             if (cols > 1) {
                 for (int i = 0; i < rows; i++) {
@@ -79,7 +84,7 @@ public class WHashAnalyzer {
     }
 
     private BitSet calculateHash(int[][] matrix, int mean) {
-        int hashSize = matrix.length / 2;
+        int hashSize = (int) (matrix.length * hashSizeCoefficient);
 
         BitSet hash = new BitSet(hashSize * hashSize);
 

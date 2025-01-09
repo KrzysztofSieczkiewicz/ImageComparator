@@ -9,15 +9,11 @@ import java.util.Arrays;
 import java.util.BitSet;
 
 public class PHashAnalyzer {
-    private final int reducedSize;
-
-    public PHashAnalyzer(HashComparatorConfig config) {
-        this.reducedSize = config.getReducedSize();
-    }
 
     /**
      * Computes pHash representing provided image.
      * Hashing is performed in steps:
+     * 0. Resize image to square dimensions </p>
      * 1. Convert image to greyscale </p>
      * 2. Calculate discrete frequency values for the image </p>
      * 3. Calculate average values for image based on comparison size </p>
@@ -27,25 +23,28 @@ public class PHashAnalyzer {
      * @return BitSet containing image hash
      */
     public BitSet pHash(BufferedImage image) {
-        BufferedImage greyscaled = ImageUtil.greyscale(image);
+        BufferedImage resized = enforceImageSquareDimensions(image);
+        BufferedImage greyscaled = ImageUtil.greyscale(resized);
 
         ImageAccessor imageAccessor = ImageAccessor.create(greyscaled);
         int[][] blueValues = imageAccessor.getBlueMatrix();
 
         double[][] freqDomainValues = generateFrequencyDomain(blueValues);
         double total = -freqDomainValues[0][0];
-        for (int x=0; x<reducedSize; x++) {
-            for (int y=0; y<reducedSize; y++) {
+        int hashSize = image.getHeight();
+
+        for (int x = 0; x< hashSize; x++) {
+            for (int y = 0; y< hashSize; y++) {
                 total += freqDomainValues[x][y];
             }
         }
-        double average = total / (double) (reducedSize*reducedSize -1);
+        double average = total / (double) (hashSize * hashSize -1);
 
-        BitSet bits = new BitSet(reducedSize*reducedSize);
-        for (int x=0; x<reducedSize; x++) {
-            for (int y=0; y<reducedSize; y++) {
+        BitSet bits = new BitSet(hashSize * hashSize);
+        for (int x = 0; x< hashSize; x++) {
+            for (int y = 0; y< hashSize; y++) {
                 bits.set(
-                        (y * reducedSize) + x,
+                        (y * hashSize) + x,
                         freqDomainValues[x][y] > average
                 );
             }
@@ -96,5 +95,13 @@ public class PHashAnalyzer {
             }
         }
         return frequencies;
+    }
+
+    private BufferedImage enforceImageSquareDimensions(BufferedImage image) {
+        if(image.getWidth() == image.getHeight()) return image;
+
+        if (image.getWidth() > image.getHeight())
+            return ImageUtil.resize(image, image.getWidth(), image.getWidth());
+        return ImageUtil.resize(image, image.getHeight(), image.getHeight());
     }
 }
