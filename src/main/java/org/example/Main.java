@@ -1,12 +1,7 @@
 package org.example;
 
-import org.example.analyzers.hash.AHashAnalyzer;
-import org.example.analyzers.hash.DHashAnalyzer;
-import org.example.analyzers.hash.PHashAnalyzer;
-import org.example.analyzers.hash.WHashAnalyzer;
+import org.example.comparators.HashComparator;
 import org.example.config.HashComparatorConfig;
-import org.example.utils.HashUtil;
-import org.example.utils.ImageUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -23,6 +18,8 @@ public class Main {
         BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
 
         long start = System.nanoTime();
+
+        new HashComparator().comparePHash(actualImage, checkedImage);
 
         long end = System.nanoTime();
         System.out.println("Time taken to compare: " + (end-start) + "ns");
