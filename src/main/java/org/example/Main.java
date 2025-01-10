@@ -1,7 +1,6 @@
 package org.example;
 
-import org.example.comparators.HashComparator;
-import org.example.config.HashComparatorConfig;
+import org.example.analyzers.feature.SIFTAnalyzer;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -19,9 +18,10 @@ public class Main {
 
         long start = System.nanoTime();
 
-        new HashComparator().comparePHash(actualImage, checkedImage);
+        //new HashComparator().comparePHash(actualImage, checkedImage);
+        new SIFTAnalyzer().generateDoG(actualImage, checkedImage);
 
         long end = System.nanoTime();
-        System.out.println("Time taken to compare: " + (end-start) + "ns");
+        System.out.println("Time taken to calc DoG: " + (end-start) + "ns");
     }
 }
