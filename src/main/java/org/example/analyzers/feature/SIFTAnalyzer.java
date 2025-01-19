@@ -6,72 +6,101 @@ import org.example.utils.accessor.ImageAccessor;
 import java.awt.image.BufferedImage;
 
 public class SIFTAnalyzer {
+    // TODO - CURRENT: test if DoG is handling edge cases and if there are aliasing issues with image downscaling
+
+    // TODO: can be memory optimized by merging buildGaussianPyramid with buildDoGPyramid
+    //  that'd work by discarding each gaussian images after necessary dog is computed
 
     /**
      * When to stop creating octaves
      */
     int minImageSizeThreshold = 16;
 
+    /**
+     * How many scales should be generated per one octave
+     */
+    int scalesAmount = 3;
+
+    /**
+     * Base sigma value used for blurring
+     */
+    double baseSigma = 1.6;
+
+    /**
+     * Downsampling factor by which the image is reduced between octaves
+     */
+    int downsamplingFactor = 2;
 
 
     private void constructScaleSpace(BufferedImage image) {
-        // 1. Multiple Gaussian blur
-        double sigma1 = 1.0;
-        double sigma2 = 1.41;
+        // 0. Greyscale the image
+        BufferedImage greyscaleImage = ImageUtil.greyscale(image);
 
-        BufferedImage blurred1 = ImageUtil.gaussianBlur(image, sigma1);
-        BufferedImage blurred2 = ImageUtil.gaussianBlur(image, sigma2);
+        // 1. Octaves
+        int octavesAmount = calculateOctavesNum(greyscaleImage, minImageSizeThreshold, downsamplingFactor);
 
-        // 2. Difference of Gaussian
-        BufferedImage dog = generateDoG(blurred1, blurred2);
+        // 2. Scale intervals
+        double k = calculateScaleIntervals(scalesAmount);
 
-        // 3. Octaves
-        int octavesNo = calculateOctavesNum(image);
+        // 3. Build Gaussian Pyramid
+        BufferedImage[][] gaussianPyramid = buildGaussianPyramid(greyscaleImage, octavesAmount, scalesAmount, k, downsamplingFactor);
 
-        // 4. DoG Pyramid
+        // 4. DoG pyramid - to be replaced with just processing the gaussian pyramid instead
+        BufferedImage[][] dogPyramid = buildDoGPyramid(gaussianPyramid);
 
     }
-        private int calculateOctavesNum(BufferedImage image) {
+
+    private int calculateOctavesNum(BufferedImage image, int minSizeThreshold, int downsamplingFactor) {
         int currWidth = image.getWidth();
         int currHeight = image.getHeight();
 
         int octaves = 0;
-        while((currWidth/2 >= minImageSizeThreshold) && (currHeight/2 >= minImageSizeThreshold)) {
+        while((currWidth/downsamplingFactor >= minSizeThreshold) && (currHeight/downsamplingFactor >= minSizeThreshold)) {
             octaves++;
-            currWidth /= 2;
-            currHeight /= 2;
+            currWidth /= downsamplingFactor;
+            currHeight /= downsamplingFactor;
         }
 
         return octaves;
     }
 
-    private BufferedImage[][] generateDoGPyramid(BufferedImage baseImage, int octavesNum, int scalesNum, float sigma) {
-        BufferedImage image = ImageUtil.greyscale(baseImage);
+    private double calculateScaleIntervals(int scalesAmount) {
+        double p = 1d/scalesAmount;
+        return Math.pow(2, p);
+    }
+
+    private BufferedImage[][] buildGaussianPyramid(BufferedImage image, int octavesNum, int scalesNum, double scaleInterval, int downsamplingFactor) {
         BufferedImage[][] pyramid = new BufferedImage[octavesNum][];
 
         for (int octave=0; octave<octavesNum; octave++) {
-            BufferedImage[] gaussianImages = generateGaussianImages(image, scalesNum+3, sigma);
-
-            BufferedImage[] differenceImages = new BufferedImage[scalesNum+2];
-            for (int scale=0; scale<scalesNum+2; scale++) {
-                differenceImages[scale] = generateDoG(
-                        gaussianImages[scale+1],
-                        gaussianImages[scale] );
-            }
-
-            pyramid[octave] = differenceImages;
+            pyramid[octave] = generateGaussianScales(image, scalesNum, scaleInterval);
 
             image = ImageUtil.resize(
                     image,
-                    image.getWidth()/2,
-                    image.getHeight()/2 );
+                    image.getWidth()/downsamplingFactor,
+                    image.getHeight()/downsamplingFactor );
         }
-
 
         return pyramid;
     }
 
-    public BufferedImage generateDoG(BufferedImage first, BufferedImage second) {
+    private BufferedImage[][] buildDoGPyramid(BufferedImage[][] gaussianPyramid) {
+        int octavesNum = gaussianPyramid.length;
+        int scalesNum = gaussianPyramid[0].length-1;
+        BufferedImage[][] pyramid = new BufferedImage[octavesNum][scalesNum];
+
+        for (int octave=0; octave<octavesNum; octave++) {
+            for (int scale=0; scale<scalesNum; scale++) {
+                pyramid[octave][scale] = calculateDoG(
+                        gaussianPyramid[octave][scale+1],
+                        gaussianPyramid[octave][scale] );
+            }
+        }
+
+        return pyramid;
+    }
+
+    public BufferedImage calculateDoG(BufferedImage first, BufferedImage second) {
         int width = first.getWidth();
         int height = first.getHeight();
         BufferedImage result = new BufferedImage(width, height, first.getType());
@@ -93,13 +122,14 @@ public class SIFTAnalyzer {
         return result;
     }
 
-    private BufferedImage[] generateGaussianImages(BufferedImage baseImage, int scalesNum, float baseSigma) {
-        BufferedImage[] gaussianImages = new BufferedImage[scalesNum];
-        float currentSigma = baseSigma;
+    private BufferedImage[] generateGaussianScales(BufferedImage baseImage, int scalesNum, double scaleInterval) {
+        int numberOfScales = scalesNum + 3;
+        BufferedImage[] gaussianImages = new BufferedImage[numberOfScales];
+        double baseScale = scaleInterval;
 
-        for (int i=0; i<scalesNum; i++) {
-            gaussianImages[i] = ImageUtil.gaussianBlur(baseImage, currentSigma);
-            currentSigma *= 1.4142f;
+        for (int i=0; i<numberOfScales; i++) {
+            gaussianImages[i] = ImageUtil.gaussianBlur(baseImage, baseScale);
+            baseScale *= scaleInterval;
         }
 
         return gaussianImages;

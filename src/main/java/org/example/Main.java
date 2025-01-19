@@ -19,7 +19,7 @@ public class Main {
         long start = System.nanoTime();
 
         //new HashComparator().comparePHash(actualImage, checkedImage);
-        new SIFTAnalyzer().generateDoG(actualImage, checkedImage);
+        new SIFTAnalyzer().calculateDoG(actualImage, checkedImage);
 
         long end = System.nanoTime();
         System.out.println("Time taken to calc DoG: " + (end-start) + "ns");
