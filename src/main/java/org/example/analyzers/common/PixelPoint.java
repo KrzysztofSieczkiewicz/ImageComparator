@@ -1,4 +1,4 @@
-package org.example.analyzers.direct;
+package org.example.analyzers;
 
 import java.util.Objects;
 
