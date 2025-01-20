@@ -22,7 +22,7 @@ public class SIFTAnalyzer {
     int scalesAmount = 3;
 
     /**
-     * Base sigma value used for blurring
+     * Base sigma value determining initial image blur
      */
     double baseSigma = 1.6;
 
@@ -40,13 +40,16 @@ public class SIFTAnalyzer {
         int octavesAmount = calculateOctavesNum(greyscaleImage, minImageSizeThreshold, downsamplingFactor);
 
         // 2. Scale intervals
-        double k = calculateScaleIntervals(scalesAmount);
+        double sigmaInterval = calculateScaleIntervals(scalesAmount);
 
         // 3. Build Gaussian Pyramid
-        BufferedImage[][] gaussianPyramid = buildGaussianPyramid(greyscaleImage, octavesAmount, scalesAmount, k, downsamplingFactor);
+        BufferedImage[][] gaussianPyramid = buildGaussianPyramid(greyscaleImage, octavesAmount, scalesAmount, baseSigma, sigmaInterval, downsamplingFactor);
 
-        // 4. DoG pyramid - to be replaced with just processing the gaussian pyramid instead
+        // 4. Build DoG pyramid
         BufferedImage[][] dogPyramid = buildDoGPyramid(gaussianPyramid);
+
+        // 5. Find keypoints in the DoG pyramid
+
 
     }
 
@@ -69,11 +72,12 @@ public class SIFTAnalyzer {
         return Math.pow(2, p);
     }
 
-    private BufferedImage[][] buildGaussianPyramid(BufferedImage image, int octavesNum, int scalesNum, double scaleInterval, int downsamplingFactor) {
+    private BufferedImage[][] buildGaussianPyramid(BufferedImage image, int octavesNum, int scalesNum, double baseSigma, double sigmaInterval, int downsamplingFactor) {
         BufferedImage[][] pyramid = new BufferedImage[octavesNum][];
 
+
         for (int octave=0; octave<octavesNum; octave++) {
-            pyramid[octave] = generateGaussianScales(image, scalesNum, scaleInterval);
+            pyramid[octave] = generateGaussianScales(image, scalesNum, baseSigma, sigmaInterval);
 
             image = ImageUtil.resize(
                     image,
@@ -122,10 +126,10 @@ public class SIFTAnalyzer {
         return result;
     }
 
-    private BufferedImage[] generateGaussianScales(BufferedImage baseImage, int scalesNum, double scaleInterval) {
+    private BufferedImage[] generateGaussianScales(BufferedImage baseImage, int scalesNum, double baseSigma, double scaleInterval) {
         int numberOfScales = scalesNum + 3;
         BufferedImage[] gaussianImages = new BufferedImage[numberOfScales];
-        double baseScale = scaleInterval;
+        double baseScale = baseSigma;
 
         for (int i=0; i<numberOfScales; i++) {
             gaussianImages[i] = ImageUtil.gaussianBlur(baseImage, baseScale);
@@ -134,4 +138,43 @@ public class SIFTAnalyzer {
 
         return gaussianImages;
     }
+
+
+    private void detectKeypoints(BufferedImage[][] dogPyramid) {
+        int octavesNum = dogPyramid.length;
+        int scalesNum = dogPyramid[0].length;
+
+        for (int octave=0; octave<octavesNum; octave++) {
+
+            for (int scale=0; scale<scalesNum; scale++) {
+
+            }
+
+        }
+    }
+
+    private void findExtremes(int[][] pixels) {
+        int rows = pixels.length - 1;
+        int cols = pixels[0].length - 1;
+
+        // includes diagonals
+        int[] dRow = {-1, 1, 0, 0, -1, -1, 1, 1};
+        int[] dCol = {0, 0, -1, 1, -1, 1, -1, 1};
+
+        for (int x=1; x<rows; x++) {
+            for (int y=1; y<cols; y++) {
+                boolean isExtrema = true;
+
+                for (int i=0; i<dRow.length; i++) {
+                    for (int j=0; j<dCol.length; j++) {
+                        int currRow = x + dRow[i];
+                        int currCol = y + dCol[j];
+
+                    }
+                }
+            }
+        }
+
+    }
+
 }
