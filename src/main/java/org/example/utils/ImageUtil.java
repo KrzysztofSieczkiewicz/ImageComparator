@@ -91,45 +91,6 @@ public class ImageUtil {
     }
 
     /**
-     * Finds local extremes in the provided greyscaled image. Searches only most direct neighbour.
-     *
-     * @param image to be searched through
-     * @return LocalExtremes class containing minima and maxima
-     */
-    public static LocalExtremes findLocalExtremes(BufferedImage image) {
-        ImageAccessor accessor = ImageAccessor.create(image);
-        int[][] pixels = accessor.getBlueMatrix();
-
-        LocalExtremes extremes = new LocalExtremes();
-        int rows = pixels.length - 1;
-        int cols = pixels[0].length - 1;
-        int[] dRow = {-1, 1, 0, 0, -1, -1, 1, 1};
-        int[] dCol = {0, 0, -1, 1, -1, 1, -1, 1};
-
-        for (int x=1; x<rows; x++) {
-            for (int y=1; y<cols; y++) {
-                boolean isMinimum = true;
-                boolean isMaximum = true;
-                int value = pixels[x][y];
-
-                for (int k=0; k<dRow.length; k++) {
-                    int currRow = x + dRow[k];
-                    int currCol = y + dCol[k];
-                    int currentValue = pixels[currRow][currCol];
-
-                    if (value >= currentValue) isMinimum = false;
-                    if (value <= currentValue) isMaximum = false;
-                    if (!isMinimum && !isMaximum) break;
-                }
-
-                if (isMinimum) extremes.addToMinima(x,y);
-                if (isMaximum) extremes.addToMaxima(x,y);
-            }
-        }
-        return extremes;
-    }
-
-    /**
      * Internal method. Generates Gaussian blur kernel. Size is set to be ~6 times sigma and odd.
      *
      * @param sigma std deviation of the Gaussian distribution used for the blur
