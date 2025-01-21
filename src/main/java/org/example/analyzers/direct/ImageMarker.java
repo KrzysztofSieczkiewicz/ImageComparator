@@ -1,5 +1,6 @@
 package org.example.analyzers.direct;
 
+import org.example.analyzers.common.PixelPoint;
 import org.example.utils.accessor.ImageAccessor;
 import org.example.analyzers.ExcludedAreas;
 import org.example.config.DirectComparatorConfig;

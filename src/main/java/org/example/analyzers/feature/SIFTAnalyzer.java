@@ -1,11 +1,10 @@
 package org.example.analyzers.feature;
 
+import org.example.analyzers.common.LocalExtremes;
 import org.example.utils.ImageUtil;
 import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 public class SIFTAnalyzer {
     // TODO - CURRENT: test if DoG is handling edge cases and if there are aliasing issues with image downscaling
@@ -142,51 +141,17 @@ public class SIFTAnalyzer {
     }
 
 
-    private void detectKeypoints(BufferedImage[][] dogPyramid) {
+    private void detectKeypoints(BufferedImage[][] dogPyramid, double contrastThreshold) {
         int octavesNum = dogPyramid.length;
         int scalesNum = dogPyramid[0].length;
 
         for (int octave=0; octave<octavesNum; octave++) {
 
             for (int scale=0; scale<scalesNum; scale++) {
-
+                LocalExtremes currentExtremes = ImageUtil.findLocalExtremes(dogPyramid[octave][scale]);
             }
 
         }
-    }
-
-    private void findExtremes(int[][] pixels) {
-        List<int[]> minima = new ArrayList<>();
-        List<int[]> maxima = new ArrayList<>();
-
-        int rows = pixels.length - 1;
-        int cols = pixels[0].length - 1;
-
-        int[] dRow = {-1, 1, 0, 0, -1, -1, 1, 1};
-        int[] dCol = {0, 0, -1, 1, -1, 1, -1, 1};
-
-        for (int x=1; x<rows; x++) {
-            for (int y=1; y<cols; y++) {
-                boolean isMinimum = true;
-                boolean isMaximum = true;
-                int value = pixels[x][y];
-
-                for (int k=0; k<dRow.length; k++) {
-                    int currRow = x + dRow[k];
-                    int currCol = y + dCol[k];
-                    int currentValue = pixels[currRow][currCol];
-
-                    if (value >= currentValue) isMinimum = false;
-                    if (value <= currentValue) isMaximum = false;
-
-                    if (!isMinimum && !isMaximum) break;
-                }
-
-                if (isMinimum) minima.add(new int[]{x,y});
-                if (isMaximum) maxima.add(new int[]{x,y});
-            }
-        }
-
     }
 
 }

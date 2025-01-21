@@ -1,5 +1,6 @@
 package org.example.utils;
 
+import org.example.analyzers.common.LocalExtremes;
 import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.*;
@@ -62,11 +63,7 @@ public class ImageUtil {
     public static BufferedImage gaussianBlur(BufferedImage image, double sigma) {
         BufferedImage blurredImg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
-        int kernelSize = (int) (6 * sigma);
-        if (kernelSize % 2 == 0) kernelSize++;
-
-        float[] kernelData = generateGaussianKernel(sigma, kernelSize);
-        Kernel kernel = new Kernel(kernelSize, kernelSize, kernelData);
+        Kernel kernel = generateGaussianKernel(sigma);
 
         ConvolveOp conv = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
         conv.filter(image, image);
@@ -94,29 +91,70 @@ public class ImageUtil {
     }
 
     /**
-     * Generates Gaussian blur kernel.
+     * Finds local extremes in the provided greyscaled image. Searches only most direct neighbour.
+     *
+     * @param image to be searched through
+     * @return LocalExtremes class containing minima and maxima
+     */
+    public static LocalExtremes findLocalExtremes(BufferedImage image) {
+        ImageAccessor accessor = ImageAccessor.create(image);
+        int[][] pixels = accessor.getBlueMatrix();
+
+        LocalExtremes extremes = new LocalExtremes();
+        int rows = pixels.length - 1;
+        int cols = pixels[0].length - 1;
+        int[] dRow = {-1, 1, 0, 0, -1, -1, 1, 1};
+        int[] dCol = {0, 0, -1, 1, -1, 1, -1, 1};
+
+        for (int x=1; x<rows; x++) {
+            for (int y=1; y<cols; y++) {
+                boolean isMinimum = true;
+                boolean isMaximum = true;
+                int value = pixels[x][y];
+
+                for (int k=0; k<dRow.length; k++) {
+                    int currRow = x + dRow[k];
+                    int currCol = y + dCol[k];
+                    int currentValue = pixels[currRow][currCol];
+
+                    if (value >= currentValue) isMinimum = false;
+                    if (value <= currentValue) isMaximum = false;
+                    if (!isMinimum && !isMaximum) break;
+                }
+
+                if (isMinimum) extremes.addToMinima(x,y);
+                if (isMaximum) extremes.addToMaxima(x,y);
+            }
+        }
+        return extremes;
+    }
+
+    /**
+     * Internal method. Generates Gaussian blur kernel. Size is set to be ~6 times sigma and odd.
      *
      * @param sigma std deviation of the Gaussian distribution used for the blur
-     * @param size kernel size. Should be an odd integer
-     * @return float array containing kernel values
+     * @return awt Kernel
      */
-    private static float[] generateGaussianKernel(double sigma, int size) {
-        float[] kernel = new float[size * size];
+    private static Kernel generateGaussianKernel(double sigma) {
+        int size = (int) (6 * sigma);
+        if (size % 2 == 0) size++;
+
+        float[] kernelData = new float[size * size];
         int halfSize = size / 2;
         float sum = 0;
 
         for (int x=-halfSize; x<=halfSize; x++) {
             for (int y =-halfSize; y<=halfSize; y++) {
                 float value = (float) ((1 / (2 * Math.PI * sigma*sigma)) * Math.exp(-(x*x + y*y) / (2 * sigma*sigma)));
-                kernel[(x+halfSize)*size + (y+halfSize)] = value;
+                kernelData[(x+halfSize)*size + (y+halfSize)] = value;
                 sum += value;
             }
         }
 
-        for (int i=0; i<kernel.length; i++) {
-            kernel[i] /= sum;
+        for (int i=0; i<kernelData.length; i++) {
+            kernelData[i] /= sum;
         }
 
-        return kernel;
+        return new Kernel(size, size, kernelData);
     }
 }
