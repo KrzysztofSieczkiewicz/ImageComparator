@@ -1,6 +1,5 @@
 package org.example.utils;
 
-import org.example.analyzers.common.LocalExtremes;
 import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.*;

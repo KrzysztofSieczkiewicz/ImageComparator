@@ -1,4 +1,4 @@
-package org.example.analyzers.common;
+package org.example.analyzers.feature;
 
 import org.example.analyzers.common.PixelPoint;
 
