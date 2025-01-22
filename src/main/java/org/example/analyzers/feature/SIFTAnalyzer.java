@@ -6,6 +6,8 @@ import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SIFTAnalyzer {
     // TODO - CURRENT: test if DoG is handling edge cases and if there are aliasing issues with image downscaling
@@ -32,6 +34,11 @@ public class SIFTAnalyzer {
      * Downsampling factor by which the image is reduced between octaves
      */
     int downsamplingFactor = 2;
+
+    /**
+     * Contrast threshold below which keypoint will be discarded as noise
+     */
+    double keypointContrastThreshold = 0.03;
 
 
     private void constructScaleSpace(BufferedImage image) {
@@ -149,12 +156,34 @@ public class SIFTAnalyzer {
         for (int octave=0; octave<octavesNum; octave++) {
 
             for (int scale=1; scale<scalesNum-1; scale++) {
+                BufferedImage previousScaleImage = dogPyramid[octave][scale-1];
+                BufferedImage currentScaleImage = dogPyramid[octave][scale];
+                BufferedImage nextScaleImage = dogPyramid[octave][scale+1];
+
+                // TODO: replace this call with octave (BufferedImage[]) and index pointing to the current base (int)
+                ArrayList<PixelPoint> keypointCandidates = findKeypointCandidates(
+                        previousScaleImage,
+                        currentScaleImage,
+                        nextScaleImage );
+
+                // 1. filter keypoints by checking contrast
+                filterLowContrastCandidates(currentScaleImage, keypointCandidates);
+                // 2. edge response elimination - current solution is calculating hessian Matrix, but maybe an optimization can be found?
+
+                // 3. calculate exact position of keypoint (subpixel coordinates)
+
+                // 4. at this point candidates should be ready to make into full Keypoints, but only after:
+                //  a. assigning orientation to each Keypoint (compute the Gradient Magnitude and Orientation)
+                //  b. create orientation histogram
+                //  c. decide on dominant orientation
+
+                // 5. Generate normalized descriptors for each keypoint
+                // 6. Use descriptor distances and RANSAC to match keypoints across different images
             }
 
         }
     }
 
-    // Basic
     private ArrayList<PixelPoint> findKeypointCandidates(BufferedImage current, BufferedImage previous, BufferedImage next) {
         ArrayList<PixelPoint> keypointCandidates = new ArrayList<>();
 
@@ -205,7 +234,6 @@ public class SIFTAnalyzer {
         return keypointCandidates;
     }
 
-    // Smort
     private ArrayList<PixelPoint> findKeypointCandidatesButSmarter(BufferedImage current, BufferedImage previous, BufferedImage next) {
         ArrayList<PixelPoint> keypointCandidates = new ArrayList<>();
 
@@ -232,7 +260,6 @@ public class SIFTAnalyzer {
                         int neighbourValue = currentAccessor.getBlue(
                                 row + dRow[k],
                                 col + dCol[k] );
-
                         if (currentPixel >= neighbourValue) isMinimum = false;
                         if (currentPixel <= neighbourValue) isMaximum = false;
 
@@ -281,6 +308,13 @@ public class SIFTAnalyzer {
         }
 
         return keypointCandidates;
+    }
+
+    private ArrayList<PixelPoint> filterLowContrastCandidates(BufferedImage image, ArrayList<PixelPoint> candidates) {
+        return candidates
+                .stream()
+                .filter( candidate -> image.getRGB(candidate.getX(), candidate.getY()) >= keypointContrastThreshold)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
 }
