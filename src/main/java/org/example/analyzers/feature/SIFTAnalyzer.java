@@ -310,10 +310,25 @@ public class SIFTAnalyzer {
         return keypointCandidates;
     }
 
+    /**
+     * Filters low contrast keypoint candidates
+     *
+     * @param image current scale DoG image
+     * @param candidates list of keypoint pixels
+     *
+     * @return new list containing filtered keypoint candidates
+     */
     private ArrayList<PixelPoint> filterLowContrastCandidates(BufferedImage image, ArrayList<PixelPoint> candidates) {
+        ImageAccessor imageAccessor = ImageAccessor.create(image);
+
         return candidates
                 .stream()
-                .filter( candidate -> image.getRGB(candidate.getX(), candidate.getY()) >= keypointContrastThreshold)
+                .filter( candidate -> {
+                    int value = imageAccessor.getBlue(candidate.getX(), candidate.getY());
+                    double normalizedValue = value / 255.0;
+
+                    return Math.abs(normalizedValue) >= keypointContrastThreshold;
+                })
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 

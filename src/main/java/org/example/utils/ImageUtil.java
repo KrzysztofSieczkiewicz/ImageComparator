@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
+import java.awt.image.Raster;
 
 public class ImageUtil {
 
@@ -60,12 +61,15 @@ public class ImageUtil {
      * @return new, blurred BuffedImage
      */
     public static BufferedImage gaussianBlur(BufferedImage image, double sigma) {
-        BufferedImage blurredImg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        BufferedImage blurredImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
         Kernel kernel = generateGaussianKernel(sigma);
 
         ConvolveOp conv = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
-        conv.filter(image, image);
+        conv.filter(image, blurredImg);
 
         return blurredImg;
     }
@@ -90,7 +94,7 @@ public class ImageUtil {
     }
 
     /**
-     * Internal method. Generates Gaussian blur kernel. Size is set to be ~6 times sigma and odd.
+     * Internal util method. Generates Gaussian blur kernel. Size is set to be ~6 times sigma and odd.
      *
      * @param sigma std deviation of the Gaussian distribution used for the blur
      * @return awt Kernel
