@@ -10,6 +10,11 @@ import java.io.File;
 import java.io.IOException;
 
 public class Main {
+    // TODO: test all ImageUtil method:
+    //  check greyscale
+    //  check resize
+    //  check gaussian
+
     // TODO: Comparison should  be accessed via separate ComparatorObjects
     //  ORBComparator, HashComparator and DirectComparator, all should be able to accept Config and Images
     //  Excluded areas and should be accepted by "compare()" method
