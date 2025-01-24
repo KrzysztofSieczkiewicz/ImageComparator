@@ -1,8 +1,10 @@
 package org.example;
 
 import org.example.analyzers.feature.SIFTAnalyzer;
+import org.example.utils.accessor.ImageDataUtil;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +21,7 @@ public class Main {
         long start = System.nanoTime();
 
         //new HashComparator().comparePHash(actualImage, checkedImage);
-        new SIFTAnalyzer().calculateDoG(actualImage, checkedImage);
+        new SIFTAnalyzer().constructScaleSpace(actualImage);
 
         long end = System.nanoTime();
         System.out.println("Time taken to calc DoG: " + (end-start) + "ns");

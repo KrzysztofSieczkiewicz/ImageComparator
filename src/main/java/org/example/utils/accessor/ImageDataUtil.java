@@ -14,24 +14,77 @@ public class ImageDataUtil {
      * @return A 2D array of ints representing the pixel data (RGB encoded).
      */
     public static int[][] getImageData(BufferedImage image) {
-        Raster raster = image.getData();
-
         int width = image.getWidth();
         int height = image.getHeight();
-
         int[][] pixelData = new int[height][width];
 
+        int channelsNo = 3;
+        if (image.getColorModel().hasAlpha()) channelsNo = 4;
+
+        Raster raster = image.getRaster();
+        int[] pixelBuffer = new int[width * height * channelsNo];
+        raster.getPixels(0, 0, width, height, pixelBuffer);
+
+        int index = 0;
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                int[] pixel = new int[4];
-                raster.getPixel(x, y, pixel);
+                if (channelsNo == 4) index++;
+                int red = pixelBuffer[index++];
+                int green = pixelBuffer[index++];
+                int blue = pixelBuffer[index++];
 
                 // 0xRRGGBB
-                pixelData[y][x] = (pixel[0] << 16) | (pixel[1] << 8) | pixel[2];
+                pixelData[y][x] = (red << 16) | (green << 8) | blue;
             }
         }
 
         return pixelData;
+    }
+
+    /**
+     * Resizes an image data matrix (int[][]) to the requested dimensions using averaging for downscaling.
+     *
+     * @param image 2D int array representing the input image pixels
+     * @param width requested width to scale to
+     * @param height requested height to scale to
+     * @return 2D int array containing the resized image
+     */
+    public static int[][] resizeWithAveraging(int[][] image, int width, int height) {
+        int originalWidth = image.length;
+        int originalHeight = image[0].length;
+        int[][] resizedImage = new int[width][height];
+
+        double scaleX = (double) originalWidth / width;
+        double scaleY = (double) originalHeight / height;
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int startX = (int) (x * scaleX);
+                int startY = (int) (y * scaleY);
+                int endX = (int) Math.min((x + 1) * scaleX, originalWidth);
+                int endY = (int) Math.min((y + 1) * scaleY, originalHeight);
+
+                int pixelSumR = 0, pixelSumG = 0, pixelSumB = 0;
+                int count = 0;
+
+                for (int i = startX; i < endX; i++) {
+                    for (int j = startY; j < endY; j++) {
+                        int pixel = image[i][j];
+                        pixelSumR += (pixel >> 16) & 0xFF;
+                        pixelSumG += (pixel >> 8) & 0xFF;
+                        pixelSumB += pixel & 0xFF;
+                        count++;
+                    }
+                }
+
+                int avgR = pixelSumR / count;
+                int avgG = pixelSumG / count;
+                int avgB = pixelSumB / count;
+                resizedImage[x][y] = (avgR << 16) | (avgG << 8) | avgB;
+            }
+        }
+
+        return resizedImage;
     }
 
     /**
