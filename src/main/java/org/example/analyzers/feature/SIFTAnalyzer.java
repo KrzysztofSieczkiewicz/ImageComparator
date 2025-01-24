@@ -6,7 +6,6 @@ import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class SIFTAnalyzer {
@@ -91,19 +90,15 @@ public class SIFTAnalyzer {
         for (int octave=0; octave<octavesNum; octave++) {
 
             for (int scale=1; scale<scalesNum-1; scale++) {
-                BufferedImage previousScaleImage = dogPyramid[octave][scale-1];
                 BufferedImage currentScaleImage = dogPyramid[octave][scale];
-                BufferedImage nextScaleImage = dogPyramid[octave][scale+1];
 
-                // TODO: replace this call with octave (BufferedImage[]) and index pointing to the current base (int)
-                ArrayList<PixelPoint> keypointCandidates = findKeypointCandidates(
-                        previousScaleImage,
-                        currentScaleImage,
-                        nextScaleImage );
+                ArrayList<PixelPoint> keypointCandidates = findKeypointCandidates( dogPyramid[octave], scale );
 
                 // 1. filter keypoints by checking contrast
                 filterLowContrastCandidates(currentScaleImage, keypointCandidates);
+
                 // 2. edge response elimination - current solution is calculating hessian Matrix, but maybe an optimization can be found?
+
 
                 // 3. calculate exact position of keypoint (subpixel coordinates)
 
@@ -119,15 +114,15 @@ public class SIFTAnalyzer {
         }
     }
 
-    private ArrayList<PixelPoint> findKeypointCandidates(BufferedImage current, BufferedImage previous, BufferedImage next) {
+    private ArrayList<PixelPoint> findKeypointCandidates(BufferedImage[] octave, int scaleIndex) {
         ArrayList<PixelPoint> keypointCandidates = new ArrayList<>();
 
-        ImageAccessor currentAccessor = ImageAccessor.create(current);
-        ImageAccessor previousAccessor = ImageAccessor.create(previous);
-        ImageAccessor nextAccessor = ImageAccessor.create(next);
+        ImageAccessor currentAccessor = ImageAccessor.create(octave[scaleIndex-1]);
+        ImageAccessor previousAccessor = ImageAccessor.create(octave[scaleIndex]);
+        ImageAccessor nextAccessor = ImageAccessor.create(octave[scaleIndex+1]);
 
-        int rows = current.getWidth();
-        int cols = current.getHeight();
+        int rows = currentAccessor.getWidth();
+        int cols = currentAccessor.getHeight();
         int[] dRow = {-1, 1, 0, 0, -1, -1, 1, 1};
         int[] dCol = {0, 0, -1, 1, -1, 1, -1, 1};
 

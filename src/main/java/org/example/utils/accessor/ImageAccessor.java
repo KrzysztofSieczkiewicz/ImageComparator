@@ -94,6 +94,25 @@ public interface ImageAccessor {
      */
     void setPixel(int x, int y, int a, int r, int g, int b);
 
+    /**
+     * Overwrites pixel data under 1D array index
+     * @param index image 1D array index
+     * @param r red value
+     * @param g green value
+     * @param b blue value
+     */
+    void setOpaquePixel(int index, int r, int g, int b);
+
+    /**
+     * Overwrites pixel data under image (X,Y) coordinates
+     * @param x X coordinate of the pixel
+     * @param y Y coordinate of the pixel
+     * @param r red value
+     * @param g green value
+     * @param b blue value
+     */
+    void setOpaquePixel(int x, int y, int r, int g, int b);
+
 
     /*
         ALPHA CHANNEL

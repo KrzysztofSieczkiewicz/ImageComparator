@@ -43,10 +43,18 @@ public class ImageUtil {
      */
     public static BufferedImage greyscale(BufferedImage image) {
         BufferedImage greyscaleImg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        ImageAccessor imageAccessor = ImageAccessor.create(image);
+        ImageAccessor greyscaleAccessor = ImageAccessor.create(greyscaleImg);
 
-        Graphics g = greyscaleImg.getGraphics();
-        g.drawImage(image, 0, 0, null);
-        g.dispose();
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int r = (int) (imageAccessor.getRed(x,y) * 0.21);
+                int g = (int) (imageAccessor.getGreen(x,y) * 0.72);
+                int b = (int) (imageAccessor.getBlue(x,y) * 0.07);
+
+                greyscaleAccessor.setOpaquePixel(x, y, r, g, b);
+            }
+        }
 
         return greyscaleImg;
     }
