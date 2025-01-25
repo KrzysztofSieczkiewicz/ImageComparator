@@ -1,33 +1,40 @@
 package org.example.analyzers.feature;
 
+import org.example.analyzers.common.PixelPoint;
 import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
 
-public class HessianMatrix {
+public class HessianPoint {
+    private final double[] eigenvalues;
 
-    double[][] eigenvalues;
-    double trace;
-    double determinant;
+    public HessianPoint(BufferedImage image, int x, int y) {
+        double[][] hessianMatrix = approxHessianMatrix(image, x, y);
 
-
-
-    private double calculateTrace(double[][] matrix) {
-        return matrix[0][0] + matrix[1][1];
+        double trace = hessianMatrix[0][0] + hessianMatrix[1][1];
+        double determinant = (hessianMatrix[0][0] * hessianMatrix[1][1]) - (hessianMatrix[0][1] * hessianMatrix[1][0]);
+        this.eigenvalues = calculateEigenvalues(trace, determinant);
     }
 
-    public double calculateDeterminant(double[][] matrix) {
-        return (matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0]);
+    public HessianPoint(BufferedImage image, PixelPoint point) {
+        this(image, point.getX(), point.getY());
     }
 
-    public double[] calculateEigenvalues(double[][] matrix) {
-        if (matrix.length != 2 || matrix[0].length != 2) {
-            throw new IllegalArgumentException("Input must be a 2x2 matrix.");
-        }
 
-        double trace = calculateTrace(matrix);
-        double determinant = calculateDeterminant(matrix);
+    public boolean isLowContrast(double contrastThreshold) {
+        return eigenvalues[0] * eigenvalues[1] < contrastThreshold;
+    }
 
+    public boolean isEdgeResponse(double ratioThreshold) {
+        return eigenvalues[0] / eigenvalues[1] < ratioThreshold;
+    }
+
+
+    /**
+     * Calculates hessian matrix eigenvalues
+     * @return array {lambda1, lambda2}
+     */
+    private double[] calculateEigenvalues(double trace, double determinant) {
         double discriminant = Math.pow(trace, 2) - 4 * determinant;
 
         if (discriminant < 0) {
@@ -42,7 +49,7 @@ public class HessianMatrix {
     }
 
     /**
-     * Generates Hessian matrix  for a single pixel using second order Sobel operators
+     * Generates Hessian matrix for a single pixel using second order Sobel operators
      */
     private double[][] approxHessianMatrix(BufferedImage image, int x, int y) {
         int width = image.getWidth();

@@ -39,6 +39,11 @@ public class SIFTAnalyzer {
      */
     double keypointContrastThreshold = 0.03;
 
+    /**
+     * Edge response threshold below which keypoint will be discarded as edge keypoint
+     */
+    double keypointEdgeThreshold = 0.03;
+
 
     public void constructScaleSpace(BufferedImage image) {
         BIGaussianHelper helper = new BIGaussianHelper();
@@ -94,11 +99,13 @@ public class SIFTAnalyzer {
 
                 ArrayList<PixelPoint> keypointCandidates = findKeypointCandidates( dogPyramid[octave], scale );
 
-                // 1. filter keypoints by checking contrast
-                filterLowContrastCandidates(currentScaleImage, keypointCandidates);
-
-                // 2. edge response elimination - current solution is calculating hessian Matrix, but maybe an optimization can be found?
-
+                // filter candidates by checking contrast and edge response
+                keypointCandidates = keypointCandidates.stream()
+                        .filter(candidate -> {
+                           HessianPoint hessian = new HessianPoint(currentScaleImage, candidate);
+                           return hessian.isLowContrast(keypointContrastThreshold) &&
+                                   hessian.isEdgeResponse(keypointEdgeThreshold); })
+                        .collect(Collectors.toCollection(ArrayList::new));
 
                 // 3. calculate exact position of keypoint (subpixel coordinates)
 
