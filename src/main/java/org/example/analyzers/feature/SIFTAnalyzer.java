@@ -40,9 +40,9 @@ public class SIFTAnalyzer {
     double keypointContrastThreshold = 0.03;
 
     /**
-     * Edge response threshold below which keypoint will be discarded as edge keypoint
+     * Hessian eigenvalues ratio below which keypoint will be discarded as edge keypoint
      */
-    double keypointEdgeThreshold = 0.03;
+    double keypointEdgeResponseRatio = 10;
 
 
     public void constructScaleSpace(BufferedImage image) {
@@ -102,10 +102,19 @@ public class SIFTAnalyzer {
                 // filter candidates by checking contrast and edge response
                 keypointCandidates = keypointCandidates.stream()
                         .filter(candidate -> {
-                           HessianPoint hessian = new HessianPoint(currentScaleImage, candidate);
+                           KeypointCandidate hessian = new KeypointCandidate(currentScaleImage, candidate);
                            return hessian.isLowContrast(keypointContrastThreshold) &&
-                                   hessian.isEdgeResponse(keypointEdgeThreshold); })
+                                   hessian.isEdgeResponse(keypointEdgeResponseRatio); })
                         .collect(Collectors.toCollection(ArrayList::new));
+
+                // TODO: wymaga drobnej zmiany -> po wyszukaniu "ciekawych" pixeli zapisujemy je jako listę potencjalnych pixeli
+                //  po filtrowaniu -> zapisujmy je jako listę hessianPoint - kontrast i krawędzie mogą być sprawdzane macierzą Hessego 2x2 (w ramach jednej skali)
+                //  do refinowania kandydatów potrzebna jest macierz Hessego 3x3 (masz już część w HessianPoint)
+                //  Podsumowując:
+                //  1. ArrayList<PixelPoint> potentialCandidates = ...
+                //  2. ArrayList<HessianPoint> keypointCandidates = potantialCandidates...
+                //  3. ArrayList<Keypoint> keypoints = keypointCandidates...
+                // TODO: zmień nazwę HessianPoint na KeypointCandidate, dodaj tam również zmienne do przechowania koordynatów (rozważ dodanie indeksu skali i indeksu oktawy)
 
                 // 3. calculate exact position of keypoint (subpixel coordinates)
 
@@ -119,6 +128,22 @@ public class SIFTAnalyzer {
             }
 
         }
+    }
+
+
+    private Keypoint refineKeypointCandidate(PixelPoint candidate, BufferedImage image) {
+        ImageAccessor imageAccessor = ImageAccessor.create(image);
+
+        int x = candidate.getX();
+        int y = candidate.getY();
+
+        // Gradients at the keypoint
+        double dDx = (imageAccessor.getBlue(x+1,y) - imageAccessor.getBlue(x-1,y)) / 2.0;
+        double dDy = (imageAccessor.getBlue(x,y+1) - imageAccessor.getBlue(x,y-1)) / 2.0;
+        // jednak potrzebujesz sąsiednich skal
+        double dDs = (imageAccessor.getBlue(x,y+1) - imageAccessor.getBlue(x,y-1)) / 2.0;
+
+        return new Keypoint(0f, 0f);
     }
 
     private ArrayList<PixelPoint> findKeypointCandidates(BufferedImage[] octave, int scaleIndex) {
@@ -246,27 +271,4 @@ public class SIFTAnalyzer {
 
         return keypointCandidates;
     }
-
-    /**
-     * Filters low contrast keypoint candidates
-     *
-     * @param image current scale DoG image
-     * @param candidates list of keypoint pixels
-     *
-     * @return new list containing filtered keypoint candidates
-     */
-    private ArrayList<PixelPoint> filterLowContrastCandidates(BufferedImage image, ArrayList<PixelPoint> candidates) {
-        ImageAccessor imageAccessor = ImageAccessor.create(image);
-
-        return candidates
-                .stream()
-                .filter( candidate -> {
-                    int value = imageAccessor.getBlue(candidate.getX(), candidate.getY());
-                    double normalizedValue = value / 255.0;
-
-                    return Math.abs(normalizedValue) >= keypointContrastThreshold;
-                })
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
 }

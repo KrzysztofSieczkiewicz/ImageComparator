@@ -5,18 +5,23 @@ import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
 
-public class HessianPoint {
+public class KeypointCandidate {
+    int x,y;
     private final double[] eigenvalues;
 
-    public HessianPoint(BufferedImage image, int x, int y) {
+    public KeypointCandidate(BufferedImage image, int x, int y) {
         double[][] hessianMatrix = approxHessianMatrix(image, x, y);
 
         double trace = hessianMatrix[0][0] + hessianMatrix[1][1];
         double determinant = (hessianMatrix[0][0] * hessianMatrix[1][1]) - (hessianMatrix[0][1] * hessianMatrix[1][0]);
-        this.eigenvalues = calculateEigenvalues(trace, determinant);
+        double discriminant = Math.pow(trace, 2) - 4 * determinant;
+
+        this.x = x;
+        this.y = y;
+        this.eigenvalues = calculateEigenvalues(trace, discriminant);
     }
 
-    public HessianPoint(BufferedImage image, PixelPoint point) {
+    public KeypointCandidate(BufferedImage image, PixelPoint point) {
         this(image, point.getX(), point.getY());
     }
 
@@ -29,14 +34,19 @@ public class HessianPoint {
         return eigenvalues[0] / eigenvalues[1] < ratioThreshold;
     }
 
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
 
     /**
      * Calculates hessian matrix eigenvalues
      * @return array {lambda1, lambda2}
      */
-    private double[] calculateEigenvalues(double trace, double determinant) {
-        double discriminant = Math.pow(trace, 2) - 4 * determinant;
-
+    private double[] calculateEigenvalues(double trace, double discriminant) {
         if (discriminant < 0) {
             return new double[]{-1, -1};
         }
