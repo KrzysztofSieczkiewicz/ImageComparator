@@ -1,5 +1,10 @@
 package org.example.analyzers.feature;
 
+import org.example.analyzers.common.PixelPoint;
+import org.example.utils.accessor.ImageAccessor;
+
+import java.awt.image.BufferedImage;
+
 public class Keypoint {
     private float x,y;
 
@@ -8,11 +13,11 @@ public class Keypoint {
         this.y = y;
     }
 
-    public float getX() {
-        return x;
+    public Keypoint(KeypointCandidate candidate) {
+        this.x = candidate.getX();
+        this.y = candidate.getY();
+
+
     }
 
-    public float getY() {
-        return y;
-    }
 }

@@ -97,24 +97,32 @@ public class SIFTAnalyzer {
             for (int scale=1; scale<scalesNum-1; scale++) {
                 BufferedImage currentScaleImage = dogPyramid[octave][scale];
 
-                ArrayList<PixelPoint> keypointCandidates = findKeypointCandidates( dogPyramid[octave], scale );
+                // 0. find potential keypoints
+                ArrayList<PixelPoint> potentialCandidates = findPotentialKeypoints( dogPyramid[octave], scale );
 
-                // filter candidates by checking contrast and edge response
-                keypointCandidates = keypointCandidates.stream()
-                        .filter(candidate -> {
-                           KeypointCandidate hessian = new KeypointCandidate(currentScaleImage, candidate);
-                           return hessian.isLowContrast(keypointContrastThreshold) &&
-                                   hessian.isEdgeResponse(keypointEdgeResponseRatio); })
+                // filter potential keypoints by checking contrast and edge response
+                ArrayList<KeypointCandidate> keypointCandidates = potentialCandidates.stream()
+                        .map(potentialCandidate -> new KeypointCandidate(currentScaleImage, potentialCandidate))
+                        .filter(candidate ->
+                                !candidate.isLowContrast(keypointContrastThreshold) &&
+                                !candidate.isEdgeResponse(keypointEdgeResponseRatio))
                         .collect(Collectors.toCollection(ArrayList::new));
+
+                // refine candidates into full keypoints
+                ArrayList<Keypoint> keypoints = keypointCandidates.stream()
+                        .map(candidate -> new Keypoint(candidate))
+                        .collect(Collectors.toCollection(ArrayList::new));
+
+                // TODO [CURRENT]: extend Keypoint class
 
                 // TODO: wymaga drobnej zmiany -> po wyszukaniu "ciekawych" pixeli zapisujemy je jako listę potencjalnych pixeli
                 //  po filtrowaniu -> zapisujmy je jako listę hessianPoint - kontrast i krawędzie mogą być sprawdzane macierzą Hessego 2x2 (w ramach jednej skali)
                 //  do refinowania kandydatów potrzebna jest macierz Hessego 3x3 (masz już część w HessianPoint)
                 //  Podsumowując:
                 //  1. ArrayList<PixelPoint> potentialCandidates = ...
-                //  2. ArrayList<HessianPoint> keypointCandidates = potantialCandidates...
+                //  2. ArrayList<KeypointCandidate> keypointCandidates = potantialCandidates...
                 //  3. ArrayList<Keypoint> keypoints = keypointCandidates...
-                // TODO: zmień nazwę HessianPoint na KeypointCandidate, dodaj tam również zmienne do przechowania koordynatów (rozważ dodanie indeksu skali i indeksu oktawy)
+                // TODO: zmień nazwę HessianPoint na KeypointCandidate, rozważ dodanie indeksu skali i indeksu oktawy do zmiennych wewn.
 
                 // 3. calculate exact position of keypoint (subpixel coordinates)
 
@@ -130,23 +138,7 @@ public class SIFTAnalyzer {
         }
     }
 
-
-    private Keypoint refineKeypointCandidate(PixelPoint candidate, BufferedImage image) {
-        ImageAccessor imageAccessor = ImageAccessor.create(image);
-
-        int x = candidate.getX();
-        int y = candidate.getY();
-
-        // Gradients at the keypoint
-        double dDx = (imageAccessor.getBlue(x+1,y) - imageAccessor.getBlue(x-1,y)) / 2.0;
-        double dDy = (imageAccessor.getBlue(x,y+1) - imageAccessor.getBlue(x,y-1)) / 2.0;
-        // jednak potrzebujesz sąsiednich skal
-        double dDs = (imageAccessor.getBlue(x,y+1) - imageAccessor.getBlue(x,y-1)) / 2.0;
-
-        return new Keypoint(0f, 0f);
-    }
-
-    private ArrayList<PixelPoint> findKeypointCandidates(BufferedImage[] octave, int scaleIndex) {
+    private ArrayList<PixelPoint> findPotentialKeypoints(BufferedImage[] octave, int scaleIndex) {
         ArrayList<PixelPoint> keypointCandidates = new ArrayList<>();
 
         ImageAccessor currentAccessor = ImageAccessor.create(octave[scaleIndex-1]);
