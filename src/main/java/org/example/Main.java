@@ -2,6 +2,7 @@ package org.example;
 
 import org.example.analyzers.feature.MatrixGaussianHelper;
 import org.example.analyzers.feature.BIGaussianHelper;
+import org.example.analyzers.feature.BISIFTAnalyzer;
 import org.example.utils.accessor.ImageAccessor;
 
 import javax.imageio.ImageIO;
@@ -27,12 +28,12 @@ public class Main {
         int[][] raster2D = accessor.getPixels();
 
         BIGaussianHelper helper = new BIGaussianHelper();
-        MatrixGaussianHelper arrHelper = new MatrixGaussianHelper();
+        MatrixGaussianHelper arrHelper = new MatrixGaussianHelper(1.6, 4);
 
         long start = System.nanoTime();
 
-        // TODO: COMPARE HOW BUFFERED IMAGE COMPARES WITH INT[] AND INT[][]
-        //  AS FOR NOW int[] IS Almost 10x faster (from 5-6s to 0,8s)
+        //new MatrixSIFTAnalyzer().constructScaleSpace(actualImage);
+        new BISIFTAnalyzer().constructScaleSpace(actualImage);
 
         //new HashComparator().comparePHash(actualImage, checkedImage);
         //new SIFTAnalyzer().constructScaleSpace(actualImage);

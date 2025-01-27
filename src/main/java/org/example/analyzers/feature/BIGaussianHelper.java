@@ -6,8 +6,6 @@ import org.example.utils.accessor.ImageDataUtil;
 
 import java.awt.image.BufferedImage;
 
-import static org.example.utils.accessor.ImageDataUtil.gaussianBlur;
-
 public class BIGaussianHelper {
 
     public BufferedImage[][] buildGaussianPyramid(BufferedImage image, int octavesNum, int scalesNum, double baseSigma, double sigmaInterval, int downsamplingFactor) {

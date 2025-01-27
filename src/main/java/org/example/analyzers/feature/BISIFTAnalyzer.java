@@ -8,7 +8,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-public class SIFTAnalyzer {
+public class BISIFTAnalyzer {
     // TODO - CURRENT: test if DoG is handling edge cases and if there are aliasing issues with image downscaling
 
     // TODO: can be memory optimized by merging buildGaussianPyramid with buildDoGPyramid

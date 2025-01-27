@@ -5,15 +5,21 @@ import org.example.utils.accessor.ImageDataUtil;
 public class MatrixGaussianHelper {
 
     /**
-     * Sigma value for gaussian blurring
+     * Determines base sigma from which blurring in an octave will start
      */
-    double gaussianSigma = 1.6;
+    double baseSigma;
+
     /**
      * Determines Gaussian blurring kernel dimension (multiplier * sigma)
      */
     int blurringSizeMultiplier = 6;
 
-    public int[][][][] buildGaussianPyramid(int[][] imageData, int octavesNum, int scalesNum, double baseSigma, int downsamplingFactor) {
+    public MatrixGaussianHelper(double sigma, int blurringSizeMultiplier) {
+        this.baseSigma = sigma;
+        this.blurringSizeMultiplier = blurringSizeMultiplier;
+    }
+
+    public int[][][][] buildGaussianPyramid(int[][] imageData, int octavesNum, int scalesNum, int downsamplingFactor) {
         int[][][][] pyramid = new int[octavesNum][scalesNum][][];
 
         double sigmaInterval = calculateScaleIntervals(scalesNum);

@@ -306,4 +306,34 @@ public class ImageDataUtil {
 
         return kernelData;
     }
+
+
+    public static int[][] convertToGreyscale(int[][] image) {
+        int width = image.length;
+        int height = image[0].length;
+        int[][] greyscaleImage = new int[width][height];
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int pixel = image[x][y];
+
+                // Retrieve the RGB channels
+                int red = getRedChannel(pixel);
+                int green = getGreenChannel(pixel);
+                int blue = getBlueChannel(pixel);
+
+                // Calculate the greyscale value using the luminosity method
+                int greyscaleValue = (int) (0.299 * red + 0.587 * green + 0.114 * blue);
+
+                // Create a new pixel value (assuming RGB format)
+                int greyscalePixel = (greyscaleValue << 16) | (greyscaleValue << 8) | greyscaleValue;
+
+                // Store the greyscale pixel in the new image
+                greyscaleImage[x][y] = greyscalePixel;
+            }
+        }
+
+        return greyscaleImage;
+    }
+
 }
