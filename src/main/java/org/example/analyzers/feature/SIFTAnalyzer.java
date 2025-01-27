@@ -68,7 +68,7 @@ public class SIFTAnalyzer {
 
     }
 
-    private int calculateOctavesNum(BufferedImage image, int minSizeThreshold, int downsamplingFactor) {
+    public int calculateOctavesNum(BufferedImage image, int minSizeThreshold, int downsamplingFactor) {
         int currWidth = image.getWidth();
         int currHeight = image.getHeight();
 
@@ -109,9 +109,9 @@ public class SIFTAnalyzer {
                         .collect(Collectors.toCollection(ArrayList::new));
 
                 // refine candidates into full keypoints
-                ArrayList<Keypoint> keypoints = keypointCandidates.stream()
-                        .map(candidate -> new Keypoint(candidate))
-                        .collect(Collectors.toCollection(ArrayList::new));
+//                ArrayList<Keypoint> keypoints = keypointCandidates.stream()
+//                        .map(candidate -> candidate.refineCandidate(octave, scale))
+//                        .collect(Collectors.toCollection(ArrayList::new));
 
                 // TODO [CURRENT]: extend Keypoint class
 

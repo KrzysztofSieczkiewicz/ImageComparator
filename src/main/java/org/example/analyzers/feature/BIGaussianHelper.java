@@ -2,8 +2,11 @@ package org.example.analyzers.feature;
 
 import org.example.utils.ImageUtil;
 import org.example.utils.accessor.ImageAccessor;
+import org.example.utils.accessor.ImageDataUtil;
 
 import java.awt.image.BufferedImage;
+
+import static org.example.utils.accessor.ImageDataUtil.gaussianBlur;
 
 public class BIGaussianHelper {
 
@@ -61,7 +64,7 @@ public class BIGaussianHelper {
         return result;
     }
 
-    private BufferedImage[] generateGaussianScales(BufferedImage baseImage, int scalesNum, double baseSigma, double scaleInterval) {
+    public BufferedImage[] generateGaussianScales(BufferedImage baseImage, int scalesNum, double baseSigma, double scaleInterval) {
         int numberOfScales = scalesNum + 3;
         BufferedImage[] gaussianImages = new BufferedImage[numberOfScales];
         double baseScale = baseSigma;

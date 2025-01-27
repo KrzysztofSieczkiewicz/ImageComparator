@@ -106,8 +106,9 @@ public class ImageUtil {
      * @param sigma std deviation of the Gaussian distribution used for the blur
      * @return awt Kernel
      */
+    // TODO: parametrize kernel size multiplier
     private static Kernel generateGaussianKernel(double sigma) {
-        int size = (int) (6 * sigma);
+        int size = (int) (5 * sigma);
         if (size % 2 == 0) size++;
 
         float[] kernelData = new float[size * size];

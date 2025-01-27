@@ -3,7 +3,6 @@ package org.example.analyzers.feature;
 import org.example.analyzers.common.PixelPoint;
 import org.example.utils.accessor.ImageAccessor;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class KeypointCandidate {
@@ -51,7 +50,7 @@ public class KeypointCandidate {
     /**
      * Refines candidate to a full keypoint on a given image
      */
-    // TODO: I should not provide entire octave to the pixel candidate.
+    // TODO: I should not have to provide the entire octave to the pixel candidate.
     //  maybe during candidate initialization it could save the neighbouring values as int[x][y][s] so it wouldn't access
     //  other data and wouldn't need passing octave any more? It's a temporary class anyway?
     //  or does it make this class cumbersome - is there a need to store additional data in some temporary class?
@@ -75,7 +74,7 @@ public class KeypointCandidate {
                 { dxs, dys,  dss}
         };
 
-        return new Keypoint(0f, 0f);
+        return new Keypoint(0f, 0f, hessian);
     }
 
     /**
@@ -147,5 +146,20 @@ public class KeypointCandidate {
 
 
         return matrix;
+    }
+
+    private int[][][] getNeighboursMatrix(BufferedImage[] octave,int scaleIndex, int x, int y) {
+        int matrixSize = 3;
+        int[][][] neighbours = new int[matrixSize][matrixSize][matrixSize];
+        for (int i=0; i<matrixSize; i++) {
+            for (int j=0; j<matrixSize; j++) {
+                for (int k=0; k<matrixSize; k++) {
+                    ImageAccessor accessor = ImageAccessor.create(octave[scaleIndex+k-1]);
+                    neighbours[i][j][k] = accessor.getBlue(x+i-1,y+j-1);
+                }
+            }
+        }
+
+        return neighbours;
     }
 }

@@ -1,14 +1,9 @@
 package org.example.analyzers.feature;
 
-import org.example.analyzers.common.PixelPoint;
-import org.example.utils.accessor.ImageAccessor;
-
-import java.awt.image.BufferedImage;
-
 public class Keypoint {
     private float x,y;
 
-    public Keypoint(float x, float y) {
+    public Keypoint(float x, float y, double[][] hessianMatrix) {
         this.x = x;
         this.y = y;
     }
