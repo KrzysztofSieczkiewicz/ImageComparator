@@ -93,16 +93,19 @@ public class BISIFTAnalyzer {
         int scalesNum = dogPyramid[0].length;
 
         for (int octave=0; octave<octavesNum; octave++) {
-
             for (int scale=1; scale<scalesNum-1; scale++) {
-                BufferedImage currentScaleImage = dogPyramid[octave][scale];
+
+                BufferedImage[] scaleTriplet = {
+                        dogPyramid[octave][scale-1],
+                        dogPyramid[octave][scale],
+                        dogPyramid[octave][scale+1]};
 
                 // 0. find potential keypoints
                 ArrayList<PixelPoint> potentialCandidates = findPotentialKeypoints( dogPyramid[octave], scale );
 
                 // filter potential keypoints by checking contrast and edge response
                 ArrayList<KeypointCandidate> keypointCandidates = potentialCandidates.stream()
-                        .map(potentialCandidate -> new KeypointCandidate(currentScaleImage, potentialCandidate))
+                        .map(potentialCandidate -> new KeypointCandidate(scaleTriplet, potentialCandidate))
                         .filter(candidate ->
                                 !candidate.isLowContrast(keypointContrastThreshold) &&
                                 !candidate.isEdgeResponse(keypointEdgeResponseRatio))
@@ -122,7 +125,6 @@ public class BISIFTAnalyzer {
                 //  1. ArrayList<PixelPoint> potentialCandidates = ...
                 //  2. ArrayList<KeypointCandidate> keypointCandidates = potantialCandidates...
                 //  3. ArrayList<Keypoint> keypoints = keypointCandidates...
-                // TODO: zmień nazwę HessianPoint na KeypointCandidate, rozważ dodanie indeksu skali i indeksu oktawy do zmiennych wewn.
 
                 // 3. calculate exact position of keypoint (subpixel coordinates)
 

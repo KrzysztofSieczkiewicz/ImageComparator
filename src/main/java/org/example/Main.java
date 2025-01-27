@@ -3,6 +3,7 @@ package org.example;
 import org.example.analyzers.feature.MatrixGaussianHelper;
 import org.example.analyzers.feature.BIGaussianHelper;
 import org.example.analyzers.feature.BISIFTAnalyzer;
+import org.example.analyzers.feature.MatrixSIFTAnalyzer;
 import org.example.utils.accessor.ImageAccessor;
 
 import javax.imageio.ImageIO;
@@ -32,8 +33,8 @@ public class Main {
 
         long start = System.nanoTime();
 
-        //new MatrixSIFTAnalyzer().constructScaleSpace(actualImage);
-        new BISIFTAnalyzer().constructScaleSpace(actualImage);
+        new MatrixSIFTAnalyzer().constructScaleSpace(actualImage);
+        //new BISIFTAnalyzer().constructScaleSpace(actualImage);
 
         //new HashComparator().comparePHash(actualImage, checkedImage);
         //new SIFTAnalyzer().constructScaleSpace(actualImage);

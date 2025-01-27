@@ -7,14 +7,18 @@ import java.awt.image.BufferedImage;
 
 public class KeypointCandidate {
     private int x,y;
-    private double[][] hessianMatrix;
+    private int[][][] neighbouringMatrix;
+    private int[][] basicHessianMatrix;
     private final double[] eigenvalues;
 
-    public KeypointCandidate(BufferedImage image, int x, int y) {
-        this.hessianMatrix = approxHessianMatrix(image, x, y);
+    // TODO: change - no image is needed, but an octave (or rather three images)
+    //  then You can modify getNeighbouringPixels to work with these three instead of the octave
+    public KeypointCandidate(BufferedImage[] scaleTriplet, int x, int y) {
+        this.neighbouringMatrix = getNeighbouringPixels(scaleTriplet, x, y);
+        this.basicHessianMatrix = approxHessianMatrix(scaleTriplet[1], x, y);
 
-        double trace = hessianMatrix[0][0] + hessianMatrix[1][1];
-        double determinant = (hessianMatrix[0][0] * hessianMatrix[1][1]) - (hessianMatrix[0][1] * hessianMatrix[1][0]);
+        double trace = basicHessianMatrix[0][0] + basicHessianMatrix[1][1];
+        double determinant = (basicHessianMatrix[0][0] * basicHessianMatrix[1][1]) - (basicHessianMatrix[0][1] * basicHessianMatrix[1][0]);
         double discriminant = Math.pow(trace, 2) - 4 * determinant;
 
         this.x = x;
@@ -22,8 +26,21 @@ public class KeypointCandidate {
         this.eigenvalues = calculateEigenvalues(trace, discriminant);
     }
 
-    public KeypointCandidate(BufferedImage image, PixelPoint point) {
-        this(image, point.getX(), point.getY());
+    public KeypointCandidate(BufferedImage[] scaleTriplet, PixelPoint point) {
+        this(scaleTriplet, point.getX(), point.getY());
+    }
+
+    public KeypointCandidate(int[][][] scaleTriplet, PixelPoint point) {
+        this.neighbouringMatrix = getNeighbouringPixels(scaleTriplet, x, y);
+        this.basicHessianMatrix = approxHessianMatrix(scaleTriplet[1], x, y);
+
+        double trace = basicHessianMatrix[0][0] + basicHessianMatrix[1][1];
+        double determinant = (basicHessianMatrix[0][0] * basicHessianMatrix[1][1]) - (basicHessianMatrix[0][1] * basicHessianMatrix[1][0]);
+        double discriminant = Math.pow(trace, 2) - 4 * determinant;
+
+        this.x = point.getX();
+        this.y = point.getY();
+        this.eigenvalues = calculateEigenvalues(trace, discriminant);
     }
 
 
@@ -43,8 +60,8 @@ public class KeypointCandidate {
         return y;
     }
 
-    public double[][] getHessianMatrix() {
-        return hessianMatrix;
+    public int[][] getBasicHessianMatrix() {
+        return basicHessianMatrix;
     }
 
     /**
@@ -60,9 +77,9 @@ public class KeypointCandidate {
         ImageAccessor currentAccessor = ImageAccessor.create(octave[scaleIndex]);
         ImageAccessor nextAccessor = ImageAccessor.create(octave[scaleIndex+1]);
 
-        double dxx = hessianMatrix[0][0];
-        double dyy = hessianMatrix[1][1];
-        double dxy = hessianMatrix[0][1];
+        double dxx = basicHessianMatrix[0][0];
+        double dyy = basicHessianMatrix[1][1];
+        double dxy = basicHessianMatrix[0][1];
 
         double dss = nextAccessor.getBlue(x,y) - 2 * currentAccessor.getBlue(x,y) + prevAccessor.getBlue(x,y);
         double dxs = (nextAccessor.getBlue(x+1,y) - nextAccessor.getBlue(x-1,y)) - (prevAccessor.getBlue(x+1,y) - prevAccessor.getBlue(x-1,y));
@@ -75,6 +92,24 @@ public class KeypointCandidate {
         };
 
         return new Keypoint(0f, 0f, hessian);
+    }
+
+    public Keypoint refineCandidate() {
+        double dxx = basicHessianMatrix[0][0];
+        double dyy = basicHessianMatrix[1][1];
+        double dxy = basicHessianMatrix[0][1];
+
+        double dss = neighbouringMatrix[2][x][y] - 2 * neighbouringMatrix[1][x][y] + neighbouringMatrix[0][x][y];
+        double dxs = (neighbouringMatrix[2][x+1][y] - neighbouringMatrix[2][x-1][y]) - (neighbouringMatrix[0][x+1][y] - neighbouringMatrix[0][x-1][y]);
+        double dys = (neighbouringMatrix[2][x][y+1] - neighbouringMatrix[2][x][y-1]) - (neighbouringMatrix[0][x][y+1] - neighbouringMatrix[0][x][y-1]);
+
+        double[][] hessianMatrix = {
+                { dxx, dxy,  dxs},
+                { dxy, dyy,  dys},
+                { dxs, dys,  dss}
+        };
+
+        return new Keypoint(0f, 0f, hessianMatrix);
     }
 
     /**
@@ -96,15 +131,9 @@ public class KeypointCandidate {
     /**
      * Generates Hessian matrix for a single pixel using second order Sobel operators
      */
-    private double[][] approxHessianMatrix(BufferedImage image, int x, int y) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-        double[][] matrix = new double[2][2];
-
-        BufferedImage resultImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-
+    // TODO: needs to be finished
+    private int[][] approxHessianMatrix(BufferedImage image, int x, int y) {
         ImageAccessor imageAccessor = ImageAccessor.create(image);
-        ImageAccessor resultAccessor = ImageAccessor.create(resultImage);
 
         int[][] sobelX2 = {
                 { 1, -2,  1},
@@ -117,11 +146,10 @@ public class KeypointCandidate {
                 { 1,  2,  1}
         };
         int[][] sobelXY = {
-                { 0, -1,  0},
-                {-1,  4, -1},
-                { 0, -1,  0}
+                { -1, 0, -1},
+                {  0, 0,  0},
+                {  1, 0, -1}
         };
-
 
         int dxx = 0, dyy = 0, dxy = 0;
         for (int dx=-1; dx<=1; dx++) {
@@ -140,22 +168,91 @@ public class KeypointCandidate {
             }
         }
 
-        int hessianValue = (int) Math.sqrt(dxx * dxx + dyy * dyy + 2 * dxy * dxy);
-        hessianValue = Math.min(255, Math.max(0, hessianValue));
-        resultAccessor.setOpaquePixel(x, y, hessianValue, hessianValue, hessianValue);
-
-
-        return matrix;
+        return new int[][] {
+                {dxx, dxy},
+                {dxy, dyy}
+        };
     }
 
-    private int[][][] getNeighboursMatrix(BufferedImage[] octave,int scaleIndex, int x, int y) {
+    /**
+     * Generates Hessian matrix for a single pixel using second order Sobel operators
+     */
+    private int[][] approxHessianMatrix(int[][] imageData, int x, int y) {
+        int[][] sobelX2 = {
+                { 1, -2,  1},
+                { 2, -4,  2},
+                { 1, -2,  1}
+        };
+        int[][] sobelY2 = {
+                { 1,  2,  1},
+                {-2, -4, -2},
+                { 1,  2,  1}
+        };
+        int[][] sobelXY = {
+                { -1, 0, -1},
+                {  0, 0,  0},
+                {  1, 0, -1}
+        };
+
+        int dxx = 0, dyy = 0, dxy = 0;
+        for (int dx=-1; dx<=1; dx++) {
+            for (int dy=-1; dy<=1; dy++) {
+                int pixelX = x + dx;
+                int pixelY = y + dy;
+
+                int intensity = imageData[pixelX][pixelY];
+
+                dxx += intensity * sobelX2[dx + 1][dy + 1];
+                dyy += intensity * sobelY2[dx + 1][dy + 1];
+                dxy += intensity * sobelXY[dx + 1][dy + 1];
+            }
+        }
+
+        return new int[][]{
+                {dxx, dxy},
+                {dxy, dyy}
+        };
+    }
+
+    // TODO: change to use ImageAccessor[] instead
+    private int[][][] getNeighbouringPixels(BufferedImage[] scaleTriplet,int scaleIndex, int x, int y) {
         int matrixSize = 3;
         int[][][] neighbours = new int[matrixSize][matrixSize][matrixSize];
         for (int i=0; i<matrixSize; i++) {
             for (int j=0; j<matrixSize; j++) {
                 for (int k=0; k<matrixSize; k++) {
-                    ImageAccessor accessor = ImageAccessor.create(octave[scaleIndex+k-1]);
+                    ImageAccessor accessor = ImageAccessor.create(scaleTriplet[scaleIndex+k-1]);
                     neighbours[i][j][k] = accessor.getBlue(x+i-1,y+j-1);
+                }
+            }
+        }
+
+        return neighbours;
+    }
+
+    private int[][][] getNeighbouringPixels(BufferedImage[] scaleTriplet, int x, int y) {
+        int[][][] neighbours = new int[3][3][3];
+
+        for (int ds=0; ds<scaleTriplet.length; ds++) {
+            BufferedImage image = scaleTriplet[ds];
+            ImageAccessor accessor = ImageAccessor.create(image);
+            for (int dx=0; dx<accessor.getWidth(); dx++) {
+                for (int dy=0; dy<accessor.getHeight(); dy++) {
+                    neighbours[ds][dx][dy] = accessor.getBlue(x+dx-1, y+dy-1);
+                }
+            }
+        }
+
+        return neighbours;
+    }
+
+    private int[][][] getNeighbouringPixels(int[][][] scaleTriplet, int x, int y) {
+        int[][][] neighbours = new int[3][3][3];
+
+        for (int ds=0; ds<scaleTriplet.length; ds++) {
+            for (int dx=0; dx<scaleTriplet[0].length; dx++) {
+                for (int dy=0; dy<scaleTriplet[0][0].length; dy++) {
+                    neighbours[ds][dx][dy] = scaleTriplet[1+ds-1][x+dx-1][y+dy-1];
                 }
             }
         }
