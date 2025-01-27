@@ -101,6 +101,8 @@ public class KeypointCandidate {
         return new Keypoint(0, 0, gradientVector, hessianMatrix);
     }
 
+    // TODO: remove this from Keypoint candidate. It's better if candidates will calculate derivatives by themselves,
+    //  as this method provides no checks - it is unnecessary here
     public Keypoint refineCandidate() {
         // approx 1st order derivatives with central difference approximation
         double dx = (neighbouringMatrix[1][x+1][y] - neighbouringMatrix[1][x-1][y]) / 2.0;
@@ -262,12 +264,20 @@ public class KeypointCandidate {
         return neighbours;
     }
 
+    // TODO: CURRENT:
+    //  add a parameter: radius
+    //  if a pixel outside of image boundaries is requested - get it's mirrored value
+    //  radius will be parametrized with config
+    //  the only thing to consider - do scale triplets need to be replaced? if yes - radius might be skipped as it can be determined from array length
+    //  if triplet might be replaced by larger collection -> how to determine it's size? config?
+    //  as for now - the best would be two separate parameters - scaleDepth, windowSize -> that'd allow for many optimizations
     private int[][][] getNeighbouringPixels(int[][][] scaleTriplet, int x, int y) {
+        int matrixDimension = scaleTriplet.length;
         int[][][] neighbours = new int[3][3][3];
 
-        for (int ds=0; ds<scaleTriplet.length; ds++) {
-            for (int dx=0; dx<scaleTriplet[0].length; dx++) {
-                for (int dy=0; dy<scaleTriplet[0][0].length; dy++) {
+        for (int ds=0; ds<matrixDimension; ds++) {
+            for (int dx=0; dx<matrixDimension; dx++) {
+                for (int dy=0; dy<matrixDimension; dy++) {
                     neighbours[ds][dx][dy] = scaleTriplet[1+ds-1][x+dx-1][y+dy-1];
                 }
             }

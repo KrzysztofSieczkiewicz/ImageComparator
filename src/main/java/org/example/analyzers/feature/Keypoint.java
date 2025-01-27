@@ -31,7 +31,7 @@ public class Keypoint {
         this.pixelY = candidate.getY();
     }
 
-    public boolean performSubpixelRefinement() {
+    public boolean subpixelRefinement() {
         RealMatrix hessian = new Array2DRowRealMatrix(hessianMatrix);
         RealVector gradient = new ArrayRealVector(gradientsVector);
 
@@ -43,17 +43,25 @@ public class Keypoint {
 
         double offsetMagnitude = offset.getNorm();
         if (offsetMagnitude > 0.5) {
-            System.out.println("Offset too large: " + offsetMagnitude);
             return false;
         }
 
         double contrast = gradient.dotProduct(offset);
         if (Math.abs(contrast) < contrastThreshold) {
-            System.out.println("Low contrast at refined position: " + contrast);
             return false;
         }
 
         return true;
+    }
+
+    // TODO: finish this
+    private void computeOrientation() {
+        int[] histogramm = new int[36];
+
+        double magnitude = Math.sqrt( gradientsVector[0]*gradientsVector[0] + gradientsVector[1]*gradientsVector[1]);
+        double direction = Math.atan2(gradientsVector[0], gradientsVector[1]) * 100 / Math.PI;
+
+        if (direction < 0) direction += 360;
     }
 
 }
