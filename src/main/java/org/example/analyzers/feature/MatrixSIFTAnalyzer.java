@@ -123,14 +123,19 @@ public class MatrixSIFTAnalyzer {
                         .map(KeypointCandidate::refineCandidate)
                         .collect(Collectors.toCollection(ArrayList::new));
 
-                // TODO [CURRENT]: extend Keypoint class
-                // 3.
+
+                // 3. subpixel refinement
+                keypoints = keypoints.stream()
+                        .filter(Keypoint::performSubpixelRefinement)
+                        .collect(Collectors.toCollection(ArrayList::new));
+
+                // TODO [CURRENT]: extend Keypoint class with orientation method
 
                 // 4. at this point keypoints should be ready to make into full descriptor, but only after:
                 //  a. calculate exact position of keypoint (subpixel coordinates)
-                //  b. assigning orientation to each Keypoint (compute the Gradient Magnitude and Orientation)
-                //  c. create orientation histogram
-                //  d. decide on dominant orientation
+                //  b. assigning orientation to each Keypoint (compute the Gradient Magnitude and Orientation) and create orientation histogram
+                //      and finally decide on dominant orientation
+                //
                 // then, convert keypoints into normalized descriptors.
 
                 // 5. Use descriptor distances and RANSAC to match keypoints across different images

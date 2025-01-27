@@ -7,8 +7,8 @@ import java.awt.image.BufferedImage;
 
 public class KeypointCandidate {
     private int x,y;
-    private int[][][] neighbouringMatrix;
-    private int[][] basicHessianMatrix;
+    private final int[][][] neighbouringMatrix;
+    private final int[][] basicHessianMatrix;
     private final double[] eigenvalues;
 
     public KeypointCandidate(BufferedImage[] scaleTriplet, int x, int y) {
@@ -98,7 +98,7 @@ public class KeypointCandidate {
                 { dxs, dys,  dss}
         };
 
-        return new Keypoint(0f, 0f, gradientVector, hessianMatrix);
+        return new Keypoint(0, 0, gradientVector, hessianMatrix);
     }
 
     public Keypoint refineCandidate() {
@@ -125,7 +125,7 @@ public class KeypointCandidate {
                 { dxs, dys,  dss}
         };
 
-        return new Keypoint(0f, 0f, gradientVector, hessianMatrix);
+        return new Keypoint(0, 0, gradientVector, hessianMatrix);
     }
 
     /**
