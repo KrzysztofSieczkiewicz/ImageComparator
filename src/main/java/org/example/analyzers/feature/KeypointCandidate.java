@@ -101,6 +101,8 @@ public class KeypointCandidate {
         return new Keypoint(0, 0, gradientVector, hessianMatrix);
     }
 
+    // TODO: remove this from Keypoint candidate. It's better if candidates will calculate derivatives by themselves,
+    //  as this method provides no checks - it is unnecessary here
     public Keypoint refineCandidate() {
         // approx 1st order derivatives with central difference approximation
         double dx = (neighbouringMatrix[1][x+1][y] - neighbouringMatrix[1][x-1][y]) / 2.0;
@@ -262,6 +264,10 @@ public class KeypointCandidate {
         return neighbours;
     }
 
+    // TODO: CURRENT:
+    //  add a parameter: radius
+    //  if a pixel outside of image boundaries is requested - get it's mirrored value
+    //  radius will be parametrized with config
     private int[][][] getNeighbouringPixels(int[][][] scaleTriplet, int x, int y) {
         int[][][] neighbours = new int[3][3][3];
 

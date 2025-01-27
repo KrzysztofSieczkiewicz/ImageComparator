@@ -126,7 +126,7 @@ public class MatrixSIFTAnalyzer {
 
                 // 3. subpixel refinement
                 keypoints = keypoints.stream()
-                        .filter(Keypoint::performSubpixelRefinement)
+                        .filter(Keypoint::subpixelRefinement)
                         .collect(Collectors.toCollection(ArrayList::new));
 
                 // TODO [CURRENT]: extend Keypoint class with orientation method

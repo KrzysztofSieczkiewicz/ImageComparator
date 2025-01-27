@@ -2,7 +2,6 @@ package org.example;
 
 import org.example.analyzers.feature.MatrixGaussianHelper;
 import org.example.analyzers.feature.BIGaussianHelper;
-import org.example.analyzers.feature.BISIFTAnalyzer;
 import org.example.analyzers.feature.MatrixSIFTAnalyzer;
 import org.example.utils.accessor.ImageAccessor;
 
