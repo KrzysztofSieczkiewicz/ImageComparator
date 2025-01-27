@@ -11,8 +11,6 @@ public class KeypointCandidate {
     private int[][] basicHessianMatrix;
     private final double[] eigenvalues;
 
-    // TODO: change - no image is needed, but an octave (or rather three images)
-    //  then You can modify getNeighbouringPixels to work with these three instead of the octave
     public KeypointCandidate(BufferedImage[] scaleTriplet, int x, int y) {
         this.neighbouringMatrix = getNeighbouringPixels(scaleTriplet, x, y);
         this.basicHessianMatrix = approxHessianMatrix(scaleTriplet[1], x, y);
@@ -73,35 +71,26 @@ public class KeypointCandidate {
     //  or does it make this class cumbersome - is there a need to store additional data in some temporary class?
     //  anyway - find a way to skip passing octave and scaleIndex -> this method is a Candidate transforming itself into a Keypoint
     public Keypoint refineCandidate(BufferedImage[] octave, int scaleIndex) {
+        // approx 1st order derivatives with central difference approximation
+        double dx = (neighbouringMatrix[1][x+1][y] - neighbouringMatrix[1][x-1][y]) / 2.0;
+        double dy = (neighbouringMatrix[1][x][y+1] - neighbouringMatrix[1][x][y-1]) / 2.0;
+        double ds = (neighbouringMatrix[2][x][y] - neighbouringMatrix[0][x][y]) / 2.0;
+
         ImageAccessor prevAccessor = ImageAccessor.create(octave[scaleIndex-1]);
         ImageAccessor currentAccessor = ImageAccessor.create(octave[scaleIndex]);
         ImageAccessor nextAccessor = ImageAccessor.create(octave[scaleIndex+1]);
 
+        // reuse 2nd order space derivatives
         double dxx = basicHessianMatrix[0][0];
         double dyy = basicHessianMatrix[1][1];
         double dxy = basicHessianMatrix[0][1];
 
+        // approx 2nd order derivatives with second-order central difference
         double dss = nextAccessor.getBlue(x,y) - 2 * currentAccessor.getBlue(x,y) + prevAccessor.getBlue(x,y);
         double dxs = (nextAccessor.getBlue(x+1,y) - nextAccessor.getBlue(x-1,y)) - (prevAccessor.getBlue(x+1,y) - prevAccessor.getBlue(x-1,y));
         double dys = (nextAccessor.getBlue(x,y+1) - nextAccessor.getBlue(x,y-1)) - (prevAccessor.getBlue(x,y+1) - prevAccessor.getBlue(x,y-1));
 
-        double[][] hessian = {
-                { dxx, dxy,  dxs},
-                { dxy, dyy,  dys},
-                { dxs, dys,  dss}
-        };
-
-        return new Keypoint(0f, 0f, hessian);
-    }
-
-    public Keypoint refineCandidate() {
-        double dxx = basicHessianMatrix[0][0];
-        double dyy = basicHessianMatrix[1][1];
-        double dxy = basicHessianMatrix[0][1];
-
-        double dss = neighbouringMatrix[2][x][y] - 2 * neighbouringMatrix[1][x][y] + neighbouringMatrix[0][x][y];
-        double dxs = (neighbouringMatrix[2][x+1][y] - neighbouringMatrix[2][x-1][y]) - (neighbouringMatrix[0][x+1][y] - neighbouringMatrix[0][x-1][y]);
-        double dys = (neighbouringMatrix[2][x][y+1] - neighbouringMatrix[2][x][y-1]) - (neighbouringMatrix[0][x][y+1] - neighbouringMatrix[0][x][y-1]);
+        double[] gradientVector = { dx, dy, ds };
 
         double[][] hessianMatrix = {
                 { dxx, dxy,  dxs},
@@ -109,7 +98,34 @@ public class KeypointCandidate {
                 { dxs, dys,  dss}
         };
 
-        return new Keypoint(0f, 0f, hessianMatrix);
+        return new Keypoint(0f, 0f, gradientVector, hessianMatrix);
+    }
+
+    public Keypoint refineCandidate() {
+        // approx 1st order derivatives with central difference approximation
+        double dx = (neighbouringMatrix[1][x+1][y] - neighbouringMatrix[1][x-1][y]) / 2.0;
+        double dy = (neighbouringMatrix[1][x][y+1] - neighbouringMatrix[1][x][y-1]) / 2.0;
+        double ds = (neighbouringMatrix[2][x][y] - neighbouringMatrix[0][x][y]) / 2.0;
+
+        // reuse 2nd order space derivatives
+        double dxx = basicHessianMatrix[0][0];
+        double dyy = basicHessianMatrix[1][1];
+        double dxy = basicHessianMatrix[0][1];
+
+        // approx 2nd order derivatives with second-order central difference
+        double dss = neighbouringMatrix[2][x][y] - 2 * neighbouringMatrix[1][x][y] + neighbouringMatrix[0][x][y];
+        double dxs = ((neighbouringMatrix[2][x+1][y] - neighbouringMatrix[2][x-1][y]) - (neighbouringMatrix[0][x+1][y] - neighbouringMatrix[0][x-1][y])) / 2.0;
+        double dys = ((neighbouringMatrix[2][x][y+1] - neighbouringMatrix[2][x][y-1]) - (neighbouringMatrix[0][x][y+1] - neighbouringMatrix[0][x][y-1])) / 2.0;
+
+        double[] gradientVector = { dx, dy, ds };
+
+        double[][] hessianMatrix = {
+                { dxx, dxy,  dxs},
+                { dxy, dyy,  dys},
+                { dxs, dys,  dss}
+        };
+
+        return new Keypoint(0f, 0f, gradientVector, hessianMatrix);
     }
 
     /**
@@ -189,7 +205,7 @@ public class KeypointCandidate {
                 { 1,  2,  1}
         };
         int[][] sobelXY = {
-                { -1, 0, -1},
+                { -1, 0,  1},
                 {  0, 0,  0},
                 {  1, 0, -1}
         };

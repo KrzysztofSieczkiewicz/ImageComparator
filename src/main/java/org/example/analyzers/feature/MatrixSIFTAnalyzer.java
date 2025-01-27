@@ -124,23 +124,16 @@ public class MatrixSIFTAnalyzer {
                         .collect(Collectors.toCollection(ArrayList::new));
 
                 // TODO [CURRENT]: extend Keypoint class
+                // 3.
 
-                // TODO: wymaga drobnej zmiany -> po wyszukaniu "ciekawych" pixeli zapisujemy je jako listę potencjalnych pixeli
-                //  po filtrowaniu -> zapisujmy je jako listę hessianPoint - kontrast i krawędzie mogą być sprawdzane macierzą Hessego 2x2 (w ramach jednej skali)
-                //  do refinowania kandydatów potrzebna jest macierz Hessego 3x3 (masz już część w HessianPoint)
-                //  Podsumowując:
-                //  1. ArrayList<PixelPoint> potentialCandidates = ...
-                //  2. ArrayList<KeypointCandidate> keypointCandidates = potantialCandidates...
-                //  3. ArrayList<Keypoint> keypoints = keypointCandidates...
-                // 3. calculate exact position of keypoint (subpixel coordinates)
+                // 4. at this point keypoints should be ready to make into full descriptor, but only after:
+                //  a. calculate exact position of keypoint (subpixel coordinates)
+                //  b. assigning orientation to each Keypoint (compute the Gradient Magnitude and Orientation)
+                //  c. create orientation histogram
+                //  d. decide on dominant orientation
+                // then, convert keypoints into normalized descriptors.
 
-                // 4. at this point candidates should be ready to make into full Keypoints, but only after:
-                //  a. assigning orientation to each Keypoint (compute the Gradient Magnitude and Orientation)
-                //  b. create orientation histogram
-                //  c. decide on dominant orientation
-
-                // 5. Generate normalized descriptors for each keypoint
-                // 6. Use descriptor distances and RANSAC to match keypoints across different images
+                // 5. Use descriptor distances and RANSAC to match keypoints across different images
             }
 
         }
