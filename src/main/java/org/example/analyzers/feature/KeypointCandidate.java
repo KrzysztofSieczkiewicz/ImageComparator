@@ -30,7 +30,7 @@ public class KeypointCandidate {
 
     public KeypointCandidate(int[][][] scaleTriplet, PixelPoint point) {
         this.neighbouringMatrix = getNeighbouringPixels(scaleTriplet, x, y);
-        this.basicHessianMatrix = approxHessianMatrix(scaleTriplet[1], x, y);
+        this.basicHessianMatrix = approxHessianMatrix(scaleTriplet, x, y);
 
         double trace = basicHessianMatrix[0][0] + basicHessianMatrix[1][1];
         double determinant = (basicHessianMatrix[0][0] * basicHessianMatrix[1][1]) - (basicHessianMatrix[0][1] * basicHessianMatrix[1][0]);
@@ -195,7 +195,12 @@ public class KeypointCandidate {
     /**
      * Generates Hessian matrix for a single pixel using second order Sobel operators
      */
-    private int[][] approxHessianMatrix(int[][] imageData, int x, int y) {
+    private int[][] approxHessianMatrix(int[][][] octaveSlice, int x, int y) {
+        int[][] imageData = octaveSlice[octaveSlice.length / 2];
+
+        int maxX = octaveSlice[0].length - 1;
+        int maxY = octaveSlice[0][0].length - 1;
+
         int[][] sobelX2 = {
                 { 1, -2,  1},
                 { 2, -4,  2},
@@ -214,11 +219,14 @@ public class KeypointCandidate {
 
         int dxx = 0, dyy = 0, dxy = 0;
         for (int dx=-1; dx<=1; dx++) {
-            for (int dy=-1; dy<=1; dy++) {
-                int pixelX = x + dx;
-                int pixelY = y + dy;
+            int currentX = x + dx;
+            currentX = safeguardPixelPosition(currentX, 0, maxX);
 
-                int intensity = imageData[pixelX][pixelY];
+            for (int dy=-1; dy<=1; dy++) {
+                int currentY = y + dy;
+                currentY = safeguardPixelPosition(currentY, 0, maxY);
+
+                int intensity = imageData[currentX][currentY];
 
                 dxx += intensity * sobelX2[dx + 1][dy + 1];
                 dyy += intensity * sobelY2[dx + 1][dy + 1];
@@ -284,5 +292,43 @@ public class KeypointCandidate {
         }
 
         return neighbours;
+    }
+
+    private int[][][] extractPixelWindow3D(int[][][] octaveSlice, int pixelX, int pixelY, int pixelWindowSize) {
+        int scaleDepth = octaveSlice.length;
+        int halfWindowSize = pixelWindowSize / 2;
+
+        int[][][] pixels = new int[scaleDepth][pixelWindowSize][pixelWindowSize];
+
+        int maxX = octaveSlice[0].length - 1;
+        int maxY = octaveSlice[0][0].length - 1;
+
+        for (int currentScale=0; currentScale<scaleDepth; currentScale++) {
+            int[][] scaleLayer = octaveSlice[currentScale];
+            int[][] windowLayer = pixels[currentScale];
+
+            for (int dx=-halfWindowSize; dx<=halfWindowSize; dx++) {
+                int currentX = pixelX + dx;
+                currentX = safeguardPixelPosition(currentX, 0, maxX);
+
+                for (int dy=-halfWindowSize; dy<=halfWindowSize; dy++) {
+                    int currentY = pixelY + dy;
+                    currentY = safeguardPixelPosition(currentY, 0, maxY);
+
+                    windowLayer[dx+halfWindowSize][dy+halfWindowSize] = scaleLayer[currentX][currentY];
+                }
+            }
+        }
+
+        return pixels;
+    }
+
+    private int safeguardPixelPosition(int coordinate, int min, int max) {
+        if (coordinate < min) {
+            return 2 * min - coordinate;
+        } else if (coordinate > max) {
+            return 2 * max - coordinate;
+        }
+        return coordinate;
     }
 }
