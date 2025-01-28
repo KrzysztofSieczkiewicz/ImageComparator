@@ -1,7 +1,6 @@
 package org.example.utils.accessor;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.Kernel;
 import java.awt.image.Raster;
 
 public class ImageDataUtil {
@@ -131,18 +130,18 @@ public class ImageDataUtil {
         int height = imageData[0].length;
         int[][] blurredImageData = new int[width][height];
 
-        // Generate the Gaussian kernel
         float[] kernelData = generateGaussianKernelData(sigma, radiusMultiplier);
         int kernelSize = (int) Math.sqrt(kernelData.length);
         int halfKernelSize = kernelSize / 2;
 
         // First pass: horizontal blur
         for (int y = 0; y < height; y++) {
-            for (int x = halfKernelSize; x < width - halfKernelSize; x++) {
+            for (int x = 0; x < width; x++) {
                 double r = 0, g = 0, b = 0, weightSum = 0;
 
                 for (int kx = -halfKernelSize; kx <= halfKernelSize; kx++) {
-                    int pixel = imageData[x + kx][y];
+                    int mirroredX = Math.max(0, Math.min(x + kx, width - 1));
+                    int pixel = imageData[mirroredX][y];
                     float kernelValue = kernelData[kx + halfKernelSize];
 
                     int pixelR = (pixel >> 16) & 0xFF;
@@ -163,15 +162,15 @@ public class ImageDataUtil {
                 blurredImageData[x][y] = blurredPixel;
             }
         }
-
         // Second pass: vertical blur
         int[][] tempImageData = new int[width][height];
         for (int x = 0; x < width; x++) {
-            for (int y = halfKernelSize; y < height - halfKernelSize; y++) {
+            for (int y = 0; y < height; y++) {
                 double r = 0, g = 0, b = 0, weightSum = 0;
 
                 for (int ky = -halfKernelSize; ky <= halfKernelSize; ky++) {
-                    int pixel = blurredImageData[x][y + ky];
+                    int mirroredY = Math.max(0, Math.min(y + ky, height - 1));
+                    int pixel = blurredImageData[x][mirroredY];
                     float kernelValue = kernelData[ky + halfKernelSize];
 
                     int pixelR = (pixel >> 16) & 0xFF;
@@ -195,76 +194,6 @@ public class ImageDataUtil {
 
         return tempImageData;
     }
-
-    public static int[] gaussianBlur(int[] imageData, int width, int height, double sigma, int radiusMultiplier) {
-        int[] blurredImageData = new int[imageData.length];
-
-        // Generate the Gaussian kernel
-        float[] kernelData = generateGaussianKernelData(sigma, radiusMultiplier);
-        int kernelSize = (int) Math.sqrt(kernelData.length);
-        int halfKernelSize = kernelSize / 2;
-
-        // First pass: horizontal blur
-        for (int y = 0; y < height; y++) {
-            for (int x = halfKernelSize; x < width - halfKernelSize; x++) {
-                double r = 0, g = 0, b = 0, weightSum = 0;
-
-                for (int kx = -halfKernelSize; kx <= halfKernelSize; kx++) {
-                    int pixelIndex = (y * width) + (x + kx);
-                    int pixel = imageData[pixelIndex];
-                    float kernelValue = kernelData[kx + halfKernelSize];
-
-                    int pixelR = (pixel >> 16) & 0xFF;
-                    int pixelG = (pixel >> 8) & 0xFF;
-                    int pixelB = pixel & 0xFF;
-
-                    r += pixelR * kernelValue;
-                    g += pixelG * kernelValue;
-                    b += pixelB * kernelValue;
-                    weightSum += kernelValue;
-                }
-
-                r = Math.min(255, Math.max(0, r / weightSum));
-                g = Math.min(255, Math.max(0, g / weightSum));
-                b = Math.min(255, Math.max(0, b / weightSum));
-
-                int blurredPixel = (int) (r) << 16 | (int) (g) << 8 | (int) (b);
-                blurredImageData[(y * width) + x] = blurredPixel;
-            }
-        }
-
-        // Second pass: vertical blur
-        for (int x = 0; x < width; x++) {
-            for (int y = halfKernelSize; y < height - halfKernelSize; y++) {
-                double r = 0, g = 0, b = 0, weightSum = 0;
-
-                for (int ky = -halfKernelSize; ky <= halfKernelSize; ky++) {
-                    int pixelIndex = ((y + ky) * width) + x;
-                    int pixel = blurredImageData[pixelIndex];
-                    float kernelValue = kernelData[ky + halfKernelSize];
-
-                    int pixelR = (pixel >> 16) & 0xFF;
-                    int pixelG = (pixel >> 8) & 0xFF;
-                    int pixelB = pixel & 0xFF;
-
-                    r += pixelR * kernelValue;
-                    g += pixelG * kernelValue;
-                    b += pixelB * kernelValue;
-                    weightSum += kernelValue;
-                }
-
-                r = Math.min(255, Math.max(0, r / weightSum));
-                g = Math.min(255, Math.max(0, g / weightSum));
-                b = Math.min(255, Math.max(0, b / weightSum));
-
-                int blurredPixel = (int) (r) << 16 | (int) (g) << 8 | (int) (b);
-                blurredImageData[(y * width) + x] = blurredPixel;
-            }
-        }
-
-        return blurredImageData;
-    }
-
 
     /**
      * Blurs image using convolve op.
@@ -308,7 +237,7 @@ public class ImageDataUtil {
     }
 
 
-    public static int[][] convertToGreyscale(int[][] image) {
+    public static int[][] greyscale(int[][] image) {
         int width = image.length;
         int height = image[0].length;
         int[][] greyscaleImage = new int[width][height];
@@ -317,19 +246,12 @@ public class ImageDataUtil {
             for (int y = 0; y < height; y++) {
                 int pixel = image[x][y];
 
-                // Retrieve the RGB channels
                 int red = getRedChannel(pixel);
                 int green = getGreenChannel(pixel);
                 int blue = getBlueChannel(pixel);
-
-                // Calculate the greyscale value using the luminosity method
                 int greyscaleValue = (int) (0.299 * red + 0.587 * green + 0.114 * blue);
 
-                // Create a new pixel value (assuming RGB format)
-                int greyscalePixel = (greyscaleValue << 16) | (greyscaleValue << 8) | greyscaleValue;
-
-                // Store the greyscale pixel in the new image
-                greyscaleImage[x][y] = greyscalePixel;
+                greyscaleImage[x][y] = (greyscaleValue << 16) | (greyscaleValue << 8) | greyscaleValue;
             }
         }
 

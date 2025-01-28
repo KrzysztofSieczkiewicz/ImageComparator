@@ -1,10 +1,12 @@
 package org.example.analyzers.feature;
 
 import org.example.analyzers.common.PixelPoint;
-import org.example.utils.ImageUtil;
 import org.example.utils.accessor.ImageDataUtil;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
@@ -17,12 +19,12 @@ public class MatrixSIFTAnalyzer {
     /**
      * When to stop creating octaves
      */
-    int minImageSizeThreshold = 16;
+    int minImageSizeThreshold = 128;
 
     /**
      * How many scales should be generated per one octave
      */
-    int scalesAmount = 3;
+    int scalesAmount = 2;
 
     /**
      * Base sigma value determining initial image blur
@@ -49,12 +51,35 @@ public class MatrixSIFTAnalyzer {
      */
     double keypointEdgeResponseRatio = 10;
 
+    // TODO: CURRENT -> time to debug -
+    //  go through each dog pyramid step and save all created images.
+    //  then go through all keypoint steps and mark them on the image
 
     public void constructScaleSpace(int[][] imageData) {
         MatrixGaussianHelper helper = new MatrixGaussianHelper(baseSigma, blurringSizeMultiplier);
 
         // 0. Greyscale the image
-        int[][] greyscaleImageData = ImageDataUtil.convertToGreyscale(imageData);
+        int[][] greyscaleImageData = ImageDataUtil.greyscale(imageData);
+
+
+        {// [DEBUG]
+            BufferedImage greyscaleImage = new BufferedImage(imageData.length, imageData[0].length, BufferedImage.TYPE_INT_RGB);
+            for (int y = 0; y < imageData[0].length; y++) {
+                for (int x = 0; x < imageData.length; x++) {
+                    // Get the grayscale value and set the pixel in the BufferedImage
+                    int pixelValue = greyscaleImageData[x][y];
+                    int rgb = (pixelValue << 16) | (pixelValue << 8) | pixelValue; // Grayscale to RGB format
+                    greyscaleImage.setRGB(x, y, rgb);
+                }
+            }
+            File file = new File("src/1_1_ScaleSpace_Greyscale.png");
+            try {
+                ImageIO.write(greyscaleImage, "PNG", file);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }// [DEBUG]
+
 
         // 1. Octaves
         int octavesAmount = calculateOctavesNum(greyscaleImageData, minImageSizeThreshold, downsamplingFactor);
@@ -62,8 +87,64 @@ public class MatrixSIFTAnalyzer {
         // 2. Build Gaussian Pyramid
         int[][][][] gaussianPyramid = helper.buildGaussianPyramid(greyscaleImageData, octavesAmount, scalesAmount, downsamplingFactor);
 
+
+        {// [DEBUG]
+            int octaveIndex = 1;
+            for (int[][][] octave : gaussianPyramid) {
+                int scaleIndex = 1;
+                for (int[][] scale : octave) {
+                    BufferedImage gaussianImage = new BufferedImage(scale.length, scale[0].length, BufferedImage.TYPE_INT_RGB);
+                    for (int y = 0; y < scale[0].length; y++) {
+                        for (int x = 0; x < scale.length; x++) {
+                            // Get the grayscale value and set the pixel in the BufferedImage
+                            int pixelValue = scale[x][y];
+                            int rgb = (pixelValue << 16) | (pixelValue << 8) | pixelValue; // Grayscale to RGB format
+                            gaussianImage.setRGB(x, y, rgb);
+                        }
+                    }
+                    File file = new File("src/1_2_Gaussian_" + octaveIndex + "_" + scaleIndex + ".png");
+                    try {
+                        ImageIO.write(gaussianImage, "PNG", file);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    scaleIndex++;
+                }
+                octaveIndex++;
+            }
+        }// [DEBUG]
+
+
         // 3. Build DoG pyramid
         int[][][][] dogPyramid = helper.buildDoGPyramid(gaussianPyramid);
+
+
+        {// [DEBUG]
+            int octaveDoGIndex = 1;
+            for (int[][][] octave : dogPyramid) {
+                int scaleDoGIndex = 1;
+                for (int[][] scale : octave) {
+                    BufferedImage gaussianImage = new BufferedImage(scale.length, scale[0].length, BufferedImage.TYPE_INT_RGB);
+                    for (int y = 0; y < scale[0].length; y++) {
+                        for (int x = 0; x < scale.length; x++) {
+                            // Get the grayscale value and set the pixel in the BufferedImage
+                            int pixelValue = scale[x][y];
+                            int rgb = (pixelValue << 16) | (pixelValue << 8) | pixelValue; // Grayscale to RGB format
+                            gaussianImage.setRGB(x, y, rgb);
+                        }
+                    }
+                    File file = new File("src/1_3_DoG_" + octaveDoGIndex + "_" + scaleDoGIndex + ".png");
+                    try {
+                        ImageIO.write(gaussianImage, "PNG", file);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    scaleDoGIndex++;
+                }
+                octaveDoGIndex++;
+            }
+        }// [DEBUG]
+
 
         // 4. Find keypoints in the DoG pyramid
         detectKeypoints(dogPyramid);
@@ -101,21 +182,21 @@ public class MatrixSIFTAnalyzer {
                 // 0. find potential keypoints
                 ArrayList<PixelPoint> potentialCandidates = findPotentialKeypoints(octave[scaleIndex-1], octave[scaleIndex], octave[scaleIndex+1]);
 
+                System.out.println("POTENTIAL CANDIDATES:");
                 potentialCandidates.forEach(candidate -> {
-                    System.out.println("X: " + candidate.getX() + ", Y: " + candidate.getY());
+                    System.out.print("X: " + candidate.getX() + ", Y: " + candidate.getY() + ", ");
                 });
+                System.out.println();
+
+                // TODO: NO PONTENTIAL CANDIDATES ARE CONVERTED INTO CANDIDATES
 
                 // 1. filter potential keypoints by checking contrast and edge response
                 ArrayList<KeypointCandidate> keypointCandidates = potentialCandidates.stream()
                         .map(potentialCandidate -> new KeypointCandidate(octaveSlice, potentialCandidate))
                         .filter(candidate ->
-                                !candidate.isLowContrast(keypointContrastThreshold) &&
-                                !candidate.isEdgeResponse(keypointEdgeResponseRatio))
+                                candidate.isLowContrast(keypointContrastThreshold) &&
+                                candidate.isEdgeResponse(keypointEdgeResponseRatio))
                         .collect(Collectors.toCollection(ArrayList::new));
-
-                keypointCandidates.forEach(candidate -> {
-                    System.out.println("X: " + candidate.getX() + ", Y: " + candidate.getY());
-                });
 
                 // 2. refine candidates into full keypoints
                 ArrayList<Keypoint> keypoints = keypointCandidates.stream()
@@ -136,8 +217,10 @@ public class MatrixSIFTAnalyzer {
                 // then, convert keypoints into normalized descriptors.
 
                 // 5. Use descriptor distances and RANSAC to match keypoints across different images
+
+                System.out.println("KEYPOINTS:");
                 keypoints.forEach(keypoint -> {
-                    System.out.println("X: " + keypoint.getSubPixelX() + ", Y: " + keypoint.getSubPixelY());
+                    System.out.print("X: " + keypoint.getSubPixelX() + ", Y: " + keypoint.getSubPixelY() + ", ");
                 });
 
             }

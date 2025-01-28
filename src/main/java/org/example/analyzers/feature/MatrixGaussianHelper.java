@@ -61,14 +61,15 @@ public class MatrixGaussianHelper {
         int height = firstImage[0].length;
         int[][] result = new int[width][height];
 
-        for (int x=0; x<width; x++) {
-            for (int y=0; y<height; y++) {
-                result[x][y] = Math.max( 0, Math.min(firstImage[x][y], secondImage[x][y]) );
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                result[x][y] = firstImage[x][y] - secondImage[x][y];
             }
         }
 
         return result;
     }
+
 
 
     /**

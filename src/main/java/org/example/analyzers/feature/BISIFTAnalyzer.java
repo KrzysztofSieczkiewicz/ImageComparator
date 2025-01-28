@@ -17,7 +17,7 @@ public class BISIFTAnalyzer {
     /**
      * When to stop creating octaves
      */
-    int minImageSizeThreshold = 16;
+    int minImageSizeThreshold = 128;
 
     /**
      * How many scales should be generated per one octave

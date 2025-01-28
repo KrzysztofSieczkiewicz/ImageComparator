@@ -51,9 +51,9 @@ public class BIGaussianHelper {
 
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
-                int red = Math.max( 0, Math.min(firstAccessor.getRed(x,y), secondAccessor.getRed(x,y)) );
-                int blue = Math.max( 0, Math.min(firstAccessor.getBlue(x,y), secondAccessor.getBlue(x,y)) );
-                int green = Math.max( 0, Math.min(firstAccessor.getGreen(x,y), secondAccessor.getGreen(x,y)) );
+                int red = firstAccessor.getRed(x,y) - secondAccessor.getRed(x,y);
+                int blue = firstAccessor.getBlue(x,y) - secondAccessor.getBlue(x,y);
+                int green = firstAccessor.getGreen(x,y) - secondAccessor.getGreen(x,y);
 
                 resultAccessor.setPixel(x, y, 0, red, green, blue);
             }
