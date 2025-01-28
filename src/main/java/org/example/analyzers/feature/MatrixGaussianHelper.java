@@ -12,7 +12,7 @@ public class MatrixGaussianHelper {
     /**
      * Determines Gaussian blurring kernel dimension (multiplier * sigma)
      */
-    int blurringSizeMultiplier = 6;
+    int blurringSizeMultiplier;
 
     public MatrixGaussianHelper(double sigma, int blurringSizeMultiplier) {
         this.baseSigma = sigma;

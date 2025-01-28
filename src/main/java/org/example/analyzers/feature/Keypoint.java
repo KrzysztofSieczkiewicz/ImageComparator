@@ -64,4 +64,12 @@ public class Keypoint {
         if (direction < 0) direction += 360;
     }
 
+
+    public double getSubPixelX() {
+        return subPixelX;
+    }
+
+    public double getSubPixelY() {
+        return subPixelY;
+    }
 }

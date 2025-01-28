@@ -64,6 +64,7 @@ public class BISIFTAnalyzer {
         BufferedImage[][] dogPyramid = helper.buildDoGPyramid(gaussianPyramid);
 
         // 5. Find keypoints in the DoG pyramid
+        detectKeypoints(dogPyramid);
 
 
     }

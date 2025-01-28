@@ -35,9 +35,9 @@ public class KeypointCandidate {
         this(scaleTriplet, point.getX(), point.getY());
     }
 
-    public KeypointCandidate(int[][][] scaleTriplet, PixelPoint point) {
-        this.neighbouringMatrix = getNeighbouringPixels(scaleTriplet, x, y);
-        this.basicHessianMatrix = approxHessianMatrix(scaleTriplet, x, y);
+    public KeypointCandidate(int[][][] octaveSlice, PixelPoint point) {
+        this.neighbouringMatrix = extractPixelWindow3D(octaveSlice, x, y, 3);
+        this.basicHessianMatrix = approxHessianMatrix(octaveSlice, x, y);
 
         double trace = basicHessianMatrix[0][0] + basicHessianMatrix[1][1];
         double determinant = (basicHessianMatrix[0][0] * basicHessianMatrix[1][1]) - (basicHessianMatrix[0][1] * basicHessianMatrix[1][0]);

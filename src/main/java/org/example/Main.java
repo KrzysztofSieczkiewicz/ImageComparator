@@ -1,9 +1,12 @@
 package org.example;
 
+import org.example.analyzers.feature.BISIFTAnalyzer;
 import org.example.analyzers.feature.MatrixGaussianHelper;
 import org.example.analyzers.feature.BIGaussianHelper;
 import org.example.analyzers.feature.MatrixSIFTAnalyzer;
+import org.example.utils.ImageUtil;
 import org.example.utils.accessor.ImageAccessor;
+import org.example.utils.accessor.ImageDataUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -32,7 +35,7 @@ public class Main {
 
         long start = System.nanoTime();
 
-        new MatrixSIFTAnalyzer().constructScaleSpace(actualImage);
+        new MatrixSIFTAnalyzer().constructScaleSpace(raster2D);
         //new BISIFTAnalyzer().constructScaleSpace(actualImage);
 
         //new HashComparator().comparePHash(actualImage, checkedImage);
