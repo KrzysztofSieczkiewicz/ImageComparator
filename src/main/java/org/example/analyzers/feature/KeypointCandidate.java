@@ -6,13 +6,20 @@ import org.example.utils.accessor.ImageAccessor;
 import java.awt.image.BufferedImage;
 
 public class KeypointCandidate {
+
+    /**
+     * Config value. Determines the dimensions of the pixels window of neighbours used for hessians and gradients
+     */
+    private int windowSize = 3;
+
+
     private int x,y;
     private final int[][][] neighbouringMatrix;
     private final int[][] basicHessianMatrix;
     private final double[] eigenvalues;
 
     public KeypointCandidate(BufferedImage[] scaleTriplet, int x, int y) {
-        this.neighbouringMatrix = getNeighbouringPixels(scaleTriplet, x, y);
+        this.neighbouringMatrix = getNeighbouringPixels(scaleTriplet, x, y, windowSize);
         this.basicHessianMatrix = approxHessianMatrix(scaleTriplet[1], x, y);
 
         double trace = basicHessianMatrix[0][0] + basicHessianMatrix[1][1];
@@ -57,11 +64,7 @@ public class KeypointCandidate {
     public int getY() {
         return y;
     }
-
-    public int[][] getBasicHessianMatrix() {
-        return basicHessianMatrix;
-    }
-
+    
     /**
      * Refines candidate to a full keypoint on a given image
      */
