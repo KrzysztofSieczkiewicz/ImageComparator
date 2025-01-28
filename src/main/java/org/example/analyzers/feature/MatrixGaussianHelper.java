@@ -19,8 +19,8 @@ public class MatrixGaussianHelper {
         this.blurringSizeMultiplier = blurringSizeMultiplier;
     }
 
-    public int[][][][] buildGaussianPyramid(int[][] imageData, int octavesNum, int scalesNum, int downsamplingFactor) {
-        int[][][][] pyramid = new int[octavesNum][scalesNum][][];
+    public float[][][][] buildGaussianPyramid(int[][] imageData, int octavesNum, int scalesNum, int downsamplingFactor) {
+        float[][][][] pyramid = new float[octavesNum][scalesNum+3][][];
 
         double sigmaInterval = calculateScaleIntervals(scalesNum);
 
@@ -37,10 +37,10 @@ public class MatrixGaussianHelper {
         return pyramid;
     }
 
-    public int[][][][] buildDoGPyramid(int[][][][] gaussianPyramid) {
+    public float[][][][] buildDoGPyramid(float[][][][] gaussianPyramid) {
         int octavesNum = gaussianPyramid.length;
         int scalesNum = gaussianPyramid[0].length-1;
-        int[][][][] pyramid = new int[octavesNum][scalesNum][][];
+        float[][][][] pyramid = new float[octavesNum][scalesNum][][];
 
         for (int octave=0; octave<octavesNum; octave++) {
             for (int scale=0; scale<scalesNum; scale++) {
@@ -56,13 +56,14 @@ public class MatrixGaussianHelper {
     /**
      * Internal method. Calculates difference between two greyscaled images.
      */
-    private int[][] calculateDifferences(int[][] firstImage, int[][] secondImage) {
+    private float[][] calculateDifferences(float[][] firstImage, float[][] secondImage) {
         int width = firstImage.length;
         int height = firstImage[0].length;
-        int[][] result = new int[width][height];
+        float[][] result = new float[width][height];
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
+                System.out.println(firstImage[x][y] - secondImage[x][y]);
                 result[x][y] = firstImage[x][y] - secondImage[x][y];
             }
         }
@@ -81,13 +82,13 @@ public class MatrixGaussianHelper {
      *
      * @return octave (array of progressively blurred images)
      */
-    private int[][][] generateGaussianScales(int[][] imageData, int scalesNum, double baseSigma, double scaleInterval) {
+    private float[][][] generateGaussianScales(int[][] imageData, int scalesNum, double baseSigma, double scaleInterval) {
         int numberOfScales = scalesNum + 3;
-        int[][][] gaussianImages = new int[numberOfScales][imageData.length][imageData[0].length];
+        float[][][] gaussianImages = new float[numberOfScales][imageData.length][imageData[0].length];
         double baseScale = baseSigma;
 
         for (int i = 0; i < numberOfScales; i++) {
-            gaussianImages[i] = ImageDataUtil.gaussianBlur(imageData, baseScale, blurringSizeMultiplier);
+            gaussianImages[i] = ImageDataUtil.gaussianBlurGreyscaled(imageData, baseScale, blurringSizeMultiplier);
             baseScale *= scaleInterval;
         }
 

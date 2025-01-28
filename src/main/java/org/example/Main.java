@@ -27,7 +27,7 @@ public class Main {
         BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
         BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
 
-        ImageAccessor accessor = ImageAccessor.create(actualImage);
+        ImageAccessor accessor = ImageAccessor.create(checkedImage);
         int[][] raster2D = accessor.getPixels();
 
         BIGaussianHelper helper = new BIGaussianHelper();

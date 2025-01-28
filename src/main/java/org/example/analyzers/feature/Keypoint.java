@@ -1,11 +1,8 @@
 package org.example.analyzers.feature;
 
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.LUDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.linear.*;
+
+import java.util.Arrays;
 
 public class Keypoint {
 
@@ -36,18 +33,22 @@ public class Keypoint {
         RealVector gradient = new ArrayRealVector(gradientsVector);
 
         DecompositionSolver solver = new LUDecomposition(hessian).getSolver();
-        RealVector offset = solver.solve(gradient.mapMultiply(-1.0));
 
-        this.subPixelX = pixelX + offset.getEntry(0);
-        this.subPixelY = pixelY + offset.getEntry(1);
+        try {
+            RealVector offset = solver.solve(gradient.mapMultiply(-1.0));
+            this.subPixelX = pixelX + offset.getEntry(0);
+            this.subPixelY = pixelY + offset.getEntry(1);
 
-        double offsetMagnitude = offset.getNorm();
-        if (offsetMagnitude > 0.5) {
-            return false;
-        }
+            double offsetMagnitude = offset.getNorm();
+            if (offsetMagnitude > 0.5) {
+                return false;
+            }
 
-        double contrast = gradient.dotProduct(offset);
-        if (Math.abs(contrast) < contrastThreshold) {
+            double contrast = gradient.dotProduct(offset);
+            if (Math.abs(contrast) < contrastThreshold) {
+                return false;
+            }
+        } catch (SingularMatrixException e) {
             return false;
         }
 

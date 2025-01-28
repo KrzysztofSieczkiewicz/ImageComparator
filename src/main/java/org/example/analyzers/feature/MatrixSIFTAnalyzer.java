@@ -1,6 +1,7 @@
 package org.example.analyzers.feature;
 
 import org.example.analyzers.common.PixelPoint;
+import org.example.utils.accessor.ImageAccessor;
 import org.example.utils.accessor.ImageDataUtil;
 
 import javax.imageio.ImageIO;
@@ -85,19 +86,19 @@ public class MatrixSIFTAnalyzer {
         int octavesAmount = calculateOctavesNum(greyscaleImageData, minImageSizeThreshold, downsamplingFactor);
 
         // 2. Build Gaussian Pyramid
-        int[][][][] gaussianPyramid = helper.buildGaussianPyramid(greyscaleImageData, octavesAmount, scalesAmount, downsamplingFactor);
+        float[][][][] gaussianPyramid = helper.buildGaussianPyramid(greyscaleImageData, octavesAmount, scalesAmount, downsamplingFactor);
 
 
         {// [DEBUG]
             int octaveIndex = 1;
-            for (int[][][] octave : gaussianPyramid) {
+            for (float[][][] octave : gaussianPyramid) {
                 int scaleIndex = 1;
-                for (int[][] scale : octave) {
+                for (float[][] scale : octave) {
                     BufferedImage gaussianImage = new BufferedImage(scale.length, scale[0].length, BufferedImage.TYPE_INT_RGB);
                     for (int y = 0; y < scale[0].length; y++) {
                         for (int x = 0; x < scale.length; x++) {
                             // Get the grayscale value and set the pixel in the BufferedImage
-                            int pixelValue = scale[x][y];
+                            int pixelValue = (int) scale[x][y];
                             int rgb = (pixelValue << 16) | (pixelValue << 8) | pixelValue; // Grayscale to RGB format
                             gaussianImage.setRGB(x, y, rgb);
                         }
@@ -116,26 +117,28 @@ public class MatrixSIFTAnalyzer {
 
 
         // 3. Build DoG pyramid
-        int[][][][] dogPyramid = helper.buildDoGPyramid(gaussianPyramid);
+        float[][][][] dogPyramid = helper.buildDoGPyramid(gaussianPyramid);
 
 
         {// [DEBUG]
             int octaveDoGIndex = 1;
-            for (int[][][] octave : dogPyramid) {
+            for (float[][][] octave : dogPyramid) {
                 int scaleDoGIndex = 1;
-                for (int[][] scale : octave) {
-                    BufferedImage gaussianImage = new BufferedImage(scale.length, scale[0].length, BufferedImage.TYPE_INT_RGB);
+                for (float[][] scale : octave) {
+                    BufferedImage dogImage = new BufferedImage(scale.length, scale[0].length, BufferedImage.TYPE_INT_RGB);
+                    ImageAccessor accessor = ImageAccessor.create(dogImage);
                     for (int y = 0; y < scale[0].length; y++) {
                         for (int x = 0; x < scale.length; x++) {
                             // Get the grayscale value and set the pixel in the BufferedImage
-                            int pixelValue = scale[x][y];
+                            int pixelValue = (int) scale[x][y];
                             int rgb = (pixelValue << 16) | (pixelValue << 8) | pixelValue; // Grayscale to RGB format
-                            gaussianImage.setRGB(x, y, rgb);
+                            accessor.setPixel(x,y, 255, 0, 0, pixelValue);
+                            //gaussianImage.setRGB(x, y, rgb);
                         }
                     }
                     File file = new File("src/1_3_DoG_" + octaveDoGIndex + "_" + scaleDoGIndex + ".png");
                     try {
-                        ImageIO.write(gaussianImage, "PNG", file);
+                        ImageIO.write(dogImage, "PNG", file);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -147,7 +150,7 @@ public class MatrixSIFTAnalyzer {
 
 
         // 4. Find keypoints in the DoG pyramid
-        detectKeypoints(dogPyramid);
+        //detectKeypoints(dogPyramid);
 
     }
 
@@ -182,11 +185,13 @@ public class MatrixSIFTAnalyzer {
                 // 0. find potential keypoints
                 ArrayList<PixelPoint> potentialCandidates = findPotentialKeypoints(octave[scaleIndex-1], octave[scaleIndex], octave[scaleIndex+1]);
 
-                System.out.println("POTENTIAL CANDIDATES:");
-                potentialCandidates.forEach(candidate -> {
-                    System.out.print("X: " + candidate.getX() + ", Y: " + candidate.getY() + ", ");
-                });
-                System.out.println();
+//                System.out.println("DOG VALUE: ");
+//                int oc = octaveIndex;
+//                int sc = scaleIndex;
+//                potentialCandidates.forEach(candidate -> {
+//                    System.out.println("X: " + candidate.getX() + ", Y: " + candidate.getY() + ", DOG VALUE: " + dogPyramid[oc][sc][candidate.getX()][candidate.getY()]);
+//                });
+//                System.out.println();
 
                 // TODO: NO PONTENTIAL CANDIDATES ARE CONVERTED INTO CANDIDATES
 
@@ -197,6 +202,12 @@ public class MatrixSIFTAnalyzer {
                                 candidate.isLowContrast(keypointContrastThreshold) &&
                                 candidate.isEdgeResponse(keypointEdgeResponseRatio))
                         .collect(Collectors.toCollection(ArrayList::new));
+
+//                System.out.println("keypointCandidates: ");
+//                keypointCandidates.forEach(candidate -> {
+//                    System.out.println( "X: " + candidate.getX() + ", Y: " + candidate.getY() );
+//                });
+//                System.out.println();
 
                 // 2. refine candidates into full keypoints
                 ArrayList<Keypoint> keypoints = keypointCandidates.stream()
@@ -218,10 +229,10 @@ public class MatrixSIFTAnalyzer {
 
                 // 5. Use descriptor distances and RANSAC to match keypoints across different images
 
-                System.out.println("KEYPOINTS:");
-                keypoints.forEach(keypoint -> {
-                    System.out.print("X: " + keypoint.getSubPixelX() + ", Y: " + keypoint.getSubPixelY() + ", ");
-                });
+//                System.out.println("KEYPOINTS:");
+//                keypoints.forEach(keypoint -> {
+//                    System.out.print("X: " + keypoint.getSubPixelX() + ", Y: " + keypoint.getSubPixelY() + ", ");
+//                });
 
             }
 

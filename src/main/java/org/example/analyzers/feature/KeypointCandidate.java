@@ -4,6 +4,7 @@ import org.example.analyzers.common.PixelPoint;
 import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 public class KeypointCandidate {
 
@@ -26,6 +27,14 @@ public class KeypointCandidate {
         double determinant = (basicHessianMatrix[0][0] * basicHessianMatrix[1][1]) - (basicHessianMatrix[0][1] * basicHessianMatrix[1][0]);
         double discriminant = Math.pow(trace, 2) - 4 * determinant;
 
+        System.out.println("CANDIDATE INIT");
+        System.out.println("HESSIAN MATRIX: " + Arrays.deepToString(neighbouringMatrix));
+        System.out.println("HESSIAN MATRIX: " + Arrays.deepToString(basicHessianMatrix));
+        System.out.println("TRACE: " + trace);
+        System.out.println("DETERMINANT: " + determinant);
+        System.out.println("DICRIMINANT: " + discriminant);
+        System.out.println();
+
         this.x = x;
         this.y = y;
         this.eigenvalues = calculateEigenvalues(trace, discriminant);
@@ -46,14 +55,26 @@ public class KeypointCandidate {
         this.x = point.getX();
         this.y = point.getY();
         this.eigenvalues = calculateEigenvalues(trace, discriminant);
+
+//        System.out.println("CANDIDATE INIT");
+//        System.out.println("HESSIAN MATRIX: " + Arrays.deepToString(basicHessianMatrix));
+//        System.out.println("NEIGHBOURING PIXELS MATRIX: " + Arrays.deepToString(neighbouringMatrix));
+//        System.out.println("TRACE: " + trace);
+//        System.out.println("DETERMINANT: " + determinant);
+//        System.out.println("DICRIMINANT: " + discriminant);
+//        System.out.println("EIGENVALUES: " + eigenvalues[0] + ", " + eigenvalues[1] );
+//        System.out.println();
     }
 
 
     public boolean isLowContrast(double contrastThreshold) {
+        System.out.println( "Eigenvalues: " + eigenvalues[0] + ", " + eigenvalues[1] );
+        System.out.println(eigenvalues[0]/eigenvalues[1] + ", contrast <, " + contrastThreshold);
         return eigenvalues[0] * eigenvalues[1] < contrastThreshold;
     }
 
     public boolean isEdgeResponse(double ratioThreshold) {
+        System.out.println(eigenvalues[0]*eigenvalues[1] + ", edge <, " + ratioThreshold);
         return eigenvalues[0] / eigenvalues[1] < ratioThreshold;
     }
 
@@ -107,6 +128,8 @@ public class KeypointCandidate {
     // TODO: remove this from Keypoint candidate. It's better if candidates will calculate derivatives by themselves,
     //  as this method provides no checks - it is unnecessary here
     public Keypoint refineCandidate() {
+        int x = 1;
+        int y = 1;
         // approx 1st order derivatives with central difference approximation
         double dx = (neighbouringMatrix[1][x+1][y] - neighbouringMatrix[1][x-1][y]) / 2.0;
         double dy = (neighbouringMatrix[1][x][y+1] - neighbouringMatrix[1][x][y-1]) / 2.0;
@@ -138,8 +161,8 @@ public class KeypointCandidate {
      * @return array {lambda1, lambda2}
      */
     private double[] calculateEigenvalues(double trace, double discriminant) {
-        if (discriminant < 0) {
-            return new double[]{-1, -1};
+        if (discriminant < 0 && Math.abs(discriminant) > 1e-10) {
+            return new double[]{Double.NaN, Double.NaN};
         }
 
         double sqrtDiscriminant = Math.sqrt(discriminant);
@@ -215,9 +238,9 @@ public class KeypointCandidate {
                 { 1,  2,  1}
         };
         int[][] sobelXY = {
-                { -1, 0,  1},
-                {  0, 0,  0},
-                {  1, 0, -1}
+                { 1, -2,  1},
+                {-2,  4, -2},
+                { 1, -2,  1}
         };
 
         int dxx = 0, dyy = 0, dxy = 0;
