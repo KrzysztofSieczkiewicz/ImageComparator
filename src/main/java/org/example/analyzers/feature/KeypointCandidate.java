@@ -275,13 +275,6 @@ public class KeypointCandidate {
         return neighbours;
     }
 
-    // TODO: CURRENT:
-    //  add a parameter: radius
-    //  if a pixel outside of image boundaries is requested - get it's mirrored value
-    //  radius will be parametrized with config
-    //  the only thing to consider - do scale triplets need to be replaced? if yes - radius might be skipped as it can be determined from array length
-    //  if triplet might be replaced by larger collection -> how to determine it's size? config?
-    //  as for now - the best would be two separate parameters - scaleDepth, windowSize -> that'd allow for many optimizations
     private int[][][] getNeighbouringPixels(int[][][] scaleTriplet, int x, int y) {
         int matrixDimension = scaleTriplet.length;
         int[][][] neighbours = new int[3][3][3];
