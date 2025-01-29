@@ -24,10 +24,13 @@ public class Main {
     //  Excluded areas and should be accepted by "compare()" method
 
     public static void main(String[] args) throws IOException {
+        BufferedImage testImage = ImageIO.read(new File("src/TestImage.jpg"));
         BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
         BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
 
-        ImageAccessor accessor = ImageAccessor.create(checkedImage);
+        checkedImage = ImageUtil.resize(testImage, 1024/2, 512/2);
+
+        ImageAccessor accessor = ImageAccessor.create(testImage);
         int[][] raster2D = accessor.getPixels();
 
         BIGaussianHelper helper = new BIGaussianHelper();

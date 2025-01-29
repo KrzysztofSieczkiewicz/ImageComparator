@@ -63,7 +63,6 @@ public class MatrixGaussianHelper {
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                System.out.println(firstImage[x][y] - secondImage[x][y]);
                 result[x][y] = firstImage[x][y] - secondImage[x][y];
             }
         }

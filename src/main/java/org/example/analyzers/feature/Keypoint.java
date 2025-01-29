@@ -29,10 +29,15 @@ public class Keypoint {
     }
 
     public boolean subpixelRefinement() {
-        RealMatrix hessian = new Array2DRowRealMatrix(hessianMatrix);
-        RealVector gradient = new ArrayRealVector(gradientsVector);
+        double lambda = 1e-6;
 
-        DecompositionSolver solver = new LUDecomposition(hessian).getSolver();
+        System.out.print("Refinement: ");
+
+        RealVector gradient = new ArrayRealVector(gradientsVector);
+        RealMatrix hessian = new Array2DRowRealMatrix(hessianMatrix);
+        RealMatrix regularizedHessian = hessian.add(MatrixUtils.createRealIdentityMatrix(hessian.getRowDimension()).scalarMultiply(lambda));
+
+        DecompositionSolver solver = new LUDecomposition(regularizedHessian).getSolver();
 
         try {
             RealVector offset = solver.solve(gradient.mapMultiply(-1.0));
@@ -40,19 +45,21 @@ public class Keypoint {
             this.subPixelY = pixelY + offset.getEntry(1);
 
             double offsetMagnitude = offset.getNorm();
-            if (offsetMagnitude > 0.5) {
+            if (offsetMagnitude > 0.55) {
+                System.out.print("Magnitude too large: " + offsetMagnitude + "\n");
                 return false;
             }
 
             double contrast = gradient.dotProduct(offset);
             if (Math.abs(contrast) < contrastThreshold) {
+                System.out.print("Contrast too small: " + Math.abs(contrast) + "\n");
                 return false;
             }
+            return true;
+
         } catch (SingularMatrixException e) {
             return false;
         }
-
-        return true;
     }
 
     // TODO: finish this

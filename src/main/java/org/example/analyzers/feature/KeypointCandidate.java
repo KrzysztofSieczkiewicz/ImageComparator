@@ -4,7 +4,6 @@ import org.example.analyzers.common.PixelPoint;
 import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
 
 public class KeypointCandidate {
 
@@ -15,8 +14,8 @@ public class KeypointCandidate {
 
 
     private int x,y;
-    private final int[][][] neighbouringMatrix;
-    private final int[][] basicHessianMatrix;
+    private final float[][][] neighbouringMatrix;
+    private final float[][] basicHessianMatrix;
     private final double[] eigenvalues;
 
     public KeypointCandidate(BufferedImage[] scaleTriplet, int x, int y) {
@@ -27,14 +26,6 @@ public class KeypointCandidate {
         double determinant = (basicHessianMatrix[0][0] * basicHessianMatrix[1][1]) - (basicHessianMatrix[0][1] * basicHessianMatrix[1][0]);
         double discriminant = Math.pow(trace, 2) - 4 * determinant;
 
-        System.out.println("CANDIDATE INIT");
-        System.out.println("HESSIAN MATRIX: " + Arrays.deepToString(neighbouringMatrix));
-        System.out.println("HESSIAN MATRIX: " + Arrays.deepToString(basicHessianMatrix));
-        System.out.println("TRACE: " + trace);
-        System.out.println("DETERMINANT: " + determinant);
-        System.out.println("DICRIMINANT: " + discriminant);
-        System.out.println();
-
         this.x = x;
         this.y = y;
         this.eigenvalues = calculateEigenvalues(trace, discriminant);
@@ -44,38 +35,35 @@ public class KeypointCandidate {
         this(scaleTriplet, point.getX(), point.getY());
     }
 
-    public KeypointCandidate(int[][][] octaveSlice, PixelPoint point) {
-        this.neighbouringMatrix = extractPixelWindow3D(octaveSlice, x, y, 3);
+    public KeypointCandidate(float[][][] octaveSlice, PixelPoint point) {
+        this.x = point.getX();
+        this.y = point.getY();
+        this.neighbouringMatrix = extractPixelWindow3D(octaveSlice, x, y, 9);
         this.basicHessianMatrix = approxHessianMatrix(octaveSlice, x, y);
 
         double trace = basicHessianMatrix[0][0] + basicHessianMatrix[1][1];
         double determinant = (basicHessianMatrix[0][0] * basicHessianMatrix[1][1]) - (basicHessianMatrix[0][1] * basicHessianMatrix[1][0]);
         double discriminant = Math.pow(trace, 2) - 4 * determinant;
 
-        this.x = point.getX();
-        this.y = point.getY();
         this.eigenvalues = calculateEigenvalues(trace, discriminant);
-
-//        System.out.println("CANDIDATE INIT");
-//        System.out.println("HESSIAN MATRIX: " + Arrays.deepToString(basicHessianMatrix));
-//        System.out.println("NEIGHBOURING PIXELS MATRIX: " + Arrays.deepToString(neighbouringMatrix));
-//        System.out.println("TRACE: " + trace);
-//        System.out.println("DETERMINANT: " + determinant);
-//        System.out.println("DICRIMINANT: " + discriminant);
-//        System.out.println("EIGENVALUES: " + eigenvalues[0] + ", " + eigenvalues[1] );
-//        System.out.println();
     }
 
 
     public boolean isLowContrast(double contrastThreshold) {
-        System.out.println( "Eigenvalues: " + eigenvalues[0] + ", " + eigenvalues[1] );
-        System.out.println(eigenvalues[0]/eigenvalues[1] + ", contrast <, " + contrastThreshold);
         return eigenvalues[0] * eigenvalues[1] < contrastThreshold;
     }
 
     public boolean isEdgeResponse(double ratioThreshold) {
-        System.out.println(eigenvalues[0]*eigenvalues[1] + ", edge <, " + ratioThreshold);
-        return eigenvalues[0] / eigenvalues[1] < ratioThreshold;
+        double lambda1 = eigenvalues[0];
+        double lambda2 = eigenvalues[1];
+
+        if (lambda1 < lambda2) {
+            double temp = lambda1;
+            lambda1 = lambda2;
+            lambda2 = temp;
+        }
+
+        return lambda1 / lambda2 > ratioThreshold;
     }
 
     public int getX() {
@@ -125,15 +113,14 @@ public class KeypointCandidate {
         return new Keypoint(0, 0, gradientVector, hessianMatrix);
     }
 
-    // TODO: remove this from Keypoint candidate. It's better if candidates will calculate derivatives by themselves,
-    //  as this method provides no checks - it is unnecessary here
+    // TODO: change this method so it performs calculations across the entire neighbouring matrix
     public Keypoint refineCandidate() {
-        int x = 1;
-        int y = 1;
+        int localX = 1;
+        int localY = 1;
         // approx 1st order derivatives with central difference approximation
-        double dx = (neighbouringMatrix[1][x+1][y] - neighbouringMatrix[1][x-1][y]) / 2.0;
-        double dy = (neighbouringMatrix[1][x][y+1] - neighbouringMatrix[1][x][y-1]) / 2.0;
-        double ds = (neighbouringMatrix[2][x][y] - neighbouringMatrix[0][x][y]) / 2.0;
+        double dx = (neighbouringMatrix[1][localX+1][localY] - neighbouringMatrix[1][localX-1][localY]) / 2.0;
+        double dy = (neighbouringMatrix[1][localX][localY+1] - neighbouringMatrix[1][localX][localY-1]) / 2.0;
+        double ds = (neighbouringMatrix[2][localX][localY] - neighbouringMatrix[0][localX][localY]) / 2.0;
 
         // reuse 2nd order space derivatives
         double dxx = basicHessianMatrix[0][0];
@@ -141,9 +128,9 @@ public class KeypointCandidate {
         double dxy = basicHessianMatrix[0][1];
 
         // approx 2nd order derivatives with second-order central difference
-        double dss = neighbouringMatrix[2][x][y] - 2 * neighbouringMatrix[1][x][y] + neighbouringMatrix[0][x][y];
-        double dxs = ((neighbouringMatrix[2][x+1][y] - neighbouringMatrix[2][x-1][y]) - (neighbouringMatrix[0][x+1][y] - neighbouringMatrix[0][x-1][y])) / 2.0;
-        double dys = ((neighbouringMatrix[2][x][y+1] - neighbouringMatrix[2][x][y-1]) - (neighbouringMatrix[0][x][y+1] - neighbouringMatrix[0][x][y-1])) / 2.0;
+        double dss = neighbouringMatrix[2][localX][localY] - 2 * neighbouringMatrix[1][localX][localY] + neighbouringMatrix[0][localX][localY];
+        double dxs = ((neighbouringMatrix[2][localX+1][localY] - neighbouringMatrix[2][localX-1][localY]) - (neighbouringMatrix[0][localX+1][localY] - neighbouringMatrix[0][localX-1][localY])) / 2.0;
+        double dys = ((neighbouringMatrix[2][localX][localY+1] - neighbouringMatrix[2][localX][localY-1]) - (neighbouringMatrix[0][localX][localY+1] - neighbouringMatrix[0][localX][localY-1])) / 2.0;
 
         double[] gradientVector = { dx, dy, ds };
 
@@ -153,7 +140,7 @@ public class KeypointCandidate {
                 { dxs, dys,  dss}
         };
 
-        return new Keypoint(0, 0, gradientVector, hessianMatrix);
+        return new Keypoint(x, y, gradientVector, hessianMatrix);
     }
 
     /**
@@ -176,7 +163,7 @@ public class KeypointCandidate {
      * Generates Hessian matrix for a single pixel using second order Sobel operators
      */
     // TODO: needs to be finished
-    private int[][] approxHessianMatrix(BufferedImage image, int x, int y) {
+    private float[][] approxHessianMatrix(BufferedImage image, int x, int y) {
         ImageAccessor imageAccessor = ImageAccessor.create(image);
 
         int[][] sobelX2 = {
@@ -195,7 +182,7 @@ public class KeypointCandidate {
                 {  1, 0, -1}
         };
 
-        int dxx = 0, dyy = 0, dxy = 0;
+        float dxx = 0, dyy = 0, dxy = 0;
         for (int dx=-1; dx<=1; dx++) {
             for (int dy=-1; dy<=1; dy++) {
                 int pixelX = x + dx;
@@ -212,7 +199,7 @@ public class KeypointCandidate {
             }
         }
 
-        return new int[][] {
+        return new float[][] {
                 {dxx, dxy},
                 {dxy, dyy}
         };
@@ -221,8 +208,8 @@ public class KeypointCandidate {
     /**
      * Generates Hessian matrix for a single pixel using second order Sobel operators
      */
-    private int[][] approxHessianMatrix(int[][][] octaveSlice, int x, int y) {
-        int[][] imageData = octaveSlice[octaveSlice.length / 2];
+    private float[][] approxHessianMatrix(float[][][] octaveSlice, int x, int y) {
+        float[][] imageData = octaveSlice[octaveSlice.length / 2];
 
         int maxX = octaveSlice[0].length - 1;
         int maxY = octaveSlice[0][0].length - 1;
@@ -243,7 +230,7 @@ public class KeypointCandidate {
                 { 1, -2,  1}
         };
 
-        int dxx = 0, dyy = 0, dxy = 0;
+        float dxx = 0, dyy = 0, dxy = 0;
         for (int dx=-1; dx<=1; dx++) {
             int currentX = x + dx;
             currentX = safeguardPixelPosition(currentX, 0, maxX);
@@ -252,7 +239,7 @@ public class KeypointCandidate {
                 int currentY = y + dy;
                 currentY = safeguardPixelPosition(currentY, 0, maxY);
 
-                int intensity = imageData[currentX][currentY];
+                float intensity = imageData[currentX][currentY];
 
                 dxx += intensity * sobelX2[dx + 1][dy + 1];
                 dyy += intensity * sobelY2[dx + 1][dy + 1];
@@ -260,16 +247,16 @@ public class KeypointCandidate {
             }
         }
 
-        return new int[][]{
+        return new float[][]{
                 {dxx, dxy},
                 {dxy, dyy}
         };
     }
 
     // TODO: change to use ImageAccessor[] instead
-    private int[][][] getNeighbouringPixels(BufferedImage[] scaleTriplet,int scaleIndex, int x, int y) {
+    private float[][][] getNeighbouringPixels(BufferedImage[] scaleTriplet,int scaleIndex, int x, int y) {
         int matrixSize = 3;
-        int[][][] neighbours = new int[matrixSize][matrixSize][matrixSize];
+        float[][][] neighbours = new float[matrixSize][matrixSize][matrixSize];
         for (int i=0; i<matrixSize; i++) {
             for (int j=0; j<matrixSize; j++) {
                 for (int k=0; k<matrixSize; k++) {
@@ -313,18 +300,18 @@ public class KeypointCandidate {
         return neighbours;
     }
 
-    private int[][][] extractPixelWindow3D(int[][][] octaveSlice, int pixelX, int pixelY, int pixelWindowSize) {
+    private float[][][] extractPixelWindow3D(float[][][] octaveSlice, int pixelX, int pixelY, int pixelWindowSize) {
         int scaleDepth = octaveSlice.length;
         int halfWindowSize = pixelWindowSize / 2;
 
-        int[][][] pixels = new int[scaleDepth][pixelWindowSize][pixelWindowSize];
+        float[][][] pixels = new float[scaleDepth][pixelWindowSize][pixelWindowSize];
 
         int maxX = octaveSlice[0].length - 1;
         int maxY = octaveSlice[0][0].length - 1;
 
         for (int currentScale=0; currentScale<scaleDepth; currentScale++) {
-            int[][] scaleLayer = octaveSlice[currentScale];
-            int[][] windowLayer = pixels[currentScale];
+            float[][] scaleLayer = octaveSlice[currentScale];
+            float[][] windowLayer = pixels[currentScale];
 
             for (int dx=-halfWindowSize; dx<=halfWindowSize; dx++) {
                 int currentX = pixelX + dx;
