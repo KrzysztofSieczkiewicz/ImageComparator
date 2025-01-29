@@ -15,13 +15,13 @@ public class MatrixKeypointHelper {
      * Contrast threshold below which keypoint will be discarded as noise
      * usually between 0.01 and 0.04
      */
-    double keypointContrastThreshold = 0.04;
+    double keypointContrastThreshold = 0.03;
 
     /**
      * Hessian eigenvalues ratio below which keypoint will be discarded as edge keypoint
      * usually between 5 and 20
      */
-    double keypointEdgeResponseRatio = 15;
+    double keypointEdgeResponseRatio = 10;
 
 
     public void detectKeypoints(float[][][][] dogPyramid) {
@@ -47,8 +47,8 @@ public class MatrixKeypointHelper {
                 ArrayList<KeypointCandidate> keypointCandidates = potentialCandidates.stream()
                         .map(potentialCandidate -> new KeypointCandidate(octaveSlice, potentialCandidate))
                         .filter(candidate ->
-                                candidate.isLowContrast(keypointContrastThreshold) &&
-                                candidate.isEdgeResponse(keypointEdgeResponseRatio))
+                                !candidate.isLowContrast(keypointContrastThreshold) &&
+                                !candidate.isEdgeResponse(keypointEdgeResponseRatio))
                         .collect(Collectors.toCollection(ArrayList::new));
 
                 System.out.println("keypointCandidates: " + keypointCandidates.size());

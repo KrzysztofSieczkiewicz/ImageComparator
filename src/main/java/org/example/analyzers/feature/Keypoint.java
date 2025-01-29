@@ -6,11 +6,6 @@ import java.util.Arrays;
 
 public class Keypoint {
 
-    /**
-     * Contrast threshold below which keypoint will be discarded during subpixel refinement
-     */
-    private double contrastThreshold = 0.04;
-
     private int pixelX, pixelY;
     private double subPixelX, subPixelY;
     private double[] gradientsVector;
@@ -34,6 +29,12 @@ public class Keypoint {
         System.out.print("Refinement: ");
 
         RealVector gradient = new ArrayRealVector(gradientsVector);
+        //gradient = gradient.mapDivide(gradient.getNorm());
+        double gradientMagnitude = gradient.getNorm();
+        if (gradientMagnitude > 0) {
+            gradient = gradient.mapDivide(gradientMagnitude);  // Normalize gradient to unit length
+        }
+
         RealMatrix hessian = new Array2DRowRealMatrix(hessianMatrix);
         RealMatrix regularizedHessian = hessian.add(MatrixUtils.createRealIdentityMatrix(hessian.getRowDimension()).scalarMultiply(lambda));
 
@@ -51,7 +52,7 @@ public class Keypoint {
             }
 
             double contrast = gradient.dotProduct(offset);
-            if (Math.abs(contrast) < contrastThreshold) {
+            if (Math.abs(contrast) < 0.02) {
                 System.out.print("Contrast too small: " + Math.abs(contrast) + "\n");
                 return false;
             }

@@ -28,13 +28,13 @@ public class Main {
         BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
         BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
 
-        checkedImage = ImageUtil.resize(testImage, 1024/2, 512/2);
+        //actualImage = ImageUtil.resize(testImage, 1024/2, 512/2);
 
-        ImageAccessor accessor = ImageAccessor.create(testImage);
+        ImageAccessor accessor = ImageAccessor.create(actualImage);
         int[][] raster2D = accessor.getPixels();
 
         BIGaussianHelper helper = new BIGaussianHelper();
-        MatrixGaussianHelper arrHelper = new MatrixGaussianHelper(1.6, 4);
+        MatrixGaussianHelper arrHelper = new MatrixGaussianHelper(1.6, 6);
 
         long start = System.nanoTime();
 

@@ -16,19 +16,22 @@ public class KeypointCandidate {
     private int x,y;
     private final float[][][] neighbouringMatrix;
     private final float[][] basicHessianMatrix;
+    private final double hessianTrace;
+    private final double hessianDeterminant;
+    private final double hessianDiscriminant;
     private final double[] eigenvalues;
 
     public KeypointCandidate(BufferedImage[] scaleTriplet, int x, int y) {
         this.neighbouringMatrix = getNeighbouringPixels(scaleTriplet, x, y, windowSize);
         this.basicHessianMatrix = approxHessianMatrix(scaleTriplet[1], x, y);
 
-        double trace = basicHessianMatrix[0][0] + basicHessianMatrix[1][1];
-        double determinant = (basicHessianMatrix[0][0] * basicHessianMatrix[1][1]) - (basicHessianMatrix[0][1] * basicHessianMatrix[1][0]);
-        double discriminant = Math.pow(trace, 2) - 4 * determinant;
+        this.hessianTrace = basicHessianMatrix[0][0] + basicHessianMatrix[1][1];
+        this.hessianDeterminant = (basicHessianMatrix[0][0] * basicHessianMatrix[1][1]) - (basicHessianMatrix[0][1] * basicHessianMatrix[1][0]);
+        this.hessianDiscriminant = Math.pow(hessianTrace, 2) - 4 * hessianDeterminant;
 
         this.x = x;
         this.y = y;
-        this.eigenvalues = calculateEigenvalues(trace, discriminant);
+        this.eigenvalues = calculateEigenvalues(hessianTrace, hessianDiscriminant);
     }
 
     public KeypointCandidate(BufferedImage[] scaleTriplet, PixelPoint point) {
@@ -41,11 +44,11 @@ public class KeypointCandidate {
         this.neighbouringMatrix = extractPixelWindow3D(octaveSlice, x, y, 9);
         this.basicHessianMatrix = approxHessianMatrix(octaveSlice, x, y);
 
-        double trace = basicHessianMatrix[0][0] + basicHessianMatrix[1][1];
-        double determinant = (basicHessianMatrix[0][0] * basicHessianMatrix[1][1]) - (basicHessianMatrix[0][1] * basicHessianMatrix[1][0]);
-        double discriminant = Math.pow(trace, 2) - 4 * determinant;
+        this.hessianTrace = basicHessianMatrix[0][0] + basicHessianMatrix[1][1];
+        this.hessianDeterminant = (basicHessianMatrix[0][0] * basicHessianMatrix[1][1]) - (basicHessianMatrix[0][1] * basicHessianMatrix[1][0]);
+        this.hessianDiscriminant = Math.pow(hessianTrace, 2) - 4 * hessianDeterminant;
 
-        this.eigenvalues = calculateEigenvalues(trace, discriminant);
+        this.eigenvalues = calculateEigenvalues(hessianTrace, hessianDiscriminant);
     }
 
 
@@ -54,16 +57,10 @@ public class KeypointCandidate {
     }
 
     public boolean isEdgeResponse(double ratioThreshold) {
-        double lambda1 = eigenvalues[0];
-        double lambda2 = eigenvalues[1];
+        double r = hessianTrace*hessianTrace/hessianDeterminant;
+        double edgeThreshold = Math.pow(ratioThreshold + 1, 2) / ratioThreshold;
 
-        if (lambda1 < lambda2) {
-            double temp = lambda1;
-            lambda1 = lambda2;
-            lambda2 = temp;
-        }
-
-        return lambda1 / lambda2 > ratioThreshold;
+        return r > edgeThreshold;
     }
 
     public int getX() {
