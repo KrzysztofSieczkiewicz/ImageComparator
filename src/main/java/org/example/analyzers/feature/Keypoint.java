@@ -18,11 +18,6 @@ public class Keypoint {
         this.hessianMatrix = hessianMatrix;
     }
 
-    public Keypoint(KeypointCandidate candidate) {
-        this.pixelX = candidate.getX();
-        this.pixelY = candidate.getY();
-    }
-
     public boolean subpixelRefinement() {
         double lambda = 1e-6;
 

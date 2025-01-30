@@ -30,7 +30,7 @@ public class Main {
 
         //actualImage = ImageUtil.resize(testImage, 1024/2, 512/2);
 
-        ImageAccessor accessor = ImageAccessor.create(actualImage);
+        ImageAccessor accessor = ImageAccessor.create(testImage);
         int[][] raster2D = accessor.getPixels();
 
         BIGaussianHelper helper = new BIGaussianHelper();
