@@ -3,14 +3,14 @@ package org.example.utils;
 public class MatrixUtil {
 
     /**
-     * Creates a slice of matrix with given radius. Uses reflected values if requested pixels are out of bounds of provided matrix.
-     * Ensures that matrix will have odd dimensions
+     * Creates a slice of matrix with given radius using reflected values if requested coordinates are out of bounds.
+     * Output matrix will always have odd dimensions.
      *
      * @param matrix original values to be copied
-     * @param x X coordinate of the matrix value around which slice will be created
-     * @param y Y coordinate of the matrix value around which slice will be created
-     * @param radius value copying distance
-     * @return new matrix containing copied values
+     * @param x X coordinate of the input matrix point
+     * @param y Y coordinate of the input matrix point
+     * @param radius max range from xy coordinates
+     * @return new matrix float[2*radius+1][2*radius+1].
      */
     public static float[][] getSafeMatrixSlice(float[][] matrix, int x, int y, int radius) {
         int maxX = matrix.length;

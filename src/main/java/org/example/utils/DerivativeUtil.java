@@ -41,9 +41,6 @@ public class DerivativeUtil {
         return new float[] {dx, dy, ds};
     }
 
-    // TODO: move Hessian and gradient methods here -
-    //  create two methods for Hessians, depending on number of parameters provided (x,y) and (x,y,s);
-
     public static float[][] approximateHessianMatrix(float[][] matrix, int x, int y) {
         int kernelRadius = 1;
         float[][] slice = MatrixUtil.getSafeMatrixSlice(matrix, x, y, kernelRadius);
@@ -70,6 +67,11 @@ public class DerivativeUtil {
     //  hesjany są "bezpieczne", ale pochodna skali już nie - korzysta z oryginalnego tensora
     //  rozważ czy te metody nie wymagają rozdzielenia
     //  ale zastanów się też jak "zabezpieczyć" pochodną skali - nie ma co jej pozostawiać bez niczego
+    //  najlepiej zaznacz już w metodach wyżej, że float[][][] ma zawsze pierwszy wymiar równy 3
+    //  nie sprawdzamy przecież skali dalej niż bezpośredni sąsiad - może utworzyć klasę OctaveSlice trzymającą prevScale, currentScale, nextScale?
+    //  to rozwiązuje kwestię out of bound dla skal, a xy jest zabezpieczone przez SafeMatrixSlice.
+    //  a Keypoint i Keypoint candidate nie musiałyby trzymać ani neighbourMatrix ani OctaveSlice, jedynie wyniki działań z tej klasy
+
     public static float[][] approximateScaleDerivatives(float[][][] tensor, int scale, int x, int y) {
         int kernelRadius = 1;
         float[][] slice = MatrixUtil.getSafeMatrixSlice(tensor[scale], x, y, kernelRadius);
