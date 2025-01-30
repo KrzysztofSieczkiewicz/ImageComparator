@@ -2,21 +2,16 @@ package org.example.utils;
 
 public class MatrixUtil {
 
-    public static float accessElementWithReflection(float[][] matrix, int maxX, int maxY, int x, int y) {
-        int reflectedX = x < 0 ? -x : (x >= maxX ? 2*maxX-x-1 : x);
-        int reflectedY = y < 0 ? -y : (y >= maxY ? 2*maxY-y-1 : y);
-
-        return matrix[reflectedX][reflectedY];
-    }
-
-
-    public static float accessElementWithReflection(float[][] matrix, int x, int y) {
-        int matrixWidth = matrix.length;
-        int matrixHeight = matrix[0].length;
-
-        return accessElementWithReflection(matrix, matrixWidth, matrixHeight, x, y);
-    }
-
+    /**
+     * Creates a slice of matrix with given radius. Uses reflected values if requested pixels are out of bounds of provided matrix.
+     * Ensures that matrix will have odd dimensions
+     *
+     * @param matrix original values to be copied
+     * @param x X coordinate of the matrix value around which slice will be created
+     * @param y Y coordinate of the matrix value around which slice will be created
+     * @param radius value copying distance
+     * @return new matrix containing copied values
+     */
     public static float[][] getSafeMatrixSlice(float[][] matrix, int x, int y, int radius) {
         int maxX = matrix.length;
         int maxY = matrix[0].length;

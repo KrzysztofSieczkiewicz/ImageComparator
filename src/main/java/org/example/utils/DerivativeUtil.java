@@ -32,13 +32,18 @@ public class DerivativeUtil {
             { 1,  0, -1}
     };
 
+    // TODO: do dokończenia - na razie nie ma prawa działać
+    public static float[] approximateGradientVector(float[][][] octaveSlice, int scale, int x, int y) {
+        float dx = (octaveSlice[1][x+1][y] - octaveSlice[1][x-1][y]) / 2f;
+        float dy = (octaveSlice[1][x][y+1] - octaveSlice[1][x][y-1]) / 2f;
+        float ds = (octaveSlice[2][x][y] - octaveSlice[0][x][y]) / 2f;
+
+        return new float[] {dx, dy, ds};
+    }
+
     // TODO: move Hessian and gradient methods here -
     //  create two methods for Hessians, depending on number of parameters provided (x,y) and (x,y,s);
-    //  it is not worth the trouble (and to sacrifice accuracy) to reuse 2x2 Hessian
 
-    /**
-     *
-     */
     public static float[][] approximateHessianMatrix(float[][] matrix, int x, int y) {
         int kernelRadius = 1;
         float[][] slice = MatrixUtil.getSafeMatrixSlice(matrix, x, y, kernelRadius);
@@ -61,7 +66,11 @@ public class DerivativeUtil {
         };
     }
 
-    public static float[][] approximateHessianMatrix(float[][][] tensor, int scale, int x, int y) {
+    // TODO: do dokończenia
+    //  hesjany są "bezpieczne", ale pochodna skali już nie - korzysta z oryginalnego tensora
+    //  rozważ czy te metody nie wymagają rozdzielenia
+    //  ale zastanów się też jak "zabezpieczyć" pochodną skali - nie ma co jej pozostawiać bez niczego
+    public static float[][] approximateScaleDerivatives(float[][][] tensor, int scale, int x, int y) {
         int kernelRadius = 1;
         float[][] slice = MatrixUtil.getSafeMatrixSlice(tensor[scale], x, y, kernelRadius);
 
@@ -89,39 +98,4 @@ public class DerivativeUtil {
         };
     }
 
-    // TODO: instead of accessing matrix with safeguar, maybe it's better to have a method generate safe "window" of the matrix, that runs once before loops?
-
-    public static float[][] approximateScaleDerivatives(float[][][] tensor, int x, int y) {
-        int maxS = tensor.length - 1;
-        int maxX = tensor[0].length - 1;
-        int maxY = tensor[0][0].length - 1;
-        int halfS = maxS/2;
-
-        float dxx=0, dyy=0, dxy=0;
-        for (int i=-1; i<=1; i++) {
-            for (int j=-1; j<=1; j++) {
-                float intensity = MatrixUtil.accessElementWithReflection(
-                        tensor[halfS],
-                        maxX,
-                        maxY,
-                        (x + i),
-                        (y + j) );
-
-                dxx += intensity * sobelDxx[i + 1][j + 1];
-                dyy += intensity * sobelDyy[i + 1][j + 1];
-                dxy += intensity * sobelDxy[i + 1][j + 1];
-            }
-        }
-
-        // Approx scale by finite difference (central)
-        float dss = tensor[2][x][y] - 2 * tensor[1][x][y] + tensor[0][x][y];
-        float dxs = ((tensor[2][x+1][y] - tensor[2][x-1][y]) - (tensor[0][x+1][y] - tensor[0][x-1][y])) / 2f;
-        float dys = ((tensor[2][x][y+1] - tensor[2][x][y-1]) - (tensor[0][x][y+1] - tensor[0][x][y-1])) / 2f;
-
-        return new float[][] {
-                { dxx, dxy,  dxs},
-                { dxy, dyy,  dys},
-                { dxs, dys,  dss}
-        };
-    }
 }
