@@ -32,24 +32,56 @@ public class DerivativeUtil {
             { 1,  0, -1}
     };
 
-    // TODO: do dokończenia - na razie nie ma prawa działać
-    public static float[] approximateGradientVector(float[][][] octaveSlice, int scale, int x, int y) {
-        float dx = (octaveSlice[1][x+1][y] - octaveSlice[1][x-1][y]) / 2f;
-        float dy = (octaveSlice[1][x][y+1] - octaveSlice[1][x][y-1]) / 2f;
-        float ds = (octaveSlice[2][x][y] - octaveSlice[0][x][y]) / 2f;
+    /**
+     * Approximates first order derivatives using sobel kernel for space and central difference for scale
+     *
+     * @param previousScale image data from the previous scale (scale-1)
+     * @param currentScale main image data (from the current scale)
+     * @param nextScale  image data from the next scale (scale+1)
+     * @param x pixel width coordinate
+     * @param y pixel height coordinate
+     * @return array containing derivatives {dx, dy, ds}
+     */
+    public static float[] approximateGradientVector(float[][] previousScale, float[][] currentScale, float[][] nextScale, int x, int y) {
+        int range = 1;
+        int width = currentScale.length;
+        int height = currentScale[0].length;
+
+        float dx=0, dy=0;
+        int safeX, safeY;
+
+        for (int i = -range; i <= range; i++) {
+            for (int j = -range; j <= range; j++) {
+                safeX = MatrixUtil.reflectMatrixCoordinate(x + i, width);
+                safeY = MatrixUtil.reflectMatrixCoordinate(y + j, height);
+                float pixel = currentScale[safeX][safeY];
+                dx += pixel * sobelDx[i + 1][j + 1];
+                dy += pixel * sobelDy[i + 1][j + 1];
+            }
+        }
+
+        float ds = (nextScale[x][y] - previousScale[x][y]) / 2f;
 
         return new float[] {dx, dy, ds};
     }
 
-    public static float[][] approximateHessianMatrix(float[][] matrix, int x, int y) {
+    /**
+     * Approximates space derivatives (XY) of the image using sobel kernels
+     *
+     * @param imageData image data
+     * @param x pixel width coordinate
+     * @param y pixel height coordinate
+     * @return array of derivatives {dxx, dxy, dyy}
+     */
+    public static float[] approximateSpaceDerivatives(float[][] imageData, int x, int y) {
         int kernelRadius = 1;
-        float[][] slice = MatrixUtil.getSafeMatrixSlice(matrix, x, y, kernelRadius);
+        float[][] imageSlice = MatrixUtil.getSafeMatrixSlice(imageData, x, y, kernelRadius);
 
         float dxx = 0, dyy = 0, dxy = 0;
         for (int dx=-kernelRadius; dx<=kernelRadius; dx++) {
             for (int dy=-kernelRadius; dy<=kernelRadius; dy++) {
 
-                float intensity = slice[x + dx][y + dy];
+                float intensity = imageSlice[x + dx][y + dy];
 
                 dxx += intensity * sobelDxx[dx + kernelRadius][dy + kernelRadius];
                 dyy += intensity * sobelDyy[dx + kernelRadius][dy + kernelRadius];
@@ -57,47 +89,35 @@ public class DerivativeUtil {
             }
         }
 
-        return new float[][]{
-                {dxx, dxy},
-                {dxy, dyy}
-        };
+        return new float[] {dxx, dxy, dyy};
     }
 
-    // TODO: do dokończenia
-    //  hesjany są "bezpieczne", ale pochodna skali już nie - korzysta z oryginalnego tensora
-    //  rozważ czy te metody nie wymagają rozdzielenia
-    //  ale zastanów się też jak "zabezpieczyć" pochodną skali - nie ma co jej pozostawiać bez niczego
-    //  najlepiej zaznacz już w metodach wyżej, że float[][][] ma zawsze pierwszy wymiar równy 3
-    //  nie sprawdzamy przecież skali dalej niż bezpośredni sąsiad - może utworzyć klasę OctaveSlice trzymającą prevScale, currentScale, nextScale?
-    //  to rozwiązuje kwestię out of bound dla skal, a xy jest zabezpieczone przez SafeMatrixSlice.
-    //  a Keypoint i Keypoint candidate nie musiałyby trzymać ani neighbourMatrix ani OctaveSlice, jedynie wyniki działań z tej klasy
+    /**
+     * Approximates scale derivatives for an octave slice
+     *
+     * @param previousScale image data from the previous scale (scale-1)
+     * @param currentScale main image data (from the current scale)
+     * @param nextScale  image data from the next scale (scale+1)
+     * @param x pixel width coordinate
+     * @param y pixel height coordinate
+     * @return array {dss, dxs, dys} containing derivatives
+     */
+    public static float[] approximateScaleDerivatives(float[][] previousScale, float[][] currentScale, float[][] nextScale, int x, int y) {
+        int range = 1;
 
-    public static float[][] approximateScaleDerivatives(float[][][] tensor, int scale, int x, int y) {
-        int kernelRadius = 1;
-        float[][] slice = MatrixUtil.getSafeMatrixSlice(tensor[scale], x, y, kernelRadius);
+        int width = currentScale.length;
+        int height = currentScale[0].length;
 
-        float dxx = 0, dyy = 0, dxy = 0;
-        for (int dx=-kernelRadius; dx<=kernelRadius; dx++) {
-            for (int dy=-kernelRadius; dy<=kernelRadius; dy++) {
+        int xNext = MatrixUtil.reflectMatrixCoordinate(x + range, width);
+        int xPrev = MatrixUtil.reflectMatrixCoordinate(x - range, width);
+        int yNext = MatrixUtil.reflectMatrixCoordinate(y + range, height);
+        int yPrev = MatrixUtil.reflectMatrixCoordinate(y - range, height);
 
-                float intensity = slice[x + dx][y + dy];
+        float dss = nextScale[x][y] - 2 * currentScale[x][y] + previousScale[x][y];
+        float dxs = ((nextScale[xNext][y] - nextScale[xPrev][y]) - (previousScale[xNext][y] - previousScale[xPrev][y])) / 2f;
+        float dys = ((nextScale[x][yNext] - nextScale[x][yPrev]) - (previousScale[x][yNext] - previousScale[x][yPrev])) / 2f;
 
-                dxx += intensity * sobelDxx[dx + kernelRadius][dy + kernelRadius];
-                dyy += intensity * sobelDyy[dx + kernelRadius][dy + kernelRadius];
-                dxy += intensity * sobelDxy[dx + kernelRadius][dy + kernelRadius];
-            }
-        }
-
-        // Approx scale derivatives by finite difference (central)
-        float dss = tensor[2][x][y] - 2 * tensor[1][x][y] + tensor[0][x][y];
-        float dxs = ((tensor[2][x+1][y] - tensor[2][x-1][y]) - (tensor[0][x+1][y] - tensor[0][x-1][y])) / 2f;
-        float dys = ((tensor[2][x][y+1] - tensor[2][x][y-1]) - (tensor[0][x][y+1] - tensor[0][x][y-1])) / 2f;
-
-        return new float[][] {
-                { dxx, dxy,  dxs},
-                { dxy, dyy,  dys},
-                { dxs, dys,  dss}
-        };
+        return new float[] { dss, dxs, dys };
     }
 
 }
