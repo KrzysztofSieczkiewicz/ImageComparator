@@ -52,8 +52,8 @@ public class DerivativeUtil {
 
         for (int i = -range; i <= range; i++) {
             for (int j = -range; j <= range; j++) {
-                safeX = MatrixUtil.reflectMatrixCoordinate(x + i, width);
-                safeY = MatrixUtil.reflectMatrixCoordinate(y + j, height);
+                safeX = MatrixUtil.reflectCoordinate(x + i, width);
+                safeY = MatrixUtil.reflectCoordinate(y + j, height);
                 float pixel = currentScale[safeX][safeY];
                 dx += pixel * sobelDx[i + 1][j + 1];
                 dy += pixel * sobelDy[i + 1][j + 1];
@@ -66,7 +66,7 @@ public class DerivativeUtil {
     }
 
     /**
-     * Approximates space derivatives (XY) of the image using sobel kernels
+     * Approximates space derivatives (XY) of the image. Uses sobel kernels
      *
      * @param imageData image data
      * @param x pixel width coordinate
@@ -108,10 +108,10 @@ public class DerivativeUtil {
         int width = currentScale.length;
         int height = currentScale[0].length;
 
-        int xNext = MatrixUtil.reflectMatrixCoordinate(x + range, width);
-        int xPrev = MatrixUtil.reflectMatrixCoordinate(x - range, width);
-        int yNext = MatrixUtil.reflectMatrixCoordinate(y + range, height);
-        int yPrev = MatrixUtil.reflectMatrixCoordinate(y - range, height);
+        int xNext = MatrixUtil.reflectCoordinate(x + range, width);
+        int xPrev = MatrixUtil.reflectCoordinate(x - range, width);
+        int yNext = MatrixUtil.reflectCoordinate(y + range, height);
+        int yPrev = MatrixUtil.reflectCoordinate(y - range, height);
 
         float dss = nextScale[x][y] - 2 * currentScale[x][y] + previousScale[x][y];
         float dxs = ((nextScale[xNext][y] - nextScale[xPrev][y]) - (previousScale[xNext][y] - previousScale[xPrev][y])) / 2f;

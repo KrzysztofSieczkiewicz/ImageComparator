@@ -1,13 +1,11 @@
 package org.example.analyzers.feature;
 
 import org.example.analyzers.common.PixelPoint;
-import org.example.utils.DerivativeUtil;
-import org.example.utils.MatrixUtil;
 import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
 
-public class KeypointCandidate {
+public class NewKeypointCandidate {
 
     /**
      * Config value. Determines the dimensions of the pixels window of neighbours used for hessians and gradients
@@ -15,36 +13,32 @@ public class KeypointCandidate {
     private int windowSize = 3;
 
 
-    private final int x,y;
-    private OctaveSlice images;
-    private float[][] hessianMatrix;
-    private float[] gradients;
-
+    private int x,y;
     private final float[][][] neighbouringMatrix;
     private final float[][] basicHessianMatrix;
-    private final float hessianTrace;
-    private final float hessianDeterminant;
-    private final float hessianDiscriminant;
+    private final double hessianTrace;
+    private final double hessianDeterminant;
+    private final double hessianDiscriminant;
     private final double[] eigenvalues;
 
-    public KeypointCandidate(BufferedImage[] scaleTriplet, int x, int y) {
+    public NewKeypointCandidate(BufferedImage[] scaleTriplet, int x, int y) {
         this.neighbouringMatrix = getNeighbouringPixels(scaleTriplet, x, y, windowSize);
         this.basicHessianMatrix = approxHessianMatrix(scaleTriplet[1], x, y);
 
         this.hessianTrace = basicHessianMatrix[0][0] + basicHessianMatrix[1][1];
         this.hessianDeterminant = (basicHessianMatrix[0][0] * basicHessianMatrix[1][1]) - (basicHessianMatrix[0][1] * basicHessianMatrix[1][0]);
-        this.hessianDiscriminant = (float) Math.pow(hessianTrace, 2) - 4 * hessianDeterminant;
+        this.hessianDiscriminant = Math.pow(hessianTrace, 2) - 4 * hessianDeterminant;
 
         this.x = x;
         this.y = y;
         this.eigenvalues = calculateEigenvalues(hessianTrace, hessianDiscriminant);
     }
 
-    public KeypointCandidate(BufferedImage[] scaleTriplet, PixelPoint point) {
+    public NewKeypointCandidate(BufferedImage[] scaleTriplet, PixelPoint point) {
         this(scaleTriplet, point.getX(), point.getY());
     }
 
-    public KeypointCandidate(float[][][] octaveSlice, PixelPoint point) {
+    public NewKeypointCandidate(float[][][] octaveSlice, PixelPoint point) {
         this.x = point.getX();
         this.y = point.getY();
         this.neighbouringMatrix = extractPixelWindow3D(octaveSlice, x, y, 9);
@@ -52,49 +46,9 @@ public class KeypointCandidate {
 
         this.hessianTrace = basicHessianMatrix[0][0] + basicHessianMatrix[1][1];
         this.hessianDeterminant = (basicHessianMatrix[0][0] * basicHessianMatrix[1][1]) - (basicHessianMatrix[0][1] * basicHessianMatrix[1][0]);
-        this.hessianDiscriminant = (float) Math.pow(hessianTrace, 2) - 4 * hessianDeterminant;
+        this.hessianDiscriminant = Math.pow(hessianTrace, 2) - 4 * hessianDeterminant;
 
         this.eigenvalues = calculateEigenvalues(hessianTrace, hessianDiscriminant);
-    }
-
-    // TODO: current candidate - finish this
-    public KeypointCandidate(OctaveSlice scalesTriplet, PixelPoint point) {
-        this.x = point.getX();
-        this.y = point.getY();
-        this.images = scalesTriplet;
-
-        float[] spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives(
-                scalesTriplet.getCurrentScale(),
-                x, y );
-
-        float[] scaleDerivatives = DerivativeUtil.approximateScaleDerivatives(
-                scalesTriplet.getPreviousScale(),
-                scalesTriplet.getCurrentScale(),
-                scalesTriplet.getNextScale(),
-                x, y );
-
-        this.hessianMatrix = new float[][] {
-                { spaceDerivatives[0], spaceDerivatives[1],  scaleDerivatives[1]},
-                { spaceDerivatives[1], spaceDerivatives[2],  scaleDerivatives[2]},
-                { scaleDerivatives[1], scaleDerivatives[2],  scaleDerivatives[0]}
-        };
-
-        // move to the keypoint refinement refinement
-        this.gradients = DerivativeUtil.approximateGradientVector(
-                scalesTriplet.getPreviousScale(),
-                scalesTriplet.getCurrentScale(),
-                scalesTriplet.getNextScale(),
-                x, y);
-
-        // TODO: needed here?
-        this.hessianTrace = MatrixUtil.getMatrixTrace(hessianMatrix);
-        this.hessianDeterminant = MatrixUtil.get2x2MatrixDeterminant(hessianMatrix);
-        this.hessianDiscriminant = MatrixUtil.get2x2MatrixDiscriminant(hessianTrace, hessianDeterminant);
-        this.neighbouringMatrix = new float[][][] {};
-        this.basicHessianMatrix = new float[][] {};
-
-        float[] tempEigenvalues = MatrixUtil.get2x2MatrixEigenvalues(hessianTrace, hessianDiscriminant);
-        this.eigenvalues = new double[]{ tempEigenvalues[0], tempEigenvalues[1] };
     }
 
 
