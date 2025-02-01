@@ -1,5 +1,7 @@
 package org.example.utils;
 
+// TODO: FIX MATRIX INDICES:
+//  is x for width or y
 public class MatrixUtil {
 
     /**

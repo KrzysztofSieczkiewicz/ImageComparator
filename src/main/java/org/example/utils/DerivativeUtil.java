@@ -81,7 +81,7 @@ public class DerivativeUtil {
         for (int dx=-kernelRadius; dx<=kernelRadius; dx++) {
             for (int dy=-kernelRadius; dy<=kernelRadius; dy++) {
 
-                float intensity = imageSlice[x + dx][y + dy];
+                float intensity = imageSlice[dx + kernelRadius][dy + kernelRadius];
 
                 dxx += intensity * sobelDxx[dx + kernelRadius][dy + kernelRadius];
                 dyy += intensity * sobelDyy[dx + kernelRadius][dy + kernelRadius];

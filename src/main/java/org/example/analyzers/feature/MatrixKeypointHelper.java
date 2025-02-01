@@ -16,13 +16,13 @@ public class MatrixKeypointHelper {
      * Contrast threshold below which keypoint will be discarded as noise
      * usually between 0.01 and 0.04
      */
-    double keypointContrastThreshold = 0.03;
+    float keypointContrastThreshold = 0.03f;
 
     /**
      * Hessian eigenvalues ratio below which keypoint will be discarded as edge keypoint
      * usually between 5 and 20
      */
-    double keypointEdgeResponseRatio = 10;
+    float keypointEdgeResponseRatio = 10;
 
 
     public void detectKeypoints(float[][][][] dogPyramid) {
@@ -34,10 +34,12 @@ public class MatrixKeypointHelper {
 
             for (int scaleIndex=1; scaleIndex<scalesNum-1; scaleIndex++) {
 
-                float[][][] octaveSlice = {
+                OctaveSlice octaveSlice = new OctaveSlice(
+                        scaleIndex,
                         octave[scaleIndex-1],
                         octave[scaleIndex],
-                        octave[scaleIndex+1] };
+                        octave[scaleIndex+1]
+                );
 
                 // 0. find potential keypoints
                 ArrayList<PixelPoint> potentialCandidates = findPotentialKeypoints(octave[scaleIndex-1], octave[scaleIndex], octave[scaleIndex+1]);
@@ -48,8 +50,8 @@ public class MatrixKeypointHelper {
                 ArrayList<KeypointCandidate> keypointCandidates = potentialCandidates.stream()
                         .map(potentialCandidate -> new KeypointCandidate(octaveSlice, potentialCandidate))
                         .filter(candidate ->
-                                !candidate.isLowContrast(keypointContrastThreshold) &&
-                                !candidate.isEdgeResponse(keypointEdgeResponseRatio))
+                                candidate.checkIsNotLowContrast(keypointContrastThreshold) &&
+                                candidate.checkIsNotEdgeResponse(keypointEdgeResponseRatio))
                         .collect(Collectors.toCollection(ArrayList::new));
 
                 System.out.println("keypointCandidates: " + keypointCandidates.size());

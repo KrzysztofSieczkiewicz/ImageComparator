@@ -1,12 +1,9 @@
 package org.example;
 
-import org.example.analyzers.feature.BISIFTAnalyzer;
 import org.example.analyzers.feature.MatrixGaussianHelper;
 import org.example.analyzers.feature.BIGaussianHelper;
 import org.example.analyzers.feature.MatrixSIFTAnalyzer;
-import org.example.utils.ImageUtil;
 import org.example.utils.accessor.ImageAccessor;
-import org.example.utils.accessor.ImageDataUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
