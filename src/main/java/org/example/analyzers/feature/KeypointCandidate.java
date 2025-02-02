@@ -96,20 +96,4 @@ public class KeypointCandidate {
 
         return new Keypoint(x, y, tempGradientVector, tempHessianMatrix);
     }
-
-    /**
-     * Calculates hessian matrix eigenvalues
-     * @return array {lambda1, lambda2}
-     */
-    private double[] calculateEigenvalues(double trace, double discriminant) {
-        if (discriminant < 0 && Math.abs(discriminant) > 1e-10) {
-            return new double[]{Double.NaN, Double.NaN};
-        }
-
-        double sqrtDiscriminant = Math.sqrt(discriminant);
-        double lambda1 = (trace + sqrtDiscriminant) / 2.0;
-        double lambda2 = (trace - sqrtDiscriminant) / 2.0;
-
-        return new double[]{lambda1, lambda2};
-    }
 }
