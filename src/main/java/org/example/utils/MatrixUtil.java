@@ -125,8 +125,8 @@ public class MatrixUtil {
      * Calculates matrix determinant.
      * Works only with square matrices with max size 2x2
      */
-    public static float get2x2MatrixDiscriminant(float trace, float determinent) {
-        return (float) Math.pow(trace, 2) - 4 * determinent;
+    public static float get2x2MatrixDiscriminant(float trace, float determinant) {
+        return (trace * trace) - (4 * determinant);
     }
 
     public static float[] get2x2MatrixEigenvalues(float trace, float discriminant) {
@@ -188,8 +188,7 @@ public class MatrixUtil {
      * @return new modified matrix
      */
     public static double[][] diagonalRegularization(double[][] matrix) {
-        double lambda = 0.001;
-
+        double lambda = 0.0001;
         return diagonalRegularization(matrix, lambda);
     }
 
@@ -213,6 +212,17 @@ public class MatrixUtil {
             }
         }
         return regularizedMatrix;
+    }
+
+    /**
+     * Regularizes the matrix (Tikhonov).
+     * Works only on square matrices.
+     *
+     * @return new modified matrix
+     */
+    public static double[][] performTikhonovRegularization(double[][] matrix) {
+        double lambda = 0.0001;
+        return performTikhonovRegularization(matrix, lambda);
     }
 
     /**

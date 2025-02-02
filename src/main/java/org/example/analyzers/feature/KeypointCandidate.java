@@ -4,6 +4,12 @@ import org.example.analyzers.common.PixelPoint;
 import org.example.utils.DerivativeUtil;
 import org.example.utils.MatrixUtil;
 
+import java.util.Arrays;
+
+// TODO: Current - keypoint candidates are not being filtered properly - eigenvalues seem a bit big - check calculations
+//  Strong suspicion - DoG images require normalization as even entirely black areas seem to be "high contrast"
+//  Probably both normalization and proper threshold
+
 public class KeypointCandidate {
 
     private final int x,y;
@@ -36,12 +42,17 @@ public class KeypointCandidate {
                 { scaleDerivatives[1], scaleDerivatives[2],  scaleDerivatives[0]}
         };
 
-        // TODO: needed here?
         this.hessianTrace = MatrixUtil.getMatrixTrace(hessianMatrix);
         this.hessianDeterminant = MatrixUtil.get2x2MatrixDeterminant(hessianMatrix);
         float hessianDiscriminant = MatrixUtil.get2x2MatrixDiscriminant(hessianTrace, hessianDeterminant);
-
         this.eigenvalues = MatrixUtil.get2x2MatrixEigenvalues(hessianTrace, hessianDiscriminant);
+
+//        System.out.println("Candidate");
+//        System.out.println("Matrix: " + Arrays.deepToString(hessianMatrix));
+//        System.out.println("Trace: " + hessianTrace);
+//        System.out.println("Determinant: " + hessianDeterminant);
+//        System.out.println("Discriminant: " + hessianDiscriminant);
+//        System.out.println("Eigenvalues: " + Arrays.toString(eigenvalues));
     }
 
     /**
@@ -50,6 +61,10 @@ public class KeypointCandidate {
      * @return true if candidate's contrast is above threshold
      */
     public boolean checkIsNotLowContrast(float contrastThreshold) {
+//        System.out.println( "Contrast check: " + "1: " + eigenvalues[0] + ", 2: " + eigenvalues[1] +
+//                ", product: " + eigenvalues[0] * eigenvalues[1] +
+//                ", outcome: " + ((eigenvalues[0] * eigenvalues[1]) >= contrastThreshold) );
+
         return (eigenvalues[0] * eigenvalues[1]) >= contrastThreshold;
     }
 
@@ -60,7 +75,7 @@ public class KeypointCandidate {
      */
     public boolean checkIsNotEdgeResponse(float ratioThreshold) {
         float r = (hessianTrace*hessianTrace) / hessianDeterminant;
-        float edgeThreshold = (float) Math.pow( ratioThreshold+1, 2 ) / ratioThreshold;
+        float edgeThreshold = ((ratioThreshold+1)*(ratioThreshold+1)) / ratioThreshold;
 
         return r <= edgeThreshold;
     }

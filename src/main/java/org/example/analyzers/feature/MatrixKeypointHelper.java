@@ -16,7 +16,7 @@ public class MatrixKeypointHelper {
      * Contrast threshold below which keypoint will be discarded as noise
      * usually between 0.01 and 0.04
      */
-    float keypointContrastThreshold = 0.03f;
+    float keypointContrastThreshold = 0.04f;
 
     /**
      * Hessian eigenvalues ratio below which keypoint will be discarded as edge keypoint

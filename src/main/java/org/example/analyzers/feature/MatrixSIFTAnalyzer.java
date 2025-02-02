@@ -69,7 +69,8 @@ public class MatrixSIFTAnalyzer {
                     for (int y = 0; y < scale[0].length; y++) {
                         for (int x = 0; x < scale.length; x++) {
                             // Get the grayscale value and set the pixel in the BufferedImage
-                            int pixelValue = (int) scale[x][y];
+                            int pixelValue = (int) ((scale[x][y]+3)*10); //temp
+                            //int pixelValue = (int) scale[x][y];
                             int rgb = (pixelValue << 16) | (pixelValue << 8) | pixelValue; // Grayscale to RGB format
                             dogImage.setRGB(x, y, rgb);
                         }
