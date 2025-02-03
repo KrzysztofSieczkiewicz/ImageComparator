@@ -42,7 +42,7 @@ public class KeypointCandidate {
                 { scaleDerivatives[1], scaleDerivatives[2],  scaleDerivatives[0]}
         };
 
-        this.hessianTrace = MatrixUtil.getMatrixTrace(hessianMatrix);
+        this.hessianTrace = hessianMatrix[0][0] + hessianMatrix[1][1]; //MatrixUtil.getMatrixTrace(hessianMatrix);
         this.hessianDeterminant = MatrixUtil.get2x2MatrixDeterminant(hessianMatrix);
         float hessianDiscriminant = MatrixUtil.get2x2MatrixDiscriminant(hessianTrace, hessianDeterminant);
         this.eigenvalues = MatrixUtil.get2x2MatrixEigenvalues(hessianTrace, hessianDiscriminant);
