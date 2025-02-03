@@ -79,12 +79,18 @@ public class MatrixUtil {
         int maxX = matrix.length;
         int maxY = matrix[0].length;
 
-        float[][] slice = new float[2*radius+1][2*radius+1];
+        float[][] slice = new float[2 * radius + 1][2 * radius + 1];
 
-        for (int currX=x-radius; currX<x+radius; currX++) {
-            for (int currY=y-radius; currY<y+radius; currY++) {
-                int safeX = currX < 0 ? -currX : (currX >= maxX ? 2*maxX-currX-1 : currX);
-                int safeY = currY < 0 ? -currY : (currY >= maxY ? 2*maxY-currY-1 : currY);
+        for (int currX = x - radius; currX <= x + radius; currX++) {
+            for (int currY = y - radius; currY <= y + radius; currY++) {
+
+                int safeX = currX;
+                if (safeX < 0) safeX = -safeX;
+                if (safeX >= maxX) safeX = 2 * (maxX - 1) - safeX;
+
+                int safeY = currY;
+                if (safeY < 0) safeY = -safeY;
+                if (safeY >= maxY) safeY = 2 * (maxY - 1) - currY;
 
                 slice[currX - (x - radius)][currY - (y - radius)] = matrix[safeX][safeY];
             }
@@ -92,6 +98,7 @@ public class MatrixUtil {
 
         return slice;
     }
+
 
     /**
      * Calculates matrix trace, works only for square matrices
