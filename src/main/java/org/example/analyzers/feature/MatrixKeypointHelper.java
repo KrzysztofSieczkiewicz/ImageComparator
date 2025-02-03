@@ -44,7 +44,7 @@ public class MatrixKeypointHelper {
                 // 0. find potential keypoints
                 ArrayList<PixelPoint> potentialCandidates = findPotentialKeypoints(octave[scaleIndex-1], octave[scaleIndex], octave[scaleIndex+1]);
 
-//                System.out.println("Potential keypoints: " + potentialCandidates.size());
+                System.out.println("Potential candidates: " + potentialCandidates.size());
 
                 // 1. filter potential keypoints by checking contrast and edge response
                 ArrayList<KeypointCandidate> keypointCandidates = potentialCandidates.stream()
@@ -54,7 +54,7 @@ public class MatrixKeypointHelper {
                                 candidate.checkIsNotEdgeResponse(keypointEdgeResponseRatio))
                         .collect(Collectors.toCollection(ArrayList::new));
 
-//                System.out.println("keypointCandidates: " + keypointCandidates.size());
+                System.out.println("Keypoint candidates: " + keypointCandidates.size());
 //                keypointCandidates.forEach(candidate -> {
 //                    System.out.println("X: " + candidate.getX() + ", Y: " + candidate.getY() );
 //                });
@@ -80,7 +80,7 @@ public class MatrixKeypointHelper {
 
                 // 5. Use descriptor distances and RANSAC to match keypoints across different images
 
-//                System.out.println("KEYPOINTS: " + keypoints.size());
+                System.out.println("Keypoints: " + keypoints.size());
 //                keypoints.forEach(keypoint -> {
 //                    System.out.println( "subX: " + keypoint.getSubPixelX() + ", subY: " + keypoint.getSubPixelY() + ", X: " + keypoint.getPixelX() + ", Y: " + keypoint.getPixelY() );
 //                });
