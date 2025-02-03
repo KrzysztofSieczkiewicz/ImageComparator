@@ -52,10 +52,10 @@ public class MatrixKeypointHelper {
                                 !candidate.isEdgeResponse(keypointEdgeResponseRatio))
                         .collect(Collectors.toCollection(ArrayList::new));
 
-                System.out.println("keypointCandidates: " + keypointCandidates.size());
-                keypointCandidates.forEach(candidate -> {
-                    System.out.println("X: " + candidate.getX() + ", Y: " + candidate.getY() );
-                });
+//                System.out.println("keypointCandidates: " + keypointCandidates.size());
+//                keypointCandidates.forEach(candidate -> {
+//                    System.out.println("X: " + candidate.getX() + ", Y: " + candidate.getY() );
+//                });
 
                 // 2. refine candidates into full keypoints
                 ArrayList<Keypoint> keypoints = keypointCandidates.stream()
@@ -78,10 +78,10 @@ public class MatrixKeypointHelper {
 
                 // 5. Use descriptor distances and RANSAC to match keypoints across different images
 
-                System.out.println("KEYPOINTS: " + keypoints.size());
-                keypoints.forEach(keypoint -> {
-                    System.out.println( "subX: " + keypoint.getSubPixelX() + ", subY: " + keypoint.getSubPixelY() + ", X: " + keypoint.getPixelX() + ", Y: " + keypoint.getPixelY() );
-                });
+//                System.out.println("KEYPOINTS: " + keypoints.size());
+//                keypoints.forEach(keypoint -> {
+//                    System.out.println( "subX: " + keypoint.getSubPixelX() + ", subY: " + keypoint.getSubPixelY() + ", X: " + keypoint.getPixelX() + ", Y: " + keypoint.getPixelY() );
+//                });
 
                 {// [DEBUG]
                     if ( keypoints.size() == 0 ) continue;

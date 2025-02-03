@@ -21,7 +21,7 @@ public class Keypoint {
     public boolean subpixelRefinement() {
         double lambda = 1e-6;
 
-        System.out.print("Refinement: ");
+//        System.out.print("Refinement: ");
 
         RealVector gradient = new ArrayRealVector(gradientsVector);
         //gradient = gradient.mapDivide(gradient.getNorm());
@@ -42,13 +42,13 @@ public class Keypoint {
 
             double offsetMagnitude = offset.getNorm();
             if (offsetMagnitude > 0.55) {
-                System.out.print("Magnitude too large: " + offsetMagnitude + "\n");
+//                System.out.print("Magnitude too large: " + offsetMagnitude + "\n");
                 return false;
             }
 
             double contrast = gradient.dotProduct(offset);
             if (Math.abs(contrast) < 0.02) {
-                System.out.print("Contrast too small: " + Math.abs(contrast) + "\n");
+//                System.out.print("Contrast too small: " + Math.abs(contrast) + "\n");
                 return false;
             }
             return true;

@@ -4,6 +4,7 @@ import org.example.analyzers.common.PixelPoint;
 import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 public class KeypointCandidate {
 
