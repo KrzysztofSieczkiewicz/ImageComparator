@@ -1,6 +1,7 @@
 package org.example.analyzers.feature;
 
 import org.example.analyzers.common.PixelPoint;
+import org.example.utils.MatrixUtil;
 import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
@@ -50,6 +51,67 @@ public class KeypointCandidate {
         this.hessianDiscriminant = Math.pow(hessianTrace, 2) - 4 * hessianDeterminant;
 
         this.eigenvalues = calculateEigenvalues(hessianTrace, hessianDiscriminant);
+
+        System.out.println("Candidate");
+        System.out.println("X: " + x + ", Y: " + y);
+        System.out.println("DoG Pixels: " + Arrays.deepToString(neighbouringMatrix[octaveSlice.length / 2]));
+        System.out.println("Matrix: " + Arrays.deepToString(basicHessianMatrix));
+        System.out.println("Trace: " + hessianTrace);
+        System.out.println("Determinant: " + hessianDeterminant);
+        System.out.println("Discriminant: " + hessianDiscriminant);
+        System.out.println("Eigenvalues: " + Arrays.toString(eigenvalues));
+
+        // Differences in determinants, discriminants and eigenvalues
+
+        //Candidate
+        //X: 1270, Y: 181
+        //DoG Pixels: [[0.3473816, 0.39178467, 0.35684204], [0.43362427, 0.45986938, 0.4121933], [0.45321655, 0.4580841, 0.40647125]]
+        //Matrix: [[-0.28366852, -0.05620575, 0.1199646], [-0.05620575, -0.26746368, -0.05607605], [0.1199646, -0.05607605, -0.1504364]]
+        //Trace: -0.5511322
+        //Determinant: 0.072711945
+        //Discriminant: 0.012898922
+        //Eigenvalues: [-0.21877939, -0.33235282]
+        //Candidate
+        //X: 1272, Y: 194
+        //DoG Pixels: [[-0.20567322, -0.22736359, -0.21907806], [-0.19763184, -0.23401642, -0.233078], [-0.15522003, -0.19555664, -0.19644928]]
+        //Matrix: [[0.14406586, -0.027824402, 0.094944], [-0.027824402, 0.1752243, 0.032390594], [0.094944, 0.032390594, 0.08961487]]
+        //Trace: 0.31929016
+        //Determinant: 0.024469642
+        //Discriminant: 0.004067637
+        //Eigenvalues: [0.1915341, 0.12775606]
+        //Candidate
+        //X: 1272, Y: 563
+        //DoG Pixels: [[-0.54855347, -0.5981293, -0.5853729], [-0.62283325, -0.6628418, -0.6456146], [-0.5997009, -0.6270752, -0.60783386]]
+        //Matrix: [[0.22341919, 0.028686523, 0.09346008], [0.028686523, 0.39639282, -0.07229614], [0.09346008, -0.07229614, 0.14509583]]
+        //Trace: 0.619812
+        //Determinant: 0.08773885
+        //Discriminant: 0.03321153
+        //Eigenvalues: [0.40102616, 0.21878585]
+
+        //Candidate
+        //X: 1270, Y: 181
+        //DoG Pixels: [[0.3473816, 0.39178467, 0.35684204], [0.43362427, 0.45986938, 0.4121933], [0.45321655, 0.4580841, 0.40647125]]
+        //Matrix: [[-0.28366852, 0.012016296], [0.012016296, -0.26746368]]
+        //Trace: -0.5511322021484375
+        //Determinant: 0.07572663575410843
+        //Discriminant: 8.401612285524607E-4
+        //Eigenvalues: [-0.26107333366636615, -0.29005886848207135]
+        //Candidate
+        //X: 1272, Y: 194
+        //DoG Pixels: [[-0.20567322, -0.22736359, -0.21907806], [-0.19763184, -0.23401642, -0.233078], [-0.15522003, -0.19555664, -0.19644928]]
+        //Matrix: [[0.14406586, -0.0052261353], [-0.0052261353, 0.1752243]]
+        //Trace: 0.3192901611328125
+        //Determinant: 0.02521652728319168
+        //Discriminant: 0.0010800978634506464
+        //Eigenvalues: [0.17607750174718972, 0.14321265938562278]
+        //Candidate
+        //X: 1272, Y: 563
+        //DoG Pixels: [[-0.54855347, -0.5981293, -0.5853729], [-0.62283325, -0.6628418, -0.6456146], [-0.5997009, -0.6270752, -0.60783386]]
+        //Matrix: [[0.22341919, -0.0055236816], [-0.0055236816, 0.39639282]]
+        //Trace: 0.61981201171875
+        //Determinant: 0.0885312557220459
+        //Discriminant: 0.030041906982660294
+        //Eigenvalues: [0.3965690126481143, 0.22324299907063572]
     }
 
 
