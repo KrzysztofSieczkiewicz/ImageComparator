@@ -100,6 +100,14 @@ public class KeypointCandidate {
                 imagesTriplet.getNextScale(),
                 x, y);
 
-        return new Keypoint(x, y, gradientVector, hessianMatrix);
+        double[][] tempHessianMatrix = new double[][] {
+                { hessianMatrix[0][0], hessianMatrix[0][1], hessianMatrix[0][2] },
+                { hessianMatrix[1][0], hessianMatrix[1][1], hessianMatrix[1][2] },
+                { hessianMatrix[2][0], hessianMatrix[2][1], hessianMatrix[2][2] }
+        };
+
+        double[] tempGradientVector = new double[] { gradientVector[0], gradientVector[1], gradientVector[2] };
+
+        return new Keypoint(x, y, tempGradientVector, tempHessianMatrix);
     }
 }
