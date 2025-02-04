@@ -7,6 +7,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class MatrixSIFTAnalyzer {
     // TODO - CURRENT: test if DoG is handling edge cases and if there are aliasing issues with image downscaling
@@ -58,35 +59,6 @@ public class MatrixSIFTAnalyzer {
 
         // 3. Build DoG pyramid
         float[][][][] dogPyramid = gaussianHelper.buildDoGPyramid(gaussianPyramid);
-
-
-        {// [DEBUG]
-            int octaveDoGIndex = 1;
-            for (float[][][] octave : dogPyramid) {
-                int scaleDoGIndex = 1;
-                for (float[][] scale : octave) {
-                    BufferedImage dogImage = new BufferedImage(scale.length, scale[0].length, BufferedImage.TYPE_INT_RGB);
-                    for (int y = 0; y < scale[0].length; y++) {
-                        for (int x = 0; x < scale.length; x++) {
-                            // Get the grayscale value and set the pixel in the BufferedImage
-                            //int pixelValue = (int) (scale[x][y]/2+128); //temp
-                            int pixelValue = (int) scale[x][y];
-                            int rgb = (pixelValue << 16) | (pixelValue << 8) | pixelValue; // Grayscale to RGB format
-                            dogImage.setRGB(x, y, rgb);
-                        }
-                    }
-                    File file = new File("src/1_3_DoG_" + octaveDoGIndex + "_" + scaleDoGIndex + ".png");
-                    try {
-                        ImageIO.write(dogImage, "PNG", file);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    scaleDoGIndex++;
-                }
-                octaveDoGIndex++;
-            }
-        }// [DEBUG]
-
 
         // 4. Find keypoints in the DoG pyramid
         keypointHelper.detectKeypoints(dogPyramid);

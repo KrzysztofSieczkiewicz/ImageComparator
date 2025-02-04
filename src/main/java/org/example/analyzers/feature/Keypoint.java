@@ -3,7 +3,6 @@ package org.example.analyzers.feature;
 import org.example.utils.MatrixUtil;
 import org.example.utils.VectorUtil;
 
-
 public class Keypoint {
 
     private int pixelX, pixelY;
@@ -18,7 +17,7 @@ public class Keypoint {
         this.hessianMatrix = hessianMatrix;
     }
 
-    public boolean subpixelRefinement() {
+    public boolean subpixelRefinement(float contrastThreshold) {
 
         double[][] regularizedHessianMatrix = MatrixUtil.diagonalRegularization(hessianMatrix);
         double[] offsets = MatrixUtil.getMatrixSolution(regularizedHessianMatrix, VectorUtil.multiplyVector(gradientsVector, -1.0) );
@@ -28,27 +27,34 @@ public class Keypoint {
 
         double offsetMagnitude = VectorUtil.getVectorNorm(offsets);
         if (offsetMagnitude > 0.55) {
-            //System.out.print("Magnitude too large: " + offsetMagnitude + "\n");
             return false;
         }
 
         double contrast = VectorUtil.getVectorDotProduct(offsets);
-        if (Math.abs(contrast) < 0.02) {
-            //System.out.print("Contrast too small: " + Math.abs(contrast) + "\n");
-            return false;
-        }
 
-        return true;
+        return Math.abs(contrast) >= contrastThreshold;
     }
 
-    // TODO: finish this
-    private void computeOrientation() {
-        int[] histogramm = new int[36];
+
+    public int computeOrientation() {
+        double[] histogram = new double[36];
 
         double magnitude = Math.sqrt( gradientsVector[0]*gradientsVector[0] + gradientsVector[1]*gradientsVector[1]);
-        double direction = Math.atan2(gradientsVector[0], gradientsVector[1]) * 100 / Math.PI;
 
+        double direction = Math.atan2(gradientsVector[0], gradientsVector[1]) * 100 / Math.PI;
         if (direction < 0) direction += 360;
+        int bin = (int) (direction / 10);
+
+        histogram[bin] += magnitude;
+
+        int maxIndex = 0;
+        for (int i=1; i<histogram.length; i++) {
+            if (histogram[i] > histogram[maxIndex]) {
+                maxIndex = i;
+            }
+        }
+
+        return maxIndex * 10;
     }
 
     public int getPixelX() {

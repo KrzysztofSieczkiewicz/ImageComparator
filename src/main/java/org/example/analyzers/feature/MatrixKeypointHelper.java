@@ -1,12 +1,7 @@
 package org.example.analyzers.feature;
 
 import org.example.analyzers.common.PixelPoint;
-import org.example.utils.accessor.ImageAccessor;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
@@ -55,9 +50,6 @@ public class MatrixKeypointHelper {
                         .collect(Collectors.toCollection(ArrayList::new));
 
                 System.out.println("Keypoint candidates: " + keypointCandidates.size());
-//                keypointCandidates.forEach(candidate -> {
-//                    System.out.println("X: " + candidate.getX() + ", Y: " + candidate.getY() );
-//                });
 
                 // 2. refine candidates into full keypoints
                 ArrayList<Keypoint> keypoints = keypointCandidates.stream()
@@ -67,7 +59,12 @@ public class MatrixKeypointHelper {
 
                 // 3. subpixel refinement
                 keypoints = keypoints.stream()
-                        .filter(Keypoint::subpixelRefinement)
+                        .filter(keypoint -> {
+                            keypoint.subpixelRefinement(keypointContrastThreshold);
+                            double orientation = keypoint.computeOrientation();
+                            //System.out.println("Orientation: " + orientation);
+                            return true;
+                        })
                         .collect(Collectors.toCollection(ArrayList::new));
 
 
@@ -81,44 +78,7 @@ public class MatrixKeypointHelper {
                 // 5. Use descriptor distances and RANSAC to match keypoints across different images
 
                 System.out.println("Keypoints: " + keypoints.size());
-//                keypoints.forEach(keypoint -> {
-//                    System.out.println( "subX: " + keypoint.getSubPixelX() + ", subY: " + keypoint.getSubPixelY() + ", X: " + keypoint.getPixelX() + ", Y: " + keypoint.getPixelY() );
-//                });
 
-                {// [DEBUG]
-                    if ( keypoints.size() == 0 ) continue;
-                    float[][] imageData = dogPyramid[octaveIndex][scaleIndex];
-                    BufferedImage keypointImage = new BufferedImage(imageData.length, imageData[0].length, BufferedImage.TYPE_INT_RGB);
-                    ImageAccessor image = ImageAccessor.create(keypointImage);
-                    for (int y = 0; y < imageData[0].length; y++) {
-                        for (int x = 0; x < imageData.length; x++) {
-                            // Get the grayscale value and set the pixel in the BufferedImage
-//                            int pixelValue = (int) (imageData[x][y]/2+128);
-                            int pixelValue = (int) (imageData[x][y]/2+64);
-//                            int pixelValue = (int) imageData[x][y];
-                            int rgb = (pixelValue << 16) | (pixelValue << 8) | pixelValue; // Grayscale to RGB format
-                            keypointImage.setRGB(x, y, rgb);
-
-                            keypoints.forEach(keypoint -> tempSetPixel(image, keypoint.getPixelX(), keypoint.getPixelY()) );
-                        }
-                    }
-                    File file = new File("src/1_4_Keypoints_" + octaveIndex + "_" + scaleIndex + ".png");
-                    try {
-                        ImageIO.write(keypointImage, "PNG", file);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }// [DEBUG]
-            }
-        }
-    }
-
-    private void tempSetPixel(ImageAccessor image, int x, int y) {
-        for (int i=-3; i<=3; i++) {
-            for (int j=-3; j<=3; j++) {
-                try {
-                    image.setPixel(x+i, y+j, 255, 255, 0, 0);
-                } catch (Exception ignored) {}
             }
         }
     }
