@@ -47,33 +47,15 @@ public class KeypointCandidate {
         float hessianDiscriminant = MatrixUtil.get2x2MatrixDiscriminant(hessianTrace, hessianDeterminant);
         this.eigenvalues = MatrixUtil.get2x2MatrixEigenvalues(hessianTrace, hessianDiscriminant);
 
-        System.out.println("Candidate");
-        System.out.println("X: " + x + ", Y: " + y);
-        System.out.println("DoG Pixels: " + Arrays.deepToString(MatrixUtil.getSafeMatrixSlice(scalesTriplet.getCurrentScale(), x, y, 1)));
-        System.out.println("Matrix: " + Arrays.deepToString(hessianMatrix));
-        System.out.println("Trace: " + hessianTrace);
-        System.out.println("Determinant: " + hessianDeterminant);
-        System.out.println("Discriminant: " + hessianDiscriminant);
-        System.out.println("Eigenvalues: " + Arrays.toString(eigenvalues));
-        // Differences in determinants, discriminants and eigenvalues
+//        System.out.println("Candidate");
+//        System.out.println("X: " + x + ", Y: " + y);
+//        System.out.println("DoG Pixels: " + Arrays.deepToString(MatrixUtil.getSafeMatrixSlice(scalesTriplet.getCurrentScale(), x, y, 1)));
+//        System.out.println("Matrix: " + Arrays.deepToString(hessianMatrix));
+//        System.out.println("Trace: " + hessianTrace);
+//        System.out.println("Determinant: " + hessianDeterminant);
+//        System.out.println("Discriminant: " + hessianDiscriminant);
+//        System.out.println("Eigenvalues: " + Arrays.toString(eigenvalues));
 
-        //Candidate
-        //X: 1270, Y: 181
-        //DoG Pixels: [[0.3473816, 0.39178467, 0.35684204], [0.43362427, 0.45986938, 0.4121933], [0.45321655, 0.4580841, 0.40647125]]
-        //Matrix: [[-0.28366852, -0.05620575, 0.1199646], [-0.05620575, -0.26746368, -0.05607605], [0.1199646, -0.05607605, -0.1504364]]
-        //Trace: -0.5511322
-        //Determinant: 0.072711945
-        //Discriminant: 0.012898922
-        //Eigenvalues: [-0.21877939, -0.33235282]
-
-        //Candidate
-        //X: 1270, Y: 181
-        //DoG Pixels: [[0.3473816, 0.39178467, 0.35684204], [0.43362427, 0.45986938, 0.4121933], [0.45321655, 0.4580841, 0.40647125]]
-        //Matrix: [[-0.28366852, 0.012016296], [0.012016296, -0.26746368]]
-        //Trace: -0.5511322021484375
-        //Determinant: 0.07572663575410843
-        //Discriminant: 8.401612285524607E-4
-        //Eigenvalues: [-0.26107333366636615, -0.29005886848207135]
     }
 
     /**
@@ -82,10 +64,6 @@ public class KeypointCandidate {
      * @return true if candidate's contrast is above threshold
      */
     public boolean checkIsNotLowContrast(float contrastThreshold) {
-//        System.out.println( "Contrast check: " + "1: " + eigenvalues[0] + ", 2: " + eigenvalues[1] +
-//                ", product: " + eigenvalues[0] * eigenvalues[1] +
-//                ", outcome: " + ((eigenvalues[0] * eigenvalues[1]) >= contrastThreshold) );
-
         return (eigenvalues[0] * eigenvalues[1]) >= contrastThreshold;
     }
 

@@ -7,10 +7,10 @@ public class Keypoint {
 
     private int pixelX, pixelY;
     private double subPixelX, subPixelY;
-    private double[] gradientsVector;
-    private double[][] hessianMatrix;
+    private float[] gradientsVector;
+    private float[][] hessianMatrix;
 
-    public Keypoint(int x, int y, double[] gradientsVector, double[][] hessianMatrix) {
+    public Keypoint(int x, int y, float[] gradientsVector, float[][] hessianMatrix) {
         this.pixelX = x;
         this.pixelY = y;
         this.gradientsVector = gradientsVector;
@@ -19,18 +19,18 @@ public class Keypoint {
 
     public boolean subpixelRefinement(float contrastThreshold) {
 
-        double[][] regularizedHessianMatrix = MatrixUtil.diagonalRegularization(hessianMatrix);
-        double[] offsets = MatrixUtil.getMatrixSolution(regularizedHessianMatrix, VectorUtil.multiplyVector(gradientsVector, -1.0) );
+        float[][] regularizedHessianMatrix = MatrixUtil.diagonalRegularization(hessianMatrix);
+        float[] offsets = MatrixUtil.getMatrixSolution(regularizedHessianMatrix, VectorUtil.multiplyVector(gradientsVector, -1.0f) );
 
         this.subPixelX = pixelX + offsets[0];
         this.subPixelY = pixelY + offsets[1];
 
-        double offsetMagnitude = VectorUtil.getVectorNorm(offsets);
+        float offsetMagnitude = VectorUtil.getVectorNorm(offsets);
         if (offsetMagnitude > 0.55) {
             return false;
         }
 
-        double contrast = VectorUtil.getVectorDotProduct(offsets);
+        float contrast = VectorUtil.getVectorDotProduct(offsets);
 
         return Math.abs(contrast) >= contrastThreshold;
     }

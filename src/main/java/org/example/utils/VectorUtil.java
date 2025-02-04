@@ -3,10 +3,10 @@ package org.example.utils;
 public class VectorUtil {
 
 
-    public static double[] multiplyVector(double[] vector, double value) {
+    public static float[] multiplyVector(float[] vector, float value) {
         int length = vector.length;
 
-        double[] result = new double[length];
+        float[] result = new float[length];
 
         for (int i = 0; i < length; i++) {
                 result[i] += vector[i] * value;
@@ -15,21 +15,21 @@ public class VectorUtil {
         return result;
     }
 
-    public static double getVectorNorm(double[] vector) {
-        double squaresSum = 0;
-        for (double value: vector) {
+    public static float getVectorNorm(float[] vector) {
+        float squaresSum = 0;
+        for (float value: vector) {
             squaresSum += value * value;
         }
 
-        return Math.sqrt(squaresSum);
+        return (float) Math.sqrt(squaresSum);
     }
 
-    public static double getVectorDotProduct(double[] vector) {
+    public static float getVectorDotProduct(float[] vector) {
         return getVectorDotProduct(vector, vector);
     }
 
-    public static double getVectorDotProduct(double[] vectorA, double[] vectorB) {
-        double sum = 0;
+    public static float getVectorDotProduct(float[] vectorA, float[] vectorB) {
+        float sum = 0;
         for (int i=0; i<vectorA.length; i++) {
             sum += vectorA[i] * vectorB[i];
         }

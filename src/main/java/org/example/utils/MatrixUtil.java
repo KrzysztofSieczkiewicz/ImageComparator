@@ -59,7 +59,7 @@ public class MatrixUtil {
      * @param max largest allowed index
      * @return index within 0-max limit
      */
-    public static int reflectCoordinate(int index, int max) {
+    public static int safeReflectCoordinate(int index, int max) {
         if (index < 0) return -index;
         if (index >= max) return 2 * (max-1) - index;
         return index;
@@ -156,9 +156,9 @@ public class MatrixUtil {
     /**
      * Solves square matrix using vector with in-place LU decomposition (Doolittle's method).
      */
-    public static double[] getMatrixSolution(double[][] matrix, double[] vector) {
+    public static float[] getMatrixSolution(float[][] matrix, float[] vector) {
         int size = matrix.length;
-        double[][] LU = new double[size][size];
+        float[][] LU = new float[size][size];
 
         for (int x=0; x<size; x++) { // clone the matrix
                 LU[x] = matrix[x].clone();
@@ -173,7 +173,7 @@ public class MatrixUtil {
             }
         }
 
-        double[] intermediateSolution = new double[size];
+        float[] intermediateSolution = new float[size];
         for (int i = 0; i < size; i++) { // solve lower matrix with forward substitution
             intermediateSolution[i] = vector[i];
             for (int j = 0; j < i; j++) {
@@ -181,7 +181,7 @@ public class MatrixUtil {
             }
         }
 
-        double[] finalSolution = new double[size];
+        float[] finalSolution = new float[size];
         for (int i = size - 1; i >= 0; i--) { // solve upper matrix with backward substitution
             finalSolution[i] = intermediateSolution[i];
             for (int j = i + 1; j < size; j++) {
@@ -199,8 +199,8 @@ public class MatrixUtil {
      *
      * @return new modified matrix
      */
-    public static double[][] diagonalRegularization(double[][] matrix) {
-        double lambda = 0.0001;
+    public static float[][] diagonalRegularization(float[][] matrix) {
+        float lambda = 0.0001f;
         return diagonalRegularization(matrix, lambda);
     }
 
@@ -210,13 +210,13 @@ public class MatrixUtil {
      *
      * @return new modified matrix
      */
-    public static double[][] diagonalRegularization(double[][] matrix, double lambda) {
+    public static float[][] diagonalRegularization(float[][] matrix, float lambda) {
         int n = matrix.length;
         int m = matrix[0].length;
 
         if (n != m) throw new IllegalArgumentException("Regularized matrix must be square");
 
-        double[][] regularizedMatrix = new double[n][n];
+        float[][] regularizedMatrix = new float[n][n];
         for (int i=0; i<n; i++) {
             for (int j=0; j<m; j++) {
                 regularizedMatrix[i][j] = matrix[i][j];

@@ -52,8 +52,8 @@ public class DerivativeUtil {
 
         for (int i = -range; i <= range; i++) {
             for (int j = -range; j <= range; j++) {
-                safeX = MatrixUtil.reflectCoordinate(x + i, width);
-                safeY = MatrixUtil.reflectCoordinate(y + j, height);
+                safeX = MatrixUtil.safeReflectCoordinate(x + i, width);
+                safeY = MatrixUtil.safeReflectCoordinate(y + j, height);
                 float pixel = currentScale[safeX][safeY];
                 dx += pixel * sobelDx[i + 1][j + 1];
                 dy += pixel * sobelDy[i + 1][j + 1];
@@ -108,10 +108,10 @@ public class DerivativeUtil {
         int width = currentScale.length;
         int height = currentScale[0].length;
 
-        int xNext = MatrixUtil.reflectCoordinate(x + range, width);
-        int xPrev = MatrixUtil.reflectCoordinate(x - range, width);
-        int yNext = MatrixUtil.reflectCoordinate(y + range, height);
-        int yPrev = MatrixUtil.reflectCoordinate(y - range, height);
+        int xNext = MatrixUtil.safeReflectCoordinate(x + range, width);
+        int xPrev = MatrixUtil.safeReflectCoordinate(x - range, width);
+        int yNext = MatrixUtil.safeReflectCoordinate(y + range, height);
+        int yPrev = MatrixUtil.safeReflectCoordinate(y - range, height);
 
         float dss = nextScale[x][y] - 2 * currentScale[x][y] + previousScale[x][y];
         float dxs = ((nextScale[xNext][y] - nextScale[xPrev][y]) - (previousScale[xNext][y] - previousScale[xPrev][y])) / 2f;

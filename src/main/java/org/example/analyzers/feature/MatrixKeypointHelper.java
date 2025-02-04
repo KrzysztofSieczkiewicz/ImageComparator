@@ -1,10 +1,14 @@
 package org.example.analyzers.feature;
 
 import org.example.analyzers.common.PixelPoint;
+import org.example.utils.DerivativeUtil;
+import org.example.utils.MatrixUtil;
+import org.example.utils.VectorUtil;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+// TODO: rename to KeyppointFinder
 public class MatrixKeypointHelper {
 
     /**
@@ -23,7 +27,7 @@ public class MatrixKeypointHelper {
     public void detectKeypoints(float[][][][] dogPyramid) {
         int octavesNum = dogPyramid.length;
         int scalesNum = dogPyramid[0].length;
-
+        
         for (int octaveIndex=0; octaveIndex<octavesNum; octaveIndex++) {
             float[][][] octave = dogPyramid[octaveIndex];
 
@@ -37,118 +41,62 @@ public class MatrixKeypointHelper {
                 );
 
                 // 0. find potential keypoints
-                ArrayList<PixelPoint> potentialCandidates = findPotentialKeypoints(octave[scaleIndex-1], octave[scaleIndex], octave[scaleIndex+1]);
-
+                ArrayList<PixelPoint> potentialCandidates = findKeypointCandidates(octaveSlice);
                 System.out.println("Potential candidates: " + potentialCandidates.size());
 
-                // 1. filter potential keypoints by checking contrast and edge response
-                ArrayList<KeypointCandidate> keypointCandidates = potentialCandidates.stream()
-                        .map(potentialCandidate -> new KeypointCandidate(octaveSlice, potentialCandidate))
-                        .filter(candidate ->
-                                candidate.checkIsNotLowContrast(keypointContrastThreshold) &&
-                                candidate.checkIsNotEdgeResponse(keypointEdgeResponseRatio))
-                        .collect(Collectors.toCollection(ArrayList::new));
+                for (PixelPoint candidate: potentialCandidates) {
+                    int pixelX = candidate.getX();
+                    int pixelY = candidate.getY();
 
-                System.out.println("Keypoint candidates: " + keypointCandidates.size());
+                    // Calculate basic image data
+                    float[][] hessianMatrix = calculateKeypointHessian(
+                            octaveSlice,
+                            pixelX,
+                            pixelY );
 
-                // 2. refine candidates into full keypoints
-                ArrayList<Keypoint> keypoints = keypointCandidates.stream()
-                        .map(KeypointCandidate::refineCandidate)
-                        .collect(Collectors.toCollection(ArrayList::new));
+                    float hessianTrace = MatrixUtil.getMatrixTrace(hessianMatrix, 2);
+                    float hessianDeterminant = MatrixUtil.get2x2MatrixDeterminant(hessianMatrix);
+                    float hessianDiscriminant = MatrixUtil.get2x2MatrixDiscriminant(hessianTrace, hessianDeterminant);
+                    float[] eigenvalues = MatrixUtil.get2x2MatrixEigenvalues(hessianTrace, hessianDiscriminant);
 
+                    // Skip for low contrast and edge response candidates
+                    if (checkIsLowContrast(eigenvalues, keypointContrastThreshold)) continue;
+                    if (checkIsEdgeResponse(hessianTrace, hessianDiscriminant, keypointEdgeResponseRatio)) continue;
 
-                // 3. subpixel refinement
-                keypoints = keypoints.stream()
-                        .filter(keypoint -> {
-                            keypoint.subpixelRefinement(keypointContrastThreshold);
-                            double orientation = keypoint.computeOrientation();
-                            //System.out.println("Orientation: " + orientation);
-                            return true;
-                        })
-                        .collect(Collectors.toCollection(ArrayList::new));
+                    // Refine candidate
+                    float[] gradientVector = DerivativeUtil.approximateGradientVector(
+                            octaveSlice.getPreviousScale(),
+                            octaveSlice.getCurrentScale(),
+                            octaveSlice.getNextScale(),
+                            pixelX, pixelY);
 
+                    // Subpixel refinement
+                    float[] offsets = calculatePositionOffsets(hessianMatrix, gradientVector);
 
-                // 4. at this point keypoints should be ready to make into full descriptor, but only after:
-                //  a. calculate exact position of keypoint (subpixel coordinates)
-                //  b. assigning orientation to each Keypoint (compute the Gradient Magnitude and Orientation) and create orientation histogram
-                //      and finally decide on dominant orientation
-                //
-                // then, convert keypoints into normalized descriptors.
+                    float subPixelX = pixelX + offsets[0];
+                    float subPixelY = pixelY + offsets[1];
 
-                // 5. Use descriptor distances and RANSAC to match keypoints across different images
+                    if (subpixelRefinement(offsets, keypointContrastThreshold)) continue;
 
-                System.out.println("Keypoints: " + keypoints.size());
+                    int orientationBin = computeOrientation(gradientVector);
+                }
 
             }
         }
     }
 
     /**
-     * Searches through provided octave slice (three consecutive scales within single octave) for potential
-     * keypoint candidates. Requires that the images are the same size
+     * Searches through provided octave slice for potential keypoint candidates.
+     * Optimizes by searching for potential candidates in the main image and then checking them against neighbours.
      *
-     * @param previousImage image from previous scale within the same octave
-     * @param currentImage central scale image that will be searched for candidates
-     * @param nextImage image from next scale within the same octave
+     * @param octaveSlice three images (consecutive scales) from the single octave
      * @return ArrayList containing pixel coordinates of potential keypoint candidates
      */
-    public ArrayList<PixelPoint> findPotentialKeypoints(float[][] previousImage, float[][] currentImage, float[][] nextImage) {
-        ArrayList<PixelPoint> keypointCandidates = new ArrayList<>();
+    private ArrayList<PixelPoint> findKeypointCandidates(OctaveSlice octaveSlice) {
+        float[][] currentImage = octaveSlice.getCurrentScale();
+        float[][] previousImage = octaveSlice.getPreviousScale();
+        float[][] nextImage = octaveSlice.getNextScale();
 
-        int rows = currentImage.length;
-        int cols = currentImage[0].length;
-
-        int[] dRow = {-1, 1, 0, 0, -1, -1, 1, 1};
-        int[] dCol = {0, 0, -1, 1, -1, 1, -1, 1};
-
-        for (int row=1; row<rows-1; row++) {
-            for (int col=1; col<cols-1; col++) {
-                float currentPixel = currentImage[row][col];
-                boolean isMinimum = true;
-                boolean isMaximum = true;
-
-                for (int k=0; k<dRow.length; k++) {
-                    int currRow = row + dRow[k];
-                    int currCol = col + dCol[k];
-
-                    // compare with current scale
-                    float neighbourValue = currentImage[currRow][currCol];
-                    if (currentPixel >= neighbourValue) isMinimum = false;
-                    if (currentPixel <= neighbourValue) isMaximum = false;
-
-                    // compare with previous scale
-                    neighbourValue = previousImage[currRow][currCol];
-                    if (currentPixel >= neighbourValue) isMinimum = false;
-                    if (currentPixel <= neighbourValue) isMaximum = false;
-
-                    // compare with next scale
-                    neighbourValue = nextImage[currRow][currCol];
-                    if (currentPixel >= neighbourValue) isMinimum = false;
-                    if (currentPixel <= neighbourValue) isMaximum = false;
-
-                    // early exit
-                    if (!isMinimum && !isMaximum) break;
-                }
-
-                if (isMaximum || isMinimum) {
-                    keypointCandidates.add(new PixelPoint(row, col));
-                }
-            }
-        }
-
-        return keypointCandidates;
-    }
-
-    /**
-     * Searches through provided octave slice (three consecutive scales within single octave) for potential
-     * keypoint candidates. Requires that the images are the same size
-     *
-     * @param previousImage image from previous scale within the same octave
-     * @param currentImage central scale image that will be searched for candidates
-     * @param nextImage image from next scale within the same octave
-     * @return ArrayList containing pixel coordinates of potential keypoint candidates
-     */
-    private ArrayList<PixelPoint> findKeypointCandidatesButSmarter(int[][] previousImage, int[][] currentImage, int[][] nextImage) {
         ArrayList<PixelPoint> keypointCandidates = new ArrayList<>();
 
         int rows = currentImage.length;
@@ -162,12 +110,12 @@ public class MatrixKeypointHelper {
 
             for (int row=1; row<rows-1; row++) {
                 for (int col = 1; col < cols - 1; col++) {
-                    int currentPixel = currentImage[row][col];
+                    float currentPixel = currentImage[row][col];
                     boolean isMinimum = true;
                     boolean isMaximum = true;
 
                     for (int k=0; k<dRow.length; k++) {
-                        int neighbourValue = currentImage
+                        float neighbourValue = currentImage
                                 [row + dRow[k]]
                                 [col + dCol[k]];
 
@@ -191,19 +139,19 @@ public class MatrixKeypointHelper {
             for( PixelPoint candidate : baseCandidates) {
                 int row = candidate.getX();
                 int col = candidate.getY();
-                int currentPixel = currentImage[row][col];
+                float currentPixel = currentImage[row][col];
 
                 boolean isMinimum = true;
                 boolean isMaximum = true;
 
                 for (int k=0; k<dRow.length; k++) {
-                    int previousValue = previousImage
+                    float previousValue = previousImage
                             [row + dRow[k]]
                             [col + dCol[k]];
                     if (currentPixel >= previousValue) isMinimum = false;
                     if (currentPixel <= previousValue) isMaximum = false;
 
-                    int nextValue = nextImage
+                    float nextValue = nextImage
                             [row + dRow[k]]
                             [col + dCol[k]];
                     if (currentPixel >= nextValue) isMinimum = false;
@@ -219,5 +167,85 @@ public class MatrixKeypointHelper {
         }
 
         return keypointCandidates;
+    }
+
+    private float[][] calculateKeypointHessian(OctaveSlice octaveSlice, int pixelX, int pixelY) {
+        float[] spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives(
+                octaveSlice.getCurrentScale(),
+                pixelX,
+                pixelY );
+
+        float[] scaleDerivatives = DerivativeUtil.approximateScaleDerivatives(
+                octaveSlice.getPreviousScale(),
+                octaveSlice.getCurrentScale(),
+                octaveSlice.getNextScale(),
+                pixelX,
+                pixelY );
+
+        return new float[][] {
+                { spaceDerivatives[0], spaceDerivatives[1],  scaleDerivatives[1]},
+                { spaceDerivatives[1], spaceDerivatives[2],  scaleDerivatives[2]},
+                { scaleDerivatives[1], scaleDerivatives[2],  scaleDerivatives[0]} };
+    }
+
+    /**
+     * Verification method for low contrast keypoint candidates
+     * @return true if candidate's contrast is above threshold
+     */
+    public boolean checkIsLowContrast(float[] eigenvalues, float contrastThreshold) {
+        return (eigenvalues[0] * eigenvalues[1]) < contrastThreshold;
+    }
+
+    /**
+     * Verification method if keypoint candidate is an edge response.
+     * @return true if candidate is not an edge response
+     */
+    public boolean checkIsEdgeResponse(float trace, float determinant, float ratioThreshold) {
+        float r = (trace*trace) / determinant;
+        float edgeThreshold = ((ratioThreshold+1)*(ratioThreshold+1)) / ratioThreshold;
+
+        return r > edgeThreshold;
+    }
+
+    public float[] calculatePositionOffsets(float[][] hessianMatrix, float[] gradientsVector) {
+        float[][] regularizedHessianMatrix = MatrixUtil.diagonalRegularization(hessianMatrix);
+        return MatrixUtil.getMatrixSolution(regularizedHessianMatrix, VectorUtil.multiplyVector(gradientsVector, -1.0f) );
+    }
+
+    public boolean subpixelRefinement(float[] offsets, float contrastThreshold) {
+
+        float offsetMagnitude = VectorUtil.getVectorNorm(offsets);
+        if (offsetMagnitude > 0.55) {
+            return false;
+        }
+
+        float contrast = VectorUtil.getVectorDotProduct(offsets);
+
+        if (Math.abs(contrast) >= contrastThreshold) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public int computeOrientation(float[] gradientsVector) {
+        double[] histogram = new double[36];
+
+        double magnitude = Math.sqrt( gradientsVector[0]*gradientsVector[0] + gradientsVector[1]*gradientsVector[1]);
+
+        double direction = Math.atan2(gradientsVector[0], gradientsVector[1]) * 100 / Math.PI;
+        if (direction < 0) direction += 360;
+        int bin = (int) (direction / 10);
+
+        histogram[bin] += magnitude;
+
+        int maxIndex = 0;
+        for (int i=1; i<histogram.length; i++) {
+            if (histogram[i] > histogram[maxIndex]) {
+                maxIndex = i;
+            }
+        }
+
+        return maxIndex * 10;
     }
 }
