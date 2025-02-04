@@ -93,8 +93,9 @@ public class MatrixKeypointHelper {
                     for (int y = 0; y < imageData[0].length; y++) {
                         for (int x = 0; x < imageData.length; x++) {
                             // Get the grayscale value and set the pixel in the BufferedImage
-                            //int pixelValue = (int) (imageData[x][y]/2+128);
-                            int pixelValue = (int) imageData[x][y];
+//                            int pixelValue = (int) (imageData[x][y]/2+128);
+                            int pixelValue = (int) (imageData[x][y]/2+64);
+//                            int pixelValue = (int) imageData[x][y];
                             int rgb = (pixelValue << 16) | (pixelValue << 8) | pixelValue; // Grayscale to RGB format
                             keypointImage.setRGB(x, y, rgb);
 

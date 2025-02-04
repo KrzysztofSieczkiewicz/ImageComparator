@@ -101,10 +101,15 @@ public class MatrixUtil {
 
 
     /**
-     * Calculates matrix trace, works only for square matrices
+     * Calculates matrix trace, works only for square matrices,
+     *
+     * @param matrix target matrix
+     * @param indexLimit limits trace summing to provided index
      */
-    public static float getMatrixTrace(float[][] matrix) {
+    public static float getMatrixTrace(float[][] matrix, int indexLimit) {
         int size = matrix.length;
+        if (indexLimit < size)
+            size = indexLimit;
 
         float trace = 0;
         for (int i=0; i<size; i++) {
