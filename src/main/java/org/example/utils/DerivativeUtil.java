@@ -33,6 +33,35 @@ public class DerivativeUtil {
     };
 
     /**
+     * Approximates first order derivatives using sobel kernel for image x,y dimensions
+     *
+     * @param imageData float[][] matrix with image data
+     * @param x pixel width coordinate
+     * @param y pixel height coordinate
+     * @return array containing derivatives {dx, dy}
+     */
+    public static float[] approximateGradientVector(float[][] imageData, int x, int y) {
+        int range = 1;
+        int width = imageData.length;
+        int height = imageData[0].length;
+
+        float dx=0, dy=0;
+        int safeX, safeY;
+
+        for (int i = -range; i <= range; i++) {
+            for (int j = -range; j <= range; j++) {
+                safeX = MatrixUtil.safeReflectCoordinate(x + i, width);
+                safeY = MatrixUtil.safeReflectCoordinate(y + j, height);
+                float pixel = imageData[safeX][safeY];
+                dx += pixel * sobelDx[i + 1][j + 1];
+                dy += pixel * sobelDy[i + 1][j + 1];
+            }
+        }
+
+        return new float[] {dx, dy};
+    }
+
+    /**
      * Approximates first order derivatives using sobel kernel for space and central difference for scale
      *
      * @param previousScale image data from the previous scale (scale-1)
@@ -43,26 +72,10 @@ public class DerivativeUtil {
      * @return array containing derivatives {dx, dy, ds}
      */
     public static float[] approximateGradientVector(float[][] previousScale, float[][] currentScale, float[][] nextScale, int x, int y) {
-        int range = 1;
-        int width = currentScale.length;
-        int height = currentScale[0].length;
-
-        float dx=0, dy=0;
-        int safeX, safeY;
-
-        for (int i = -range; i <= range; i++) {
-            for (int j = -range; j <= range; j++) {
-                safeX = MatrixUtil.safeReflectCoordinate(x + i, width);
-                safeY = MatrixUtil.safeReflectCoordinate(y + j, height);
-                float pixel = currentScale[safeX][safeY];
-                dx += pixel * sobelDx[i + 1][j + 1];
-                dy += pixel * sobelDy[i + 1][j + 1];
-            }
-        }
-
+        float[] spaceGradients = approximateGradientVector(currentScale, x, y);
         float ds = (nextScale[x][y] - previousScale[x][y]) / 2f;
 
-        return new float[] {dx, dy, ds};
+        return new float[] {spaceGradients[0], spaceGradients[1], ds};
     }
 
     /**

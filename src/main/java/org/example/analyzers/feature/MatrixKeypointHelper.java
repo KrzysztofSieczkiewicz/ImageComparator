@@ -6,7 +6,7 @@ import org.example.utils.MatrixUtil;
 import org.example.utils.VectorUtil;
 
 import java.util.ArrayList;
-import java.util.stream.Collectors;
+import java.util.Arrays;
 
 // TODO: rename to KeyppointFinder
 public class MatrixKeypointHelper {
@@ -22,6 +22,11 @@ public class MatrixKeypointHelper {
      * usually between 5 and 20
      */
     float keypointEdgeResponseRatio = 10;
+
+    /**
+     * How large should the window of neighbours around keypoint be. Will be further scaled by each octave
+     */
+    int baseNeighboursWindowSize = 16;
 
 
     public void detectKeypoints(float[][][][] dogPyramid) {
@@ -40,8 +45,8 @@ public class MatrixKeypointHelper {
                         octave[scaleIndex+1]
                 );
 
-                // 0. find potential keypoints
-                ArrayList<PixelPoint> potentialCandidates = findKeypointCandidates(octaveSlice);
+                ArrayList<PixelPoint> finalCandidates = new ArrayList<>();
+                ArrayList<PixelPoint> potentialCandidates = findLocalExtremes(octaveSlice);
                 System.out.println("Potential candidates: " + potentialCandidates.size());
 
                 for (PixelPoint candidate: potentialCandidates) {
@@ -71,92 +76,75 @@ public class MatrixKeypointHelper {
                             pixelX, pixelY);
 
                     // Subpixel refinement
-                    float[] offsets = calculatePositionOffsets(hessianMatrix, gradientVector);
-
+                    float[] offsets = calculatePixelPositionsOffsets(hessianMatrix, gradientVector);
                     float subPixelX = pixelX + offsets[0];
                     float subPixelY = pixelY + offsets[1];
 
                     if (subpixelRefinement(offsets, keypointContrastThreshold)) continue;
 
-                    int orientationBin = computeOrientation(gradientVector);
+                    int orientationBin = computeKeypointOrientation(gradientVector);
+
+                    // Retrieve pixels 16x16 slice around requested point
+                    float[][] localGradientDistributions = calculateNeighboursGradientOrientations(
+                            octaveSlice.getCurrentScale(),
+                            pixelX,
+                            pixelY,
+                            baseNeighboursWindowSize * (1 << octaveIndex) );
+
+                    finalCandidates.add(candidate);
                 }
 
+                System.out.println("Final keypoints: " + finalCandidates.size());
             }
         }
     }
 
+
     /**
-     * Searches through provided octave slice for potential keypoint candidates.
-     * Optimizes by searching for potential candidates in the main image and then checking them against neighbours.
+     * Searches through provided octave slice (three consecutive scales within single octave) for potential
+     * keypoint candidates. Requires that the images are the same size
      *
-     * @param octaveSlice three images (consecutive scales) from the single octave
+     * @param octaveSlice images within the same octave to find extremes in
      * @return ArrayList containing pixel coordinates of potential keypoint candidates
      */
-    private ArrayList<PixelPoint> findKeypointCandidates(OctaveSlice octaveSlice) {
-        float[][] currentImage = octaveSlice.getCurrentScale();
+    public ArrayList<PixelPoint> findLocalExtremes(OctaveSlice octaveSlice) {
         float[][] previousImage = octaveSlice.getPreviousScale();
+        float[][] currentImage = octaveSlice.getCurrentScale();
         float[][] nextImage = octaveSlice.getNextScale();
-
         ArrayList<PixelPoint> keypointCandidates = new ArrayList<>();
 
         int rows = currentImage.length;
         int cols = currentImage[0].length;
 
-        ArrayList<PixelPoint> baseCandidates = new ArrayList<>();
+        int[] dRow = {-1, 1, 0, 0, -1, -1, 1, 1};
+        int[] dCol = {0, 0, -1, 1, -1, 1, -1, 1};
 
-        {   // Find all keypoints in the base image
-            int[] dRow = {-1, -1, -1, 0, 0, 1, 1, 1};
-            int[] dCol = {-1, 0, 1, -1, 1, -1, 0, 1};
-
-            for (int row=1; row<rows-1; row++) {
-                for (int col = 1; col < cols - 1; col++) {
-                    float currentPixel = currentImage[row][col];
-                    boolean isMinimum = true;
-                    boolean isMaximum = true;
-
-                    for (int k=0; k<dRow.length; k++) {
-                        float neighbourValue = currentImage
-                                [row + dRow[k]]
-                                [col + dCol[k]];
-
-                        if (currentPixel >= neighbourValue) isMinimum = false;
-                        if (currentPixel <= neighbourValue) isMaximum = false;
-
-                        if (!isMinimum && !isMaximum) break;
-                    }
-
-                    if (isMaximum || isMinimum) {
-                        baseCandidates.add(new PixelPoint(row, col));
-                    }
-                }
-
-            }
-        }
-        {   // Filter baseCandidates through previous and next images
-            int[] dRow = {-1, -1, -1, 0, 0, 0, 1, 1, 1};
-            int[] dCol = {-1, 0, 1, -1, 0, 1, -1, 0, 1};
-
-            for( PixelPoint candidate : baseCandidates) {
-                int row = candidate.getX();
-                int col = candidate.getY();
+        for (int row=1; row<rows-1; row++) {
+            for (int col=1; col<cols-1; col++) {
                 float currentPixel = currentImage[row][col];
-
                 boolean isMinimum = true;
                 boolean isMaximum = true;
 
                 for (int k=0; k<dRow.length; k++) {
-                    float previousValue = previousImage
-                            [row + dRow[k]]
-                            [col + dCol[k]];
-                    if (currentPixel >= previousValue) isMinimum = false;
-                    if (currentPixel <= previousValue) isMaximum = false;
+                    int currRow = row + dRow[k];
+                    int currCol = col + dCol[k];
 
-                    float nextValue = nextImage
-                            [row + dRow[k]]
-                            [col + dCol[k]];
-                    if (currentPixel >= nextValue) isMinimum = false;
-                    if (currentPixel <= nextValue) isMaximum = false;
+                    // compare with current scale
+                    float neighbourValue = currentImage[currRow][currCol];
+                    if (currentPixel >= neighbourValue) isMinimum = false;
+                    if (currentPixel <= neighbourValue) isMaximum = false;
 
+                    // compare with previous scale
+                    neighbourValue = previousImage[currRow][currCol];
+                    if (currentPixel >= neighbourValue) isMinimum = false;
+                    if (currentPixel <= neighbourValue) isMaximum = false;
+
+                    // compare with next scale
+                    neighbourValue = nextImage[currRow][currCol];
+                    if (currentPixel >= neighbourValue) isMinimum = false;
+                    if (currentPixel <= neighbourValue) isMaximum = false;
+
+                    // early exit
                     if (!isMinimum && !isMaximum) break;
                 }
 
@@ -168,6 +156,7 @@ public class MatrixKeypointHelper {
 
         return keypointCandidates;
     }
+
 
     private float[][] calculateKeypointHessian(OctaveSlice octaveSlice, int pixelX, int pixelY) {
         float[] spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives(
@@ -188,6 +177,7 @@ public class MatrixKeypointHelper {
                 { scaleDerivatives[1], scaleDerivatives[2],  scaleDerivatives[0]} };
     }
 
+
     /**
      * Verification method for low contrast keypoint candidates
      * @return true if candidate's contrast is above threshold
@@ -195,6 +185,7 @@ public class MatrixKeypointHelper {
     public boolean checkIsLowContrast(float[] eigenvalues, float contrastThreshold) {
         return (eigenvalues[0] * eigenvalues[1]) < contrastThreshold;
     }
+
 
     /**
      * Verification method if keypoint candidate is an edge response.
@@ -207,10 +198,12 @@ public class MatrixKeypointHelper {
         return r > edgeThreshold;
     }
 
-    public float[] calculatePositionOffsets(float[][] hessianMatrix, float[] gradientsVector) {
+
+    public float[] calculatePixelPositionsOffsets(float[][] hessianMatrix, float[] gradientsVector) {
         float[][] regularizedHessianMatrix = MatrixUtil.diagonalRegularization(hessianMatrix);
         return MatrixUtil.getMatrixSolution(regularizedHessianMatrix, VectorUtil.multiplyVector(gradientsVector, -1.0f) );
     }
+
 
     public boolean subpixelRefinement(float[] offsets, float contrastThreshold) {
 
@@ -228,12 +221,13 @@ public class MatrixKeypointHelper {
         return true;
     }
 
-    public int computeOrientation(float[] gradientsVector) {
+
+    public int computeKeypointOrientation(float[] gradientsVector) {
         double[] histogram = new double[36];
 
         double magnitude = Math.sqrt( gradientsVector[0]*gradientsVector[0] + gradientsVector[1]*gradientsVector[1]);
 
-        double direction = Math.atan2(gradientsVector[0], gradientsVector[1]) * 100 / Math.PI;
+        double direction = Math.toDegrees( Math.atan2(gradientsVector[0], gradientsVector[1]) );
         if (direction < 0) direction += 360;
         int bin = (int) (direction / 10);
 
@@ -247,5 +241,23 @@ public class MatrixKeypointHelper {
         }
 
         return maxIndex * 10;
+    }
+
+
+    public static float[][] calculateNeighboursGradientOrientations(float[][] imageData, int x, int y, int windowSize) {
+        int radius = windowSize / 2;
+
+        float[][] orientations = new float[windowSize][windowSize];
+        for (int i=-radius; i<radius; i++) {
+            for (int j=-radius; j<radius; j++) {
+                float[] gradients = DerivativeUtil.approximateGradientVector(imageData, x+i, y+j);
+                float orientation = (float) Math.toDegrees( Math.atan2(gradients[0], gradients[1]) );
+                if (orientation < 0) orientation += 360;
+
+                orientations[i + radius][j + radius] = orientation;
+            }
+        }
+
+        return orientations;
     }
 }

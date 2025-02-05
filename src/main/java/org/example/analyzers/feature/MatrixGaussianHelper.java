@@ -30,8 +30,8 @@ public class MatrixGaussianHelper {
             imageData = ImageDataUtil.resizeWithAveraging(
                     imageData,
                     imageData.length/downsamplingFactor,
-                    imageData[0].length/downsamplingFactor
-            );
+                    imageData[0].length/downsamplingFactor );
+            imageData = ImageDataUtil.gaussianBlur(imageData, 1.6);
         }
 
         return pyramid;

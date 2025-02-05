@@ -99,7 +99,6 @@ public class MatrixUtil {
         return slice;
     }
 
-
     /**
      * Calculates matrix trace, works only for square matrices,
      *
