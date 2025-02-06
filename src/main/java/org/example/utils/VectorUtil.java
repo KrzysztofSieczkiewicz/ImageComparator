@@ -24,6 +24,15 @@ public class VectorUtil {
         return (float) Math.sqrt(squaresSum);
     }
 
+    public static float getVectorDegreesOrientation2D(float[] vector) {
+        float orientation = (float) Math.toDegrees( Math.atan2(vector[0], vector[1]) );
+
+        if (orientation < 0) {
+            return orientation + 360;
+        }
+        return orientation;
+    }
+
     public static float getVectorDotProduct(float[] vector) {
         return getVectorDotProduct(vector, vector);
     }

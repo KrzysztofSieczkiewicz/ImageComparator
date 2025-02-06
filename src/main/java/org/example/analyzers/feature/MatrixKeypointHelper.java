@@ -29,6 +29,7 @@ public class MatrixKeypointHelper {
     int baseNeighboursWindowSize = 16;
 
 
+    // TODO: CLEAN THIS CODE BEFORE MOVING FURTHER - THIS CLASS SHOULD BE COMPLETE SO CLEANUP!!!!
     public void detectKeypoints(float[][][][] dogPyramid) {
         int octavesNum = dogPyramid.length;
         int scalesNum = dogPyramid[0].length;
@@ -82,14 +83,22 @@ public class MatrixKeypointHelper {
 
                     if (subpixelRefinement(offsets, keypointContrastThreshold)) continue;
 
-                    int orientationBin = computeKeypointOrientation(gradientVector);
-
                     // Retrieve pixels 16x16 slice around requested point
-                    float[][] localGradientDistributions = calculateNeighboursGradientOrientations(
+
+                    // To do it properly:
+                    //  1. I need a matrix of local orientations of ~16x16 pixel window
+                    //  2. For each of these orientations I need its magnitude to find dominant orientation
+                    //  3. I need to adjust all local orientations by subtracting dominant orientation
+                    //  4. I need to create 4 histograms of orientations and join them into longer descriptor
+                    float[][][] localGradients = computeKeypointLocalGradients(
                             octaveSlice.getCurrentScale(),
                             pixelX,
                             pixelY,
                             baseNeighboursWindowSize * (1 << octaveIndex) );
+
+                    float keypointOrientation = findKeypointDominantOrientation(localGradients);
+                    float[][] localOrientations = computeKeypointOrientations(localGradients, keypointOrientation);
+
 
                     finalCandidates.add(candidate);
                 }
@@ -222,42 +231,48 @@ public class MatrixKeypointHelper {
     }
 
 
-    public int computeKeypointOrientation(float[] gradientsVector) {
-        double[] histogram = new double[36];
+    public float[][][] computeKeypointLocalGradients(float[][] imageData, int x, int y, int windowSize) {
+        float[][][] localGradients = new float[windowSize][windowSize][2];
 
-        double magnitude = Math.sqrt( gradientsVector[0]*gradientsVector[0] + gradientsVector[1]*gradientsVector[1]);
-
-        double direction = Math.toDegrees( Math.atan2(gradientsVector[0], gradientsVector[1]) );
-        if (direction < 0) direction += 360;
-        int bin = (int) (direction / 10);
-
-        histogram[bin] += magnitude;
-
-        int maxIndex = 0;
-        for (int i=1; i<histogram.length; i++) {
-            if (histogram[i] > histogram[maxIndex]) {
-                maxIndex = i;
+        int radius = windowSize / 2;
+        for (int i=-radius; i<radius; i++) {
+            for (int j = -radius; j < radius; j++) {
+                localGradients[i+radius][j+radius] = DerivativeUtil.approximateGradientVector(imageData, x+i, y+j);
             }
         }
 
-        return maxIndex * 10;
+        return localGradients;
+    }
+
+    public float findKeypointDominantOrientation(float[][][] localGradients) {
+        float maxMagnitude = 0;
+        int maxX=0, maxY=0;
+        for (int x=0; x<localGradients.length; x++) {
+            for (int y=0; y<localGradients[0].length; y++) {
+                float magnitude = VectorUtil.getVectorNorm(localGradients[x][y]);
+                if (magnitude > maxMagnitude) {
+                    maxMagnitude = magnitude;
+                    maxX = x;
+                    maxY = y;
+                }
+            }
+        }
+
+        return VectorUtil.getVectorDegreesOrientation2D( localGradients[maxX][maxY] );
     }
 
 
-    public static float[][] calculateNeighboursGradientOrientations(float[][] imageData, int x, int y, int windowSize) {
-        int radius = windowSize / 2;
+    public float[][] computeKeypointOrientations(float[][][] localGradients, float keypointOrientation) {
+        float[][] orientations = new float[localGradients.length][localGradients[0].length];
 
-        float[][] orientations = new float[windowSize][windowSize];
-        for (int i=-radius; i<radius; i++) {
-            for (int j=-radius; j<radius; j++) {
-                float[] gradients = DerivativeUtil.approximateGradientVector(imageData, x+i, y+j);
-                float orientation = (float) Math.toDegrees( Math.atan2(gradients[0], gradients[1]) );
-                if (orientation < 0) orientation += 360;
-
-                orientations[i + radius][j + radius] = orientation;
+        for (int x=0; x<localGradients.length; x++) {
+            for (int y = 0; y < localGradients[0].length; y++) {
+                float localOrientation = VectorUtil.getVectorDegreesOrientation2D( localGradients[x][y] );
+                orientations[x][y] = localOrientation - keypointOrientation;
             }
         }
-
         return orientations;
     }
+
+
 }
