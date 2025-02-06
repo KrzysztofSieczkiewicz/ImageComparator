@@ -104,6 +104,7 @@ public class MatrixKeypointHelper {
                     float keypointOrientation = findKeypointDominantOrientation(localGradients, localMagnitudes);
                     float[][] localOrientations = computeKeypointOrientations(localGradients, keypointOrientation);
 
+                    float[] descriptor = constructDescriptor(localMagnitudes, localOrientations);
 
                     finalCandidates.add(candidate);
                 }
@@ -327,13 +328,15 @@ public class MatrixKeypointHelper {
         for (int x=0; x<localGradients.length; x++) {
             for (int y = 0; y < localGradients[0].length; y++) {
                 float localOrientation = VectorUtil.getVectorDegreesOrientation2D( localGradients[x][y] );
-                orientations[x][y] = localOrientation - keypointOrientation;
+                float orientation = localOrientation - keypointOrientation;
+                if (orientation < 0) orientation += 360;
+                orientations[x][y] = orientation;
             }
         }
         return orientations;
     }
 
-    public void constructDescriptor(float[][] gradientMagnitudes, float[][] relativeOrientations) {
+    public float[] constructDescriptor(float[][] gradientMagnitudes, float[][] relativeOrientations) {
         int numBins = 8;
         int descriptorLength = 128; // 16 cells x 8 bins
         float[] descriptor = new float[descriptorLength];
@@ -362,6 +365,11 @@ public class MatrixKeypointHelper {
         }
 
         // normalize descriptor here. Add proper method to Vector utils
+        descriptor = VectorUtil.normalizeL2(descriptor);
+        descriptor = VectorUtil.clip(descriptor, 0, 0.2f);
+        descriptor = VectorUtil.normalizeL2(descriptor);
+
+        return descriptor;
     }
 
 
