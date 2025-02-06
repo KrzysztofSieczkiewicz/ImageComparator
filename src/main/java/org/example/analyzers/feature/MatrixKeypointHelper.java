@@ -6,20 +6,24 @@ import org.example.utils.MatrixUtil;
 import org.example.utils.VectorUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-
 // TODO: rename to KeyppointFinder
 public class MatrixKeypointHelper {
 
     /**
-     * Contrast threshold below which keypoint will be discarded as noise
-     * usually between 0.01 and 0.04
+     * Contrast threshold below which keypoint will be discarded as noise.
+     * Usually between 0.01 and 0.04
      */
     float keypointContrastThreshold = 0.04f;
 
     /**
-     * Hessian eigenvalues ratio below which keypoint will be discarded as edge keypoint
-     * usually between 5 and 20
+     * Offset magnitude threshold above which keypoint will be discarded.
+     * Usually around 0.55
+     */
+    float offsetMagnitudeThreshold = 0.55f;
+
+    /**
+     * Hessian eigenvalues ratio below which keypoint will be discarded as edge keypoint.
+     * Usually between 5 and 20
      */
     float keypointEdgeResponseRatio = 10;
 
@@ -81,7 +85,7 @@ public class MatrixKeypointHelper {
                     float subPixelX = pixelX + offsets[0];
                     float subPixelY = pixelY + offsets[1];
 
-                    if (subpixelRefinement(offsets, keypointContrastThreshold)) continue;
+                    if (subpixelRefinement(offsets, offsetMagnitudeThreshold, keypointContrastThreshold)) continue;
 
                     // Retrieve pixels 16x16 slice around requested point
 
@@ -207,30 +211,51 @@ public class MatrixKeypointHelper {
         return r > edgeThreshold;
     }
 
-
+    /**
+     * Calculates subpixel position offset of the keypoint.
+     *
+     * @param hessianMatrix 3x3 hessian matrix of the keypoint
+     * @param gradientsVector {dx, dy, ds} vector with gradients in each dimension
+     *
+     * @return offsets {x,y} that, added to initial pixel coordinates, give precise keypoint location
+     */
     public float[] calculatePixelPositionsOffsets(float[][] hessianMatrix, float[] gradientsVector) {
         float[][] regularizedHessianMatrix = MatrixUtil.diagonalRegularization(hessianMatrix);
         return MatrixUtil.getMatrixSolution(regularizedHessianMatrix, VectorUtil.multiplyVector(gradientsVector, -1.0f) );
     }
 
 
-    public boolean subpixelRefinement(float[] offsets, float contrastThreshold) {
+    /**
+     * Verifies if selected pixel is significant enough by offset magnitude and contrast checks
+     *
+     * @param offsets array[2] of subpixel position offsets {x,y}
+     * @param offsetMagnitudeThreshold threshold for offset magnitude above which keypoint is discarded
+     * @param contrastThreshold threshold for contrast check below which keypoint is discarded
+     * @return
+     */
+    public boolean subpixelRefinement(float[] offsets, float offsetMagnitudeThreshold, float contrastThreshold) {
 
         float offsetMagnitude = VectorUtil.getVectorNorm(offsets);
-        if (offsetMagnitude > 0.55) {
+        if (offsetMagnitude > offsetMagnitudeThreshold) {
             return false;
         }
 
         float contrast = VectorUtil.getVectorDotProduct(offsets);
 
-        if (Math.abs(contrast) >= contrastThreshold) {
-            return false;
-        }
-
-        return true;
+        return !(Math.abs(contrast) >= contrastThreshold);
     }
 
-
+    /**
+     * Calculates local gradients of pixels inside window around given x,y coordinates.
+     * Handles out of bound by edge reflection.
+     *
+     * @param imageData float matrix containing image pixel values
+     * @param x central point x coordinate
+     * @param y central point y coordinate
+     * @param windowSize width/height of sliced window
+     *
+     * @return matrix of {dx, dy} gradients
+     */
     public float[][][] computeKeypointLocalGradients(float[][] imageData, int x, int y, int windowSize) {
         float[][][] localGradients = new float[windowSize][windowSize][2];
 
@@ -240,16 +265,42 @@ public class MatrixKeypointHelper {
                 localGradients[i+radius][j+radius] = DerivativeUtil.approximateGradientVector(imageData, x+i, y+j);
             }
         }
-
         return localGradients;
     }
 
-    public float findKeypointDominantOrientation(float[][][] localGradients) {
-        float maxMagnitude = 0;
-        int maxX=0, maxY=0;
+    /**
+     * Computes magnitudes matrix for all entries in the local gradients matrix
+     *
+     * @param localGradients matrix containing {dx, dy} entries for each pixel
+     *
+     * @return matrix of gradient magnitudes
+     */
+    public float[][] computeKeypointMagnitudes(float[][][] localGradients) {
+        float[][] magnitudes = new float[localGradients.length][localGradients[0].length];
+
         for (int x=0; x<localGradients.length; x++) {
             for (int y=0; y<localGradients[0].length; y++) {
-                float magnitude = VectorUtil.getVectorNorm(localGradients[x][y]);
+                magnitudes[x][y] = VectorUtil.getVectorNorm(localGradients[x][y]);
+            }
+        }
+
+        return magnitudes;
+    }
+
+    /**
+     * Iterates through gradients matrix, calculates magnitude of each gradient and returns orientation of the largest magnitude
+     *
+     * @param localGradients matrix of {dx, dy} gradients
+     * @param localMagnitudes matrix of gradients magnitudes computed from localGradients
+     *
+     * @return dominant orientation in degrees
+     */
+    public float findKeypointDominantOrientation(float[][][] localGradients, float[][] localMagnitudes) {
+        float maxMagnitude = 0;
+        int maxX=0, maxY=0;
+        for (int x=0; x<localMagnitudes.length; x++) {
+            for (int y=0; y<localMagnitudes[0].length; y++) {
+                float magnitude = localMagnitudes[x][y];
                 if (magnitude > maxMagnitude) {
                     maxMagnitude = magnitude;
                     maxX = x;
@@ -257,11 +308,18 @@ public class MatrixKeypointHelper {
                 }
             }
         }
-
         return VectorUtil.getVectorDegreesOrientation2D( localGradients[maxX][maxY] );
     }
 
 
+    /**
+     * Computes orientations of the entire gradients matrix and subtracts keypoint's dominant orientation from each value.
+     *
+     * @param localGradients matrix containing {dx,dy} values
+     * @param keypointOrientation keypoint dominant orientation based on highest gradient magnitude
+     *
+     * @return new matrix containing orientations in degrees
+     */
     public float[][] computeKeypointOrientations(float[][][] localGradients, float keypointOrientation) {
         float[][] orientations = new float[localGradients.length][localGradients[0].length];
 
@@ -272,6 +330,37 @@ public class MatrixKeypointHelper {
             }
         }
         return orientations;
+    }
+
+    public void constructDescriptor(float[][] gradientMagnitudes, float[][] relativeOrientations) {
+        int numBins = 8;
+        int descriptorLength = 128; // 16 cells x 8 bins
+        float[] descriptor = new float[descriptorLength];
+
+        int index = 0;
+        for (int cellX=0; cellX<4; cellX++) {
+            for (int cellY=0; cellY<4; cellY++) {
+                float[] localHistogram = new float[numBins];
+
+                for (int pixelX=0; pixelX<4; pixelX++) {
+                    for (int pixelY=0; pixelY<4; pixelY++) {
+                        int x = cellX + 4 * pixelX;
+                        int y = cellY + 4 * pixelY;
+
+                        float magnitude = gradientMagnitudes[x][y];
+                        float orientation = relativeOrientations[x][y];
+
+                        int bin = (int) Math.floor(orientation / (float)(360/numBins) ) % numBins;
+                        localHistogram[bin] += magnitude;
+                    }
+                }
+
+                System.arraycopy(localHistogram, 0, descriptor, index, numBins);
+                index += numBins;
+            }
+        }
+
+        // normalize descriptor here. Add proper method to Vector utils
     }
 
 

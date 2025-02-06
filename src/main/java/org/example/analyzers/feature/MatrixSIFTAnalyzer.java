@@ -1,13 +1,6 @@
 package org.example.analyzers.feature;
 
-import org.example.utils.accessor.ImageAccessor;
 import org.example.utils.accessor.ImageDataUtil;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 
 public class MatrixSIFTAnalyzer {
     // TODO - CURRENT: test if DoG is handling edge cases and if there are aliasing issues with image downscaling
@@ -18,7 +11,7 @@ public class MatrixSIFTAnalyzer {
     /**
      * When to stop creating octaves
      */
-    int minImageSizeThreshold = 128;
+    int minImageSizeThreshold = 32;
 
     /**
      * How many scales should be generated per one octave
