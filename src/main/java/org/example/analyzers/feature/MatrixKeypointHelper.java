@@ -100,7 +100,8 @@ public class MatrixKeypointHelper {
                             pixelY,
                             baseNeighboursWindowSize * (1 << octaveIndex) );
 
-                    float keypointOrientation = findKeypointDominantOrientation(localGradients);
+                    float[][] localMagnitudes = computeKeypointMagnitudes(localGradients);
+                    float keypointOrientation = findKeypointDominantOrientation(localGradients, localMagnitudes);
                     float[][] localOrientations = computeKeypointOrientations(localGradients, keypointOrientation);
 
 
