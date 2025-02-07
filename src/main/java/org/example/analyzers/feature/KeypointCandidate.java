@@ -93,13 +93,13 @@ public class KeypointCandidate {
      *
      * @return new Keypoint instance
      */
-    public Keypoint refineCandidate() {
+    public void refineCandidate() {
         float[] gradientVector = DerivativeUtil.approximateGradientVector(
                 imagesTriplet.getPreviousScale(),
                 imagesTriplet.getCurrentScale(),
                 imagesTriplet.getNextScale(),
                 x, y);
 
-        return new Keypoint(x, y, gradientVector, hessianMatrix);
+        //return new Keypoint(x, y, gradientVector, hessianMatrix);
     }
 }

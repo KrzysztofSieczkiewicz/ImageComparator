@@ -70,8 +70,6 @@ public class MatrixGaussianHelper {
         return result;
     }
 
-
-
     /**
      * Generates an entire octave for a gaussian pyramid
      * @param imageData matrix containing image raster

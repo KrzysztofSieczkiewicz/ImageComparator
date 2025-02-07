@@ -1,13 +1,9 @@
 package org.example.analyzers.feature;
 
+import org.example.analyzers.feature.helpers.KeypointDetector;
 import org.example.utils.accessor.ImageDataUtil;
 
 public class MatrixSIFTAnalyzer {
-    // TODO - CURRENT: test if DoG is handling edge cases and if there are aliasing issues with image downscaling
-
-    // TODO: can be memory optimized by merging buildGaussianPyramid with buildDoGPyramid
-    //  that'd work by discarding each gaussian images after necessary dog is computed
-
     /**
      * When to stop creating octaves
      */
@@ -33,13 +29,10 @@ public class MatrixSIFTAnalyzer {
      */
     int downsamplingFactor = 2;
 
-    // TODO: CURRENT -> time to debug -
-    //  go through each dog pyramid step and save all created images.
-    //  then go through all keypoint steps and mark them on the image
 
     public void constructScaleSpace(int[][] imageData) {
         MatrixGaussianHelper gaussianHelper = new MatrixGaussianHelper(baseSigma, blurringSizeMultiplier);
-        MatrixKeypointHelper keypointHelper = new MatrixKeypointHelper();
+        KeypointDetector keypointDetector = new KeypointDetector();
 
         // 0. Greyscale the image
         int[][] greyscaleImageData = ImageDataUtil.greyscale(imageData);
@@ -54,7 +47,7 @@ public class MatrixSIFTAnalyzer {
         float[][][][] dogPyramid = gaussianHelper.buildDoGPyramid(gaussianPyramid);
 
         // 4. Find keypoints in the DoG pyramid
-        keypointHelper.detectKeypoints(dogPyramid);
+        keypointDetector.detectKeypoints(dogPyramid);
 
     }
 

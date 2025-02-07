@@ -5,20 +5,20 @@ package org.example.analyzers.feature;
  */
 public class OctaveSlice {
 
-    private int scaleIndex;
+    private int octaveIndex;
     private float[][] previousScale;
     private float[][] currentScale;
     private float[][] nextScale;
 
-    public OctaveSlice(int scaleIndex, float[][] previousScale, float[][] currentScale, float[][] nextScale) {
-        this.scaleIndex = scaleIndex;
+    public OctaveSlice(int octaveIndex, float[][] previousScale, float[][] currentScale, float[][] nextScale) {
+        this.octaveIndex = octaveIndex;
         this.previousScale = previousScale;
         this.currentScale = currentScale;
         this.nextScale = nextScale;
     }
 
-    public int getScaleIndex() {
-        return scaleIndex;
+    public int getOctaveIndex() {
+        return octaveIndex;
     }
 
     public float[][] getPreviousScale() {
