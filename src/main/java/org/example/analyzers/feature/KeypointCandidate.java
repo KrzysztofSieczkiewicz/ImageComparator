@@ -1,10 +1,9 @@
 package org.example.analyzers.feature;
 
 import org.example.analyzers.common.PixelPoint;
+import org.example.analyzers.feature.helpers.ScalesTriplet;
 import org.example.utils.DerivativeUtil;
 import org.example.utils.MatrixUtil;
-
-import java.util.Arrays;
 
 // TODO: Current - keypoint candidates are not being filtered properly - eigenvalues seem a bit big - check calculations
 //  Strong suspicion - DoG images require normalization as even entirely black areas seem to be "high contrast"
@@ -13,7 +12,7 @@ import java.util.Arrays;
 public class KeypointCandidate {
 
     private final int x,y;
-    private final OctaveSlice imagesTriplet;
+    private final ScalesTriplet imagesTriplet;
     private final float[][] hessianMatrix;
 
     private final float hessianTrace;
@@ -21,7 +20,7 @@ public class KeypointCandidate {
     private final float[] eigenvalues;
 
 
-    public KeypointCandidate(OctaveSlice scalesTriplet, PixelPoint point) {
+    public KeypointCandidate(ScalesTriplet scalesTriplet, PixelPoint point) {
         this.x = point.getX();
         this.y = point.getY();
         this.imagesTriplet = scalesTriplet;

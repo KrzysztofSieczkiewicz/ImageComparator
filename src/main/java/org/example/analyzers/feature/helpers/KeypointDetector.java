@@ -2,8 +2,6 @@ package org.example.analyzers.feature.helpers;
 
 import org.example.analyzers.common.PixelPoint;
 import org.example.analyzers.feature.Keypoint;
-import org.example.analyzers.feature.OctaveSlice;
-import org.example.analyzers.feature.helpers.KeypointRefiner;
 
 import java.util.ArrayList;
 public class KeypointDetector {
@@ -47,18 +45,18 @@ public class KeypointDetector {
             float[][][] octave = dogPyramid[octaveIndex];
 
             for (int scaleIndex = 1; scaleIndex < scalesNum - 1; scaleIndex++) {
-                OctaveSlice octaveSlice = new OctaveSlice(
+                ScalesTriplet scalesTriplet = new ScalesTriplet(
                         octaveIndex,
                         octave[scaleIndex-1],
                         octave[scaleIndex],
                         octave[scaleIndex+1]
                 );
 
-                ArrayList<PixelPoint> potentialCandidates = findLocalExtremes(octaveSlice);
+                ArrayList<PixelPoint> potentialCandidates = findLocalExtremes(scalesTriplet);
                 if (potentialCandidates.isEmpty()) continue;
 
                 for (PixelPoint candidate: potentialCandidates) {
-                    Keypoint keypoint = refiner.refineKeypointCandidate(octaveSlice, candidate, baseNeighboursWindowSize);
+                    Keypoint keypoint = refiner.refineKeypointCandidate(scalesTriplet, candidate, baseNeighboursWindowSize);
                     if (keypoint != null) imageKeypoints.add(keypoint);
                 }
 
@@ -71,13 +69,13 @@ public class KeypointDetector {
      * Searches through provided octave slice (three consecutive scales within single octave) for potential
      * keypoint candidates. Requires that the images are the same size
      *
-     * @param octaveSlice images within the same octave to find extremes in
+     * @param scalesTriplet images within the same octave to find extremes in
      * @return ArrayList containing pixel coordinates of potential keypoint candidates
      */
-    public ArrayList<PixelPoint> findLocalExtremes(OctaveSlice octaveSlice) {
-        float[][] previousImage = octaveSlice.getPreviousScale();
-        float[][] currentImage = octaveSlice.getCurrentScale();
-        float[][] nextImage = octaveSlice.getNextScale();
+    public ArrayList<PixelPoint> findLocalExtremes(ScalesTriplet scalesTriplet) {
+        float[][] previousImage = scalesTriplet.getPreviousScale();
+        float[][] currentImage = scalesTriplet.getCurrentScale();
+        float[][] nextImage = scalesTriplet.getNextScale();
         ArrayList<PixelPoint> keypointCandidates = new ArrayList<>();
 
         int rows = currentImage.length;

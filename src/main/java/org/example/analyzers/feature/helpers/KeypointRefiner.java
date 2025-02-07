@@ -2,7 +2,6 @@ package org.example.analyzers.feature.helpers;
 
 import org.example.analyzers.common.PixelPoint;
 import org.example.analyzers.feature.Keypoint;
-import org.example.analyzers.feature.OctaveSlice;
 import org.example.utils.DerivativeUtil;
 import org.example.utils.MatrixUtil;
 import org.example.utils.VectorUtil;
@@ -14,42 +13,42 @@ public class KeypointRefiner {
      * Offset magnitude threshold above which keypoint will be discarded.
      * Usually around 0.55
      */
-    private final float offsetMagnitudeThreshold;
+    private final float magnitudeThreshold;
 
     /**
      * Contrast threshold below which keypoint will be discarded as noise.
      * Usually between 0.01 and 0.04
      */
-    private final float keypointContrastThreshold;
+    private final float contrastThreshold;
 
     /**
      * Hessian eigenvalues ratio below which keypoint will be discarded as edge keypoint.
      * Usually between 5 and 20
      */
-    private final float keypointEdgeResponseThreshold;
+    private final float edgeResponseThreshold;
 
-    public KeypointRefiner(float offsetMagnitudeThreshold, float keypointContrastThreshold, float keypointEdgeResponseRatio) {
-        this.offsetMagnitudeThreshold = offsetMagnitudeThreshold;
-        this.keypointContrastThreshold = keypointContrastThreshold;
-        this.keypointEdgeResponseThreshold = ((keypointEdgeResponseRatio+1)*(keypointEdgeResponseRatio+1)) / keypointEdgeResponseRatio;
+    public KeypointRefiner(float magnitudeThreshold, float contrastThreshold, float keypointEdgeResponseRatio) {
+        this.magnitudeThreshold = magnitudeThreshold;
+        this.contrastThreshold = contrastThreshold;
+        this.edgeResponseThreshold = ((keypointEdgeResponseRatio+1)*(keypointEdgeResponseRatio+1)) / keypointEdgeResponseRatio;
         this.descriptorGenerator = new DescriptorGenerator();
     }
 
-    public Keypoint refineKeypointCandidate(OctaveSlice octaveSlice, PixelPoint candidate, int neighboursWindowSize) {
+    public Keypoint refineKeypointCandidate(ScalesTriplet scalesTriplet, PixelPoint candidate, int neighboursWindowSize) {
         int pixelX = candidate.getX();
         int pixelY = candidate.getY();
-        int octaveIndex = octaveSlice.getOctaveIndex();
+        int octaveIndex = scalesTriplet.getOctaveIndex();
 
         float[][] hessianMatrix = calculateKeypointHessian(
-                octaveSlice,
+                scalesTriplet,
                 pixelX,
                 pixelY );
         if ( !isCandidateValid(hessianMatrix) ) return null;
 
         float[] gradientVector = DerivativeUtil.approximateGradientVector(
-                octaveSlice.getPreviousScale(),
-                octaveSlice.getCurrentScale(),
-                octaveSlice.getNextScale(),
+                scalesTriplet.getPreviousScale(),
+                scalesTriplet.getCurrentScale(),
+                scalesTriplet.getNextScale(),
                 pixelX, pixelY);
 
         float[] offsets = calculatePixelPositionsOffsets(hessianMatrix, gradientVector);
@@ -57,39 +56,30 @@ public class KeypointRefiner {
         float subPixelY = pixelY + offsets[1];
         if (verifySubpixelMagnitudeAndContrast(offsets) ) return null;
 
-        float[][][] localGradients = computeKeypointLocalGradients(
-                octaveSlice.getCurrentScale(),
-                pixelX,
-                pixelY,
-                neighboursWindowSize );
-
-        float[][] localMagnitudes = computeKeypointLocalMagnitudes(localGradients);
-        float keypointOrientation = findKeypointDominantOrientation(localGradients, localMagnitudes);
-        float[][] localOrientations = computeKeypointOrientations(localGradients, keypointOrientation);
-
-        float[] keypointDescriptor = descriptorGenerator.constructDescriptor(localMagnitudes, localOrientations);
+        float[][][] localGradients = computeKeypointLocalGradients(scalesTriplet.getCurrentScale(), pixelX, pixelY, neighboursWindowSize );
+        float[] keypointDescriptor = descriptorGenerator.constructDescriptor(localGradients);
 
         return new Keypoint(octaveIndex, subPixelX, subPixelY, keypointDescriptor);
     }
 
     /**
      * Generates 3x3 approximated Hessian matrix for {x,y,x} dimensions
-     * @param octaveSlice three consecutive scales from within single octave
+     * @param scalesTriplet three consecutive scales from within single octave
      * @param pixelX candidate's width coordinate
      * @param pixelY candidate's height coordinate
      *
      * @return float[][] Hessian matrix
      */
-    private float[][] calculateKeypointHessian(OctaveSlice octaveSlice, int pixelX, int pixelY) {
+    private float[][] calculateKeypointHessian(ScalesTriplet scalesTriplet, int pixelX, int pixelY) {
         float[] spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives(
-                octaveSlice.getCurrentScale(),
+                scalesTriplet.getCurrentScale(),
                 pixelX,
                 pixelY );
 
         float[] scaleDerivatives = DerivativeUtil.approximateScaleDerivatives(
-                octaveSlice.getPreviousScale(),
-                octaveSlice.getCurrentScale(),
-                octaveSlice.getNextScale(),
+                scalesTriplet.getPreviousScale(),
+                scalesTriplet.getCurrentScale(),
+                scalesTriplet.getNextScale(),
                 pixelX,
                 pixelY );
 
@@ -109,12 +99,11 @@ public class KeypointRefiner {
         float discriminant = MatrixUtil.get2x2MatrixDiscriminant(trace, determinant);
         float[] eigenvalues = MatrixUtil.get2x2MatrixEigenvalues(trace, discriminant);
 
-        if ( (eigenvalues[0] * eigenvalues[1]) < keypointContrastThreshold ) return false;
+        if ( (eigenvalues[0] * eigenvalues[1]) < contrastThreshold) return false;
 
         float r = (trace*trace) / determinant;
-        float edgeThreshold = ((keypointEdgeResponseThreshold+1)*(keypointEdgeResponseThreshold+1)) / keypointEdgeResponseThreshold;
 
-        return r <= keypointEdgeResponseThreshold;
+        return r <= edgeResponseThreshold;
     }
 
 
@@ -140,15 +129,14 @@ public class KeypointRefiner {
      */
     private boolean verifySubpixelMagnitudeAndContrast(float[] offsets) {
         float offsetMagnitude = VectorUtil.getVectorNorm(offsets);
-        if (offsetMagnitude > offsetMagnitudeThreshold) {
+        if (offsetMagnitude > magnitudeThreshold) {
             return false;
         }
 
         float contrast = VectorUtil.getVectorDotProduct(offsets);
 
-        return !(Math.abs(contrast) >= keypointContrastThreshold);
+        return !(Math.abs(contrast) >= contrastThreshold);
     }
-
 
     /**
      * Calculates local gradients of pixels inside window around given x,y coordinates.
@@ -173,69 +161,4 @@ public class KeypointRefiner {
         return localGradients;
     }
 
-    /**
-     * Computes magnitudes matrix for all entries in the local gradients matrix
-     *
-     * @param localGradients matrix containing {dx, dy} entries for each pixel
-     *
-     * @return matrix of gradient magnitudes
-     */
-    private float[][] computeKeypointLocalMagnitudes(float[][][] localGradients) {
-        float[][] magnitudes = new float[localGradients.length][localGradients[0].length];
-
-        for (int x=0; x<localGradients.length; x++) {
-            for (int y=0; y<localGradients[0].length; y++) {
-                magnitudes[x][y] = VectorUtil.getVectorNorm(localGradients[x][y]);
-            }
-        }
-
-        return magnitudes;
-    }
-
-    /**
-     * Iterates through gradients matrix, calculates magnitude of each gradient and returns orientation of the largest magnitude
-     *
-     * @param localGradients matrix of {dx, dy} gradients
-     * @param localMagnitudes matrix of gradients magnitudes computed from localGradients
-     *
-     * @return dominant orientation in degrees
-     */
-    private float findKeypointDominantOrientation(float[][][] localGradients, float[][] localMagnitudes) {
-        float maxMagnitude = 0;
-        int maxX=0, maxY=0;
-        for (int x=0; x<localMagnitudes.length; x++) {
-            for (int y=0; y<localMagnitudes[0].length; y++) {
-                float magnitude = localMagnitudes[x][y];
-                if (magnitude > maxMagnitude) {
-                    maxMagnitude = magnitude;
-                    maxX = x;
-                    maxY = y;
-                }
-            }
-        }
-        return VectorUtil.getVectorDegreesOrientation2D( localGradients[maxX][maxY] );
-    }
-
-
-    /**
-     * Computes orientations of the entire gradients matrix and subtracts keypoint's dominant orientation from each value.
-     *
-     * @param localGradients matrix containing {dx,dy} values
-     * @param keypointOrientation keypoint dominant orientation based on highest gradient magnitude
-     *
-     * @return new matrix containing orientations in degrees
-     */
-    private float[][] computeKeypointOrientations(float[][][] localGradients, float keypointOrientation) {
-        float[][] orientations = new float[localGradients.length][localGradients[0].length];
-
-        for (int x=0; x<localGradients.length; x++) {
-            for (int y = 0; y < localGradients[0].length; y++) {
-                float localOrientation = VectorUtil.getVectorDegreesOrientation2D( localGradients[x][y] );
-                float orientation = localOrientation - keypointOrientation;
-                if (orientation < 0) orientation += 360;
-                orientations[x][y] = orientation;
-            }
-        }
-        return orientations;
-    }
 }

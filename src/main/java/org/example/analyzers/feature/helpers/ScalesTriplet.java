@@ -1,16 +1,16 @@
-package org.example.analyzers.feature;
+package org.example.analyzers.feature.helpers;
 
 /**
  * Helper class holding three consecutive scales from the octave
  */
-public class OctaveSlice {
+public class ScalesTriplet {
 
     private int octaveIndex;
     private float[][] previousScale;
     private float[][] currentScale;
     private float[][] nextScale;
 
-    public OctaveSlice(int octaveIndex, float[][] previousScale, float[][] currentScale, float[][] nextScale) {
+    public ScalesTriplet(int octaveIndex, float[][] previousScale, float[][] currentScale, float[][] nextScale) {
         this.octaveIndex = octaveIndex;
         this.previousScale = previousScale;
         this.currentScale = currentScale;
