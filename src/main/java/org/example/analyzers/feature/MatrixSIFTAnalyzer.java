@@ -3,9 +3,14 @@ package org.example.analyzers.feature;
 import org.example.analyzers.feature.helpers.KeypointDetector;
 import org.example.utils.accessor.ImageDataUtil;
 
+import java.util.ArrayList;
+
 public class MatrixSIFTAnalyzer {
+    private final KeypointDetector keypointDetector;
+    private final MatrixGaussianHelper gaussianHelper;
+
     /**
-     * When to stop creating octaves
+     * Image size below which octaves won't be created
      */
     int minImageSizeThreshold = 32;
 
@@ -20,19 +25,18 @@ public class MatrixSIFTAnalyzer {
     double baseSigma = 1.6;
 
     /**
-     * Determines Gaussian blurring kernel dimension (multiplier * sigma)
-     */
-    int blurringSizeMultiplier = 6;
-
-    /**
      * Downsampling factor by which the image is reduced between octaves
      */
     int downsamplingFactor = 2;
 
 
+    public MatrixSIFTAnalyzer() {
+        this.keypointDetector = new KeypointDetector();
+        this.gaussianHelper = new MatrixGaussianHelper(baseSigma);
+    }
+
+
     public void constructScaleSpace(int[][] imageData) {
-        MatrixGaussianHelper gaussianHelper = new MatrixGaussianHelper(baseSigma, blurringSizeMultiplier);
-        KeypointDetector keypointDetector = new KeypointDetector();
 
         // 0. Greyscale the image
         int[][] greyscaleImageData = ImageDataUtil.greyscale(imageData);
@@ -47,7 +51,7 @@ public class MatrixSIFTAnalyzer {
         float[][][][] dogPyramid = gaussianHelper.buildDoGPyramid(gaussianPyramid);
 
         // 4. Find keypoints in the DoG pyramid
-        keypointDetector.detectKeypoints(dogPyramid);
+        ArrayList<Keypoint> keypoints = keypointDetector.detectKeypoints(dogPyramid);
 
     }
 

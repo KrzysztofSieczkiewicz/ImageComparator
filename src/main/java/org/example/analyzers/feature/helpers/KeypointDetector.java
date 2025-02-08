@@ -35,7 +35,7 @@ public class KeypointDetector {
         this.refiner = new KeypointRefiner(offsetMagnitudeThreshold, keypointContrastThreshold, keypointEdgeResponseRatio);
     }
 
-    public void detectKeypoints(float[][][][] dogPyramid) {
+    public ArrayList<Keypoint> detectKeypoints(float[][][][] dogPyramid) {
         int octavesNum = dogPyramid.length;
         int scalesNum = dogPyramid[0].length;
 
@@ -62,7 +62,8 @@ public class KeypointDetector {
 
             }
         }
-        System.out.println("Keypoints found for all scales: " + imageKeypoints.size());
+
+        return imageKeypoints;
     }
 
     /**

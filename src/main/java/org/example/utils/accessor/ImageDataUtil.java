@@ -122,15 +122,14 @@ public class ImageDataUtil {
      *
      * @param imageData int[][] containing greyscale image data
      * @param sigma std deviation of th Gaussian distribution used for blurring
-     * @param radiusMultiplier multiplier affecting blurring size (multiplied by sigma determines dimension of the kernel)
      * @return new float[][] containing blurred raster
      */
-    public static float[][] gaussianBlurGreyscaled(int[][] imageData, double sigma, int radiusMultiplier) {
+    public static float[][] gaussianBlurGreyscaled(int[][] imageData, double sigma) {
         int width = imageData.length;
         int height = imageData[0].length;
         float[][] blurredImageData = new float[width][height];
 
-        float[] kernelData = generateGaussianKernelData(sigma, radiusMultiplier);
+        float[] kernelData = generateGaussianKernelData(sigma);
         int kernelSize = (int) Math.sqrt(kernelData.length);
         int halfKernelSize = kernelSize / 2;
 
@@ -180,15 +179,14 @@ public class ImageDataUtil {
      *
      * @param imageData int[][] containing image pixels data
      * @param sigma std deviation of th Gaussian distribution used for blurring
-     * @param radiusMultiplier multiplier affecting blurring size (multiplied by sigma determines dimension of the kernel)
      * @return new int[][] containing blurred raster
      */
-    public static int[][] gaussianBlur(int[][] imageData, double sigma, int radiusMultiplier) {
+    public static int[][] gaussianBlur(int[][] imageData, double sigma) {
         int width = imageData.length;
         int height = imageData[0].length;
         int[][] blurredImageData = new int[width][height];
 
-        float[] kernelData = generateGaussianKernelData(sigma, radiusMultiplier);
+        float[] kernelData = generateGaussianKernelData(sigma);
         int kernelSize = (int) Math.sqrt(kernelData.length);
         int halfKernelSize = kernelSize / 2;
 
@@ -254,25 +252,13 @@ public class ImageDataUtil {
     }
 
     /**
-     * Blurs image using convolve op.
-     * Used kernel size is 6 times sigma rounded up to the next odd integer.
-     *
-     * @param imageData int[][] containing image pixels data
-     * @param sigma std deviation of th Gaussian distribution used for blurring
-     * @return new int[][] containing blurred raster
-     */
-    public static int[][] gaussianBlur(int[][] imageData, double sigma) {
-        return gaussianBlur(imageData, sigma, 6);
-    }
-
-    /**
      * Internal util method. Generates Gaussian blur kernel. Size is set to be ~6 times sigma and odd.
      *
      * @param sigma std deviation of the Gaussian distribution used for the blur
      * @return awt Kernel
      */
-    private static float[] generateGaussianKernelData(double sigma, int sizeMuliplier) {
-        int size = (int) (sizeMuliplier * sigma);
+    private static float[] generateGaussianKernelData(double sigma) {
+        int size = (int) (sigma * 6);
         if (size % 2 == 0) size++;
 
         float[] kernelData = new float[size * size];

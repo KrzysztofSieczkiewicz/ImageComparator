@@ -9,15 +9,20 @@ public class MatrixGaussianHelper {
      */
     double baseSigma;
 
-    /**
-     * Determines Gaussian blurring kernel dimension (multiplier * sigma)
-     */
-    int blurringSizeMultiplier;
-
-    public MatrixGaussianHelper(double sigma, int blurringSizeMultiplier) {
+    public MatrixGaussianHelper(double sigma) {
         this.baseSigma = sigma;
-        this.blurringSizeMultiplier = blurringSizeMultiplier;
     }
+
+    public void buildDoG(int[][] imageDate, int octavesNum, int scalesNum, int downsamplingFactor) {
+        double sigmaInterval = calculateScaleIntervals(scalesNum);
+
+        for (int octave=0; octave<octavesNum; octave++) {
+            // TODO: FINISH HERE:
+            //  go through the gaussian generation only three scales at a time (and reusing 2 of them in the next iteration)
+            //  then call keypoint detector and pass these three scales and collect the keypoints
+        }
+    }
+
 
     public float[][][][] buildGaussianPyramid(int[][] imageData, int octavesNum, int scalesNum, int downsamplingFactor) {
         float[][][][] pyramid = new float[octavesNum][scalesNum+3][][];
@@ -85,7 +90,7 @@ public class MatrixGaussianHelper {
         double baseScale = baseSigma;
 
         for (int i = 0; i < numberOfScales; i++) {
-            gaussianImages[i] = ImageDataUtil.gaussianBlurGreyscaled(imageData, baseScale, blurringSizeMultiplier);
+            gaussianImages[i] = ImageDataUtil.gaussianBlurGreyscaled(imageData, baseScale);
             baseScale *= scaleInterval;
         }
 

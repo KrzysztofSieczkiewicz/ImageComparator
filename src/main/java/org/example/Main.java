@@ -38,7 +38,7 @@ public class Main {
         int[][] raster2D = accessor.getPixels();
 
         BIGaussianHelper helper = new BIGaussianHelper();
-        MatrixGaussianHelper arrHelper = new MatrixGaussianHelper(1.6, 6);
+        MatrixGaussianHelper arrHelper = new MatrixGaussianHelper(1.6);
 
         long start = System.nanoTime();
 
