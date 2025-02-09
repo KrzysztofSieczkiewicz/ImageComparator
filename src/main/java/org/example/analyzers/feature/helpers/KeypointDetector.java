@@ -35,6 +35,27 @@ public class KeypointDetector {
         this.refiner = new KeypointRefiner(offsetMagnitudeThreshold, keypointContrastThreshold, keypointEdgeResponseRatio);
     }
 
+    public ArrayList<Keypoint> detectKeypoints(int octaveIndex, float[][] previousScaleData, float[][] currentScaleData, float[][] nextScaleData) {
+        ArrayList<Keypoint> imageKeypoints = new ArrayList<>();
+
+        ScalesTriplet scalesTriplet = new ScalesTriplet(
+                octaveIndex,
+                previousScaleData,
+                currentScaleData,
+                nextScaleData
+        );
+
+        ArrayList<PixelPoint> potentialCandidates = findLocalExtremes(scalesTriplet);
+        if (potentialCandidates.isEmpty()) return imageKeypoints;
+
+        for (PixelPoint candidate: potentialCandidates) {
+            Keypoint keypoint = refiner.refineKeypointCandidate(scalesTriplet, candidate, baseNeighboursWindowSize);
+            if (keypoint != null) imageKeypoints.add(keypoint);
+        }
+
+        return imageKeypoints;
+    }
+
     public ArrayList<Keypoint> detectKeypoints(float[][][][] dogPyramid) {
         int octavesNum = dogPyramid.length;
         int scalesNum = dogPyramid[0].length;
@@ -73,7 +94,7 @@ public class KeypointDetector {
      * @param scalesTriplet images within the same octave to find extremes in
      * @return ArrayList containing pixel coordinates of potential keypoint candidates
      */
-    public ArrayList<PixelPoint> findLocalExtremes(ScalesTriplet scalesTriplet) {
+    private ArrayList<PixelPoint> findLocalExtremes(ScalesTriplet scalesTriplet) {
         float[][] previousImage = scalesTriplet.getPreviousScale();
         float[][] currentImage = scalesTriplet.getCurrentScale();
         float[][] nextImage = scalesTriplet.getNextScale();

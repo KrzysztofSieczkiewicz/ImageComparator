@@ -175,6 +175,63 @@ public class ImageDataUtil {
     }
 
     /**
+     * Blurs greyscale image using convolve op.
+     *
+     * @param imageData int[][] containing greyscale image data
+     * @param sigma std deviation of th Gaussian distribution used for blurring
+     * @return new float[][] containing blurred raster
+     */
+    public static float[][] gaussianBlurGreyscaled(float[][] imageData, double sigma) {
+        int width = imageData.length;
+        int height = imageData[0].length;
+        float[][] blurredImageData = new float[width][height];
+
+        float[] kernelData = generateGaussianKernelData(sigma);
+        int kernelSize = (int) Math.sqrt(kernelData.length);
+        int halfKernelSize = kernelSize / 2;
+
+        // First pass: horizontal blur
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                double pixelValue = 0;
+                double weightSum = 0;
+
+                for (int kx = -halfKernelSize; kx <= halfKernelSize; kx++) {
+                    int mirroredX = Math.max(0, Math.min(x + kx, width - 1));
+                    float pixel = imageData[mirroredX][y];
+                    float kernelValue = kernelData[kx + halfKernelSize];
+
+                    pixelValue += pixel * kernelValue;
+                    weightSum += kernelValue;
+                }
+
+                blurredImageData[x][y] = (float) (pixelValue / weightSum);
+            }
+        }
+        // Second pass: vertical blur
+        float[][] tempImageData = new float[width][height];
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                double pixelValue = 0;
+                double weightSum = 0;
+
+                for (int ky = -halfKernelSize; ky <= halfKernelSize; ky++) {
+                    int mirroredY = Math.max(0, Math.min(y + ky, height - 1));
+                    float pixel = blurredImageData[x][mirroredY];
+                    float kernelValue = kernelData[ky + halfKernelSize];
+
+                    pixelValue += pixel * kernelValue;
+                    weightSum += kernelValue;
+                }
+
+                tempImageData[x][y] = (float) (pixelValue / weightSum);
+            }
+        }
+
+        return tempImageData;
+    }
+
+    /**
      * Blurs image using convolve op.
      *
      * @param imageData int[][] containing image pixels data

@@ -1,8 +1,12 @@
 package org.example.analyzers.feature;
 
+import org.example.analyzers.feature.helpers.KeypointDetector;
 import org.example.utils.accessor.ImageDataUtil;
 
+import java.util.ArrayList;
+
 public class MatrixGaussianHelper {
+    private final KeypointDetector keypointDetector;
 
     /**
      * Determines base sigma from which blurring in an octave will start
@@ -10,18 +14,57 @@ public class MatrixGaussianHelper {
     double baseSigma;
 
     public MatrixGaussianHelper(double sigma) {
+        keypointDetector = new KeypointDetector();
         this.baseSigma = sigma;
     }
 
-    public void buildDoG(int[][] imageDate, int octavesNum, int scalesNum, int downsamplingFactor) {
-        double sigmaInterval = calculateScaleIntervals(scalesNum);
+    // TODO: move dogScalesNum to config file
+    public void buildDoG(float[][] imageData, int octavesNum, int dogScalesNum, int downsamplingFactor) {
+        double sigmaInterval = calculateScaleIntervals(dogScalesNum);
 
+        int numberOfScales = dogScalesNum + 3;
+        float[][][] gaussianImages = new float[numberOfScales][imageData.length][imageData[0].length];
+        double baseScale = baseSigma;
+
+        for (int i = 0; i < numberOfScales; i++) {
+            gaussianImages[i] = ImageDataUtil.gaussianBlurGreyscaled(imageData, baseScale);
+            baseScale *= sigmaInterval;
+        }
+
+        // TODO: FINISH HERE:
+        //  update scaling to use progressing sigmas instead of blurring multiple times
         for (int octave=0; octave<octavesNum; octave++) {
-            // TODO: FINISH HERE:
-            //  go through the gaussian generation only three scales at a time (and reusing 2 of them in the next iteration)
-            //  then call keypoint detector and pass these three scales and collect the keypoints
+            float[][] previousImage = imageData;
+            float[][] currentImage = ImageDataUtil.gaussianBlurGreyscaled(imageData, baseScale);
+            float[][] nextImage = ImageDataUtil.gaussianBlurGreyscaled(currentImage, baseScale);
+            float[][] nextNextImage = ImageDataUtil.gaussianBlurGreyscaled(nextImage, baseScale);
+
+            float[][] previousDoGScale = calculateDifferences(previousImage, currentImage);
+            float[][] currentDoGScale = calculateDifferences(currentImage, nextImage);
+            float[][] nextDoGScale = calculateDifferences(nextImage, nextNextImage);
+
+            ArrayList<Keypoint> scaleKeypoints = new ArrayList<>();
+
+            for (int scale = 1; scale < dogScalesNum; scale++) {
+                // Find features in the dogImage -> detector must be modified not to work with pyramid but single image instead;
+                scaleKeypoints.addAll(keypointDetector.detectKeypoints(octave, previousDoGScale, currentDoGScale, nextDoGScale));
+
+                // Move the gaussian images by one step
+                nextImage = nextNextImage;
+                nextNextImage = ImageDataUtil.gaussianBlurGreyscaled(nextNextImage, baseScale);
+
+                // Move the DoG by one step
+                previousDoGScale = currentDoGScale;
+                currentDoGScale = nextDoGScale;
+                nextDoGScale = calculateDifferences(nextImage, nextNextImage);
+            }
         }
     }
+
+    private void prepareDoGScalesTriplet() {
+
+    }
+
 
 
     public float[][][][] buildGaussianPyramid(int[][] imageData, int octavesNum, int scalesNum, int downsamplingFactor) {
