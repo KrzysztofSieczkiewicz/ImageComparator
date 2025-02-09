@@ -1,4 +1,4 @@
-package org.example.utils.accessor;
+package org.example.utils;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
@@ -53,6 +53,24 @@ public class ImageDataUtil {
         }
 
         return pixelData;
+    }
+
+    /**
+     * Subtracts image pixel data from one another
+     * @return new float[][] matrix with the difference
+     */
+    public static float[][] subtractImages(float[][] minuendImage, float[][] subtrahendImage) {
+        int width = minuendImage.length;
+        int height = minuendImage[0].length;
+        float[][] result = new float[width][height];
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                result[x][y] = minuendImage[x][y] - subtrahendImage[x][y];
+            }
+        }
+
+        return result;
     }
 
     /**

@@ -35,7 +35,7 @@ public class KeypointDetector {
         this.refiner = new KeypointRefiner(offsetMagnitudeThreshold, keypointContrastThreshold, keypointEdgeResponseRatio);
     }
 
-    public ArrayList<Keypoint> detectKeypoints(int octaveIndex, float[][] previousScaleData, float[][] currentScaleData, float[][] nextScaleData) {
+    public ArrayList<Keypoint> detectImageKeypoints(int octaveIndex, float[][] previousScaleData, float[][] currentScaleData, float[][] nextScaleData) {
         ArrayList<Keypoint> imageKeypoints = new ArrayList<>();
 
         ScalesTriplet scalesTriplet = new ScalesTriplet(
@@ -56,7 +56,7 @@ public class KeypointDetector {
         return imageKeypoints;
     }
 
-    public ArrayList<Keypoint> detectKeypoints(float[][][][] dogPyramid) {
+    public ArrayList<Keypoint> detectPyramidKeypoints(float[][][][] dogPyramid) {
         int octavesNum = dogPyramid.length;
         int scalesNum = dogPyramid[0].length;
 

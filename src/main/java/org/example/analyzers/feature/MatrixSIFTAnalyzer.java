@@ -1,7 +1,7 @@
 package org.example.analyzers.feature;
 
 import org.example.utils.accessor.ImageAccessor;
-import org.example.utils.accessor.ImageDataUtil;
+import org.example.utils.ImageDataUtil;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class MatrixSIFTAnalyzer {
 
 
     public MatrixSIFTAnalyzer() {
-        this.gaussianHelper = new MatrixGaussianHelper(baseSigma);
+        this.gaussianHelper = new MatrixGaussianHelper(baseSigma, scalesAmount);
     }
 
 
@@ -43,7 +43,7 @@ public class MatrixSIFTAnalyzer {
 
         int octavesAmount = calculateOctavesNum(greyscaleImageData);
 
-        ArrayList<Keypoint> keypoints = gaussianHelper.buildDoG(greyscaleImageData, octavesAmount, scalesAmount, downscalingFactor);
+        ArrayList<Keypoint> keypoints = gaussianHelper.processImageKeypoints(greyscaleImageData, octavesAmount, downscalingFactor);
     }
 
     public int calculateOctavesNum(int[][] imageData) {
