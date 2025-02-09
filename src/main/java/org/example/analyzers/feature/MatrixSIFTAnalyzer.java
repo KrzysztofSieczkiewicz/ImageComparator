@@ -1,12 +1,12 @@
 package org.example.analyzers.feature;
 
-import org.example.analyzers.feature.helpers.KeypointDetector;
+import org.example.utils.accessor.ImageAccessor;
 import org.example.utils.accessor.ImageDataUtil;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 public class MatrixSIFTAnalyzer {
-    private final KeypointDetector keypointDetector;
     private final MatrixGaussianHelper gaussianHelper;
 
     /**
@@ -27,43 +27,34 @@ public class MatrixSIFTAnalyzer {
     /**
      * Downsampling factor by which the image is reduced between octaves
      */
-    int downsamplingFactor = 2;
+    int downscalingFactor = 2;
 
 
     public MatrixSIFTAnalyzer() {
-        this.keypointDetector = new KeypointDetector();
         this.gaussianHelper = new MatrixGaussianHelper(baseSigma);
     }
 
 
-    public void constructScaleSpace(int[][] imageData) {
+    public void computeImageKeypoints(BufferedImage image) {
+        ImageAccessor accessor = ImageAccessor.create(image);
+        int[][] imageData = accessor.getPixels();
 
-        // 0. Greyscale the image
         int[][] greyscaleImageData = ImageDataUtil.greyscale(imageData);
 
-        // 1. Octaves
-        int octavesAmount = calculateOctavesNum(greyscaleImageData, minImageSizeThreshold, downsamplingFactor);
+        int octavesAmount = calculateOctavesNum(greyscaleImageData);
 
-        // 2. Build Gaussian Pyramid
-        float[][][][] gaussianPyramid = gaussianHelper.buildGaussianPyramid(greyscaleImageData, octavesAmount, scalesAmount, downsamplingFactor);
-
-        // 3. Build DoG pyramid
-        float[][][][] dogPyramid = gaussianHelper.buildDoGPyramid(gaussianPyramid);
-
-        // 4. Find keypoints in the DoG pyramid
-        ArrayList<Keypoint> keypoints = keypointDetector.detectKeypoints(dogPyramid);
-
+        ArrayList<Keypoint> keypoints = gaussianHelper.buildDoG(greyscaleImageData, octavesAmount, scalesAmount, downscalingFactor);
     }
 
-    public int calculateOctavesNum(int[][] imageData, int minSizeThreshold, int downsamplingFactor) {
+    public int calculateOctavesNum(int[][] imageData) {
         int currWidth = imageData.length;
         int currHeight = imageData[0].length;
 
         int octaves = 0;
-        while((currWidth/downsamplingFactor >= minSizeThreshold) && (currHeight/downsamplingFactor >= minSizeThreshold)) {
+        while((currWidth/downscalingFactor >= minImageSizeThreshold) && (currHeight/downscalingFactor >= minImageSizeThreshold)) {
             octaves++;
-            currWidth /= downsamplingFactor;
-            currHeight /= downsamplingFactor;
+            currWidth /= downscalingFactor;
+            currHeight /= downscalingFactor;
         }
 
         return octaves;

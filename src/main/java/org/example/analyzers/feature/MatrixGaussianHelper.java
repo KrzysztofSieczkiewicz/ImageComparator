@@ -19,92 +19,54 @@ public class MatrixGaussianHelper {
     }
 
     // TODO: move dogScalesNum to config file
-    public void buildDoG(float[][] imageData, int octavesNum, int dogScalesNum, int downsamplingFactor) {
+    public ArrayList<Keypoint> buildDoG(int[][] intImageData, int octavesNum, int dogScalesNum, int downsamplingFactor) {
+        float[][] imageData = ImageDataUtil.convertToFloatMatrix(intImageData);
         double sigmaInterval = calculateScaleIntervals(dogScalesNum);
 
-        int numberOfScales = dogScalesNum + 3;
-        float[][][] gaussianImages = new float[numberOfScales][imageData.length][imageData[0].length];
-        double baseScale = baseSigma;
+        ArrayList<Keypoint> keypoints = new ArrayList<>();
 
-        for (int i = 0; i < numberOfScales; i++) {
-            gaussianImages[i] = ImageDataUtil.gaussianBlurGreyscaled(imageData, baseScale);
-            baseScale *= sigmaInterval;
-        }
-
-        // TODO: FINISH HERE:
-        //  update scaling to use progressing sigmas instead of blurring multiple times
+        double gaussianSigma;
         for (int octave=0; octave<octavesNum; octave++) {
-            float[][] previousImage = imageData;
-            float[][] currentImage = ImageDataUtil.gaussianBlurGreyscaled(imageData, baseScale);
-            float[][] nextImage = ImageDataUtil.gaussianBlurGreyscaled(currentImage, baseScale);
-            float[][] nextNextImage = ImageDataUtil.gaussianBlurGreyscaled(nextImage, baseScale);
+            gaussianSigma = baseSigma;
+            float[][] currentImage = ImageDataUtil.gaussianBlurGreyscaled(imageData, gaussianSigma);
+            gaussianSigma *= sigmaInterval;
+            float[][] nextImage = ImageDataUtil.gaussianBlurGreyscaled(imageData, gaussianSigma);
+            gaussianSigma *= sigmaInterval;
+            float[][] nextNextImage = ImageDataUtil.gaussianBlurGreyscaled(imageData, gaussianSigma);
 
-            float[][] previousDoGScale = calculateDifferences(previousImage, currentImage);
-            float[][] currentDoGScale = calculateDifferences(currentImage, nextImage);
-            float[][] nextDoGScale = calculateDifferences(nextImage, nextNextImage);
-
-            ArrayList<Keypoint> scaleKeypoints = new ArrayList<>();
+            float[][] previousDoGScale = calculateImageDifferences(imageData, currentImage);
+            float[][] currentDoGScale = calculateImageDifferences(currentImage, nextImage);
+            float[][] nextDoGScale = calculateImageDifferences(nextImage, nextNextImage);
 
             for (int scale = 1; scale < dogScalesNum; scale++) {
                 // Find features in the dogImage -> detector must be modified not to work with pyramid but single image instead;
-                scaleKeypoints.addAll(keypointDetector.detectKeypoints(octave, previousDoGScale, currentDoGScale, nextDoGScale));
+                keypoints.addAll(keypointDetector.detectKeypoints(octave, previousDoGScale, currentDoGScale, nextDoGScale));
 
                 // Move the gaussian images by one step
+                gaussianSigma *= sigmaInterval;
                 nextImage = nextNextImage;
-                nextNextImage = ImageDataUtil.gaussianBlurGreyscaled(nextNextImage, baseScale);
+                nextNextImage = ImageDataUtil.gaussianBlurGreyscaled(imageData, gaussianSigma);
 
                 // Move the DoG by one step
                 previousDoGScale = currentDoGScale;
                 currentDoGScale = nextDoGScale;
-                nextDoGScale = calculateDifferences(nextImage, nextNextImage);
+                nextDoGScale = calculateImageDifferences(nextImage, nextNextImage);
             }
-        }
-    }
 
-    private void prepareDoGScalesTriplet() {
-
-    }
-
-
-
-    public float[][][][] buildGaussianPyramid(int[][] imageData, int octavesNum, int scalesNum, int downsamplingFactor) {
-        float[][][][] pyramid = new float[octavesNum][scalesNum+3][][];
-
-        double sigmaInterval = calculateScaleIntervals(scalesNum);
-
-        for (int octave=0; octave<octavesNum; octave++) {
-            pyramid[octave] = generateGaussianScales(imageData, scalesNum, baseSigma, sigmaInterval);
-
+            // Downsize and only slightly blur between octaves
             imageData = ImageDataUtil.resizeWithAveraging(
                     imageData,
                     imageData.length/downsamplingFactor,
                     imageData[0].length/downsamplingFactor );
-            imageData = ImageDataUtil.gaussianBlur(imageData, 1.6);
         }
 
-        return pyramid;
-    }
-
-    public float[][][][] buildDoGPyramid(float[][][][] gaussianPyramid) {
-        int octavesNum = gaussianPyramid.length;
-        int scalesNum = gaussianPyramid[0].length-1;
-        float[][][][] pyramid = new float[octavesNum][scalesNum][][];
-
-        for (int octave=0; octave<octavesNum; octave++) {
-            for (int scale=0; scale<scalesNum; scale++) {
-                pyramid[octave][scale] = calculateDifferences(
-                        gaussianPyramid[octave][scale+1],
-                        gaussianPyramid[octave][scale] );
-            }
-        }
-
-        return pyramid;
+        return keypoints;
     }
 
     /**
      * Internal method. Calculates difference between two greyscaled images.
      */
-    private float[][] calculateDifferences(float[][] firstImage, float[][] secondImage) {
+    private float[][] calculateImageDifferences(float[][] firstImage, float[][] secondImage) {
         int width = firstImage.length;
         int height = firstImage[0].length;
         float[][] result = new float[width][height];
@@ -116,28 +78,6 @@ public class MatrixGaussianHelper {
         }
 
         return result;
-    }
-
-    /**
-     * Generates an entire octave for a gaussian pyramid
-     * @param imageData matrix containing image raster
-     * @param scalesNum number of scales to generate
-     * @param baseSigma base sigma for gaussian blurring
-     * @param scaleInterval value by which sigma will be multiplied between blurring
-     *
-     * @return octave (array of progressively blurred images)
-     */
-    private float[][][] generateGaussianScales(int[][] imageData, int scalesNum, double baseSigma, double scaleInterval) {
-        int numberOfScales = scalesNum + 3;
-        float[][][] gaussianImages = new float[numberOfScales][imageData.length][imageData[0].length];
-        double baseScale = baseSigma;
-
-        for (int i = 0; i < numberOfScales; i++) {
-            gaussianImages[i] = ImageDataUtil.gaussianBlurGreyscaled(imageData, baseScale);
-            baseScale *= scaleInterval;
-        }
-
-        return gaussianImages;
     }
 
     /**

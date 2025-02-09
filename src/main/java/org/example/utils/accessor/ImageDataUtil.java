@@ -5,6 +5,21 @@ import java.awt.image.Raster;
 
 public class ImageDataUtil {
 
+    // TODO: temporary!
+    public static float[][] convertToFloatMatrix(int[][] matrix) {
+        int width = matrix.length;
+        int height = matrix[0].length;
+
+        float[][] floatMatrix = new float[width][height];
+        for (int x=0; x<width; x++) {
+            for (int y=0; y<height; y++) {
+                floatMatrix[x][y] = (float) matrix[x][y];
+            }
+        }
+
+        return floatMatrix;
+    }
+
     /**
      * Retrieves the pixel data from a BufferedImage and stores it in a 2D int array, where each
      * int represents a pixel with the RGB value packed into a single integer.
@@ -43,15 +58,15 @@ public class ImageDataUtil {
     /**
      * Resizes an image data matrix (int[][]) to the requested dimensions using averaging for downscaling.
      *
-     * @param image 2D int array representing the input image pixels
+     * @param imageData 2D int array representing the input image pixels
      * @param width requested width to scale to
      * @param height requested height to scale to
      * @return 2D int array containing the resized image
      */
-    public static int[][] resizeWithAveraging(int[][] image, int width, int height) {
-        int originalWidth = image.length;
-        int originalHeight = image[0].length;
-        int[][] resizedImage = new int[width][height];
+    public static float[][] resizeWithAveraging(float[][] imageData, int width, int height) {
+        int originalWidth = imageData.length;
+        int originalHeight = imageData[0].length;
+        float[][] resizedImage = new float[width][height];
 
         double scaleX = (double) originalWidth / width;
         double scaleY = (double) originalHeight / height;
@@ -63,23 +78,18 @@ public class ImageDataUtil {
                 int endX = (int) Math.min((x + 1) * scaleX, originalWidth);
                 int endY = (int) Math.min((y + 1) * scaleY, originalHeight);
 
-                int pixelSumR = 0, pixelSumG = 0, pixelSumB = 0;
+                float pixelSum = 0;
                 int count = 0;
 
                 for (int i = startX; i < endX; i++) {
                     for (int j = startY; j < endY; j++) {
-                        int pixel = image[i][j];
-                        pixelSumR += (pixel >> 16) & 0xFF;
-                        pixelSumG += (pixel >> 8) & 0xFF;
-                        pixelSumB += pixel & 0xFF;
+                        int pixel = (int) imageData[i][j];
+                        pixelSum += pixel & 0xFF;
                         count++;
                     }
                 }
 
-                int avgR = pixelSumR / count;
-                int avgG = pixelSumG / count;
-                int avgB = pixelSumB / count;
-                resizedImage[x][y] = (avgR << 16) | (avgG << 8) | avgB;
+                resizedImage[x][y] = pixelSum / count;
             }
         }
 
