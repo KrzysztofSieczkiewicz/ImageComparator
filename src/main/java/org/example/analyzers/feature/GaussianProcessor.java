@@ -73,7 +73,7 @@ public class GaussianProcessor {
      */
     private ArrayList<Keypoint> processOctave(float[][] imageData, int octaveIndex) {
 
-        imageData = ImageDataUtil.gaussianBlurGreyscaled(imageData, baseSigma);
+        //imageData = ImageDataUtil.gaussianBlurGreyscaled(imageData, baseSigma);
 
         double gaussianSigma = baseSigma;
         float[][] currentImage = ImageDataUtil.gaussianBlurGreyscaled(imageData, gaussianSigma);
@@ -88,11 +88,11 @@ public class GaussianProcessor {
         saveImageFloat(nextNextImage, "ComputedGreyscaleImage_nextNext_"+ octaveIndex +".png");
 
         float[][] previousDoGImage = ImageDataUtil.subtractImages(currentImage, imageData);
-        previousDoGImage = normalizeDoGMinMax(previousDoGImage);
+        previousDoGImage = ImageDataUtil.normalizationZScore(previousDoGImage);
         float[][] currentDoGImage = ImageDataUtil.subtractImages(nextImage, currentImage);
-        currentDoGImage = normalizeDoGMinMax(currentDoGImage);
+        currentDoGImage = ImageDataUtil.normalizationZScore(currentDoGImage);
         float[][] nextDoGImage = ImageDataUtil.subtractImages(nextNextImage, nextImage);
-        nextDoGImage = normalizeDoGMinMax(nextDoGImage);
+        nextDoGImage = ImageDataUtil.normalizationZScore(nextDoGImage);
 
         saveImageFloat(previousDoGImage, "ComputedDoGImage_prev_"+ octaveIndex +".png");
         saveImageFloat(currentDoGImage, "ComputedDoGImage_curr_"+ octaveIndex +".png");
@@ -112,7 +112,7 @@ public class GaussianProcessor {
             previousDoGImage = currentDoGImage;
             currentDoGImage = nextDoGImage;
             nextDoGImage = ImageDataUtil.subtractImages(nextNextImage, nextImage);
-            nextDoGImage = normalizeDoGMinMax(nextDoGImage);
+            nextDoGImage = ImageDataUtil.normalizationZScore(nextDoGImage);
 
             saveImageFloat(nextDoGImage, "ComputedDoGImage_nextNextImage_"+ octaveIndex+scale +".png");
         }
@@ -172,44 +172,5 @@ public class GaussianProcessor {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public static float[][] normalizeDoGMinMax(float[][] dogImage) {
-        int width = dogImage.length;
-        int height = dogImage[0].length;
-        float[][] normalizedDoG = new float[width][height];
-
-        float sum = 0;
-        float sumOfSquares = 0;
-
-        // Calculate mean and standard deviation
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                float val = dogImage[x][y];
-                sum += val;
-                sumOfSquares += val * val;
-            }
-        }
-
-        float mean = sum / (width * height);
-        float stdDev = (float) Math.sqrt((sumOfSquares / (width * height)) - (mean * mean));
-
-        // Normalize using z-score
-        if (stdDev != 0) {
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    normalizedDoG[x][y] = (dogImage[x][y] - mean) / stdDev;
-                }
-            }
-        } else {
-            // Handle the case where stdDev is 0 (all values are the same)
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    normalizedDoG[x][y] = 0f;
-                }
-            }
-        }
-
-        return normalizedDoG;
     }
 }

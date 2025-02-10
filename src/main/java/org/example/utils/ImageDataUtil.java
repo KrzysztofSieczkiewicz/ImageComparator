@@ -67,11 +67,48 @@ public class ImageDataUtil {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 result[x][y] = minuendImage[x][y] - subtrahendImage[x][y];
-                result[x][y] = result[x][y] * 10 + 128;
             }
         }
 
         return result;
+    }
+
+    public static float[][] normalizationZScore(float[][] dogImage) {
+        int width = dogImage.length;
+        int height = dogImage[0].length;
+        float[][] normalizedDoG = new float[width][height];
+
+        float sum = 0;
+        float sumOfSquares = 0;
+
+        // Calculate mean and standard deviation
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                float val = dogImage[x][y];
+                sum += val;
+                sumOfSquares += val * val;
+            }
+        }
+
+        float mean = sum / (width * height);
+        float stdDev = (float) Math.sqrt((sumOfSquares / (width * height)) - (mean * mean));
+
+        // Normalize using z-score
+        if (stdDev != 0) {
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    normalizedDoG[x][y] = (dogImage[x][y] - mean) / stdDev;
+                }
+            }
+        } else { // Handle the case where stdDev is 0 (all values are the same)
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    normalizedDoG[x][y] = 0f;
+                }
+            }
+        }
+
+        return normalizedDoG;
     }
 
     /**
@@ -231,14 +268,12 @@ public class ImageDataUtil {
                     float kernelValue = kernelData[kx + halfKernelSize];
 
                     pixelValue += pixel * kernelValue;
-                    weightSum += kernelValue;
                 }
 
-                blurredImageData[x][y] = pixelValue / weightSum;
+                blurredImageData[x][y] = pixelValue;
             }
         }
         // Second pass: vertical blur
-        float[][] tempImageData = new float[width][height];
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 float pixelValue = 0;
@@ -250,14 +285,13 @@ public class ImageDataUtil {
                     float kernelValue = kernelData[ky + halfKernelSize];
 
                     pixelValue += pixel * kernelValue;
-                    weightSum += kernelValue;
                 }
 
-                tempImageData[x][y] = pixelValue / weightSum;
+                blurredImageData[x][y] = pixelValue;
             }
         }
 
-        return tempImageData;
+        return blurredImageData;
     }
 
     /**
