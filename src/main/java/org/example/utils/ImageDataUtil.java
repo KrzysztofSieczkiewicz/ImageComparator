@@ -273,8 +273,7 @@ public class ImageDataUtil {
         int[][] blurredImageData = new int[width][height];
 
         float[] kernelData = generateGaussianKernelData(sigma);
-        int kernelSize = (int) Math.sqrt(kernelData.length);
-        int halfKernelSize = kernelSize / 2;
+        int halfKernelSize = kernelData.length / 2;
 
         // First pass: horizontal blur
         for (int y = 0; y < height; y++) {

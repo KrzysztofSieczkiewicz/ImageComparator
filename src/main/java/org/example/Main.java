@@ -30,13 +30,13 @@ public class Main {
         BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
         BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
 
-        testImage = ImageUtil.resize(testImage, 1024, 512);
-        File file = new File("src/baseImage.png");
-        try {
-            ImageIO.write(testImage, "PNG", file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        testImage = ImageUtil.resize(testImage, 1024, 512);
+//        File file = new File("src/baseImage.png");
+//        try {
+//            ImageIO.write(testImage, "PNG", file);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
 
 //        ImageAccessor testImageAccessor = ImageAccessor.create(testImage);
 //        int[][] pixels = testImageAccessor.getPixels();
@@ -116,6 +116,7 @@ public class Main {
         }
 
         for (Keypoint k: keypoints) {
+            if (k.getOctaveIndex() > 0) continue;
             if((int)k.getSubPixelX() > image.getWidth()-1 || (int)k.getSubPixelX() < 0) continue;
             if((int)k.getSubPixelY() > image.getHeight()-1 || (int)k.getSubPixelY() < 0) continue;
 

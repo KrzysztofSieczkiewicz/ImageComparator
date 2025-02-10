@@ -79,9 +79,21 @@ public class GaussianProcessor {
         gaussianSigma *= sigmaInterval;
         float[][] nextNextImage = ImageDataUtil.gaussianBlurGreyscaled(imageData, gaussianSigma);
 
+        saveImageFloat(imageData, "ComputedGreyscaleImage_prev_"+ octaveIndex +".png");
+        saveImageFloat(currentImage, "ComputedGreyscaleImage_curr_"+ octaveIndex +".png");
+        saveImageFloat(nextImage, "ComputedGreyscaleImage_next_"+ octaveIndex +".png");
+        saveImageFloat(nextNextImage, "ComputedGreyscaleImage_nextNext_"+ octaveIndex +".png");
+
         float[][] previousDoGImage = ImageDataUtil.subtractImages(currentImage, imageData);
+        previousDoGImage = normalizeDoGMinMax(previousDoGImage);
         float[][] currentDoGImage = ImageDataUtil.subtractImages(nextImage, currentImage);
+        currentDoGImage = normalizeDoGMinMax(currentDoGImage);
         float[][] nextDoGImage = ImageDataUtil.subtractImages(nextNextImage, nextImage);
+        nextDoGImage = normalizeDoGMinMax(nextDoGImage);
+
+        saveImageFloat(previousDoGImage, "ComputedDoGImage_prev_"+ octaveIndex +".png");
+        saveImageFloat(currentDoGImage, "ComputedDoGImage_curr_"+ octaveIndex +".png");
+        saveImageFloat(nextDoGImage, "ComputedDoGImage_next_"+ octaveIndex +".png");
 
         ArrayList<Keypoint> octaveKeypoints = new ArrayList<>();
 
@@ -127,4 +139,69 @@ public class GaussianProcessor {
         return octaves;
     }
 
+
+    public static void saveImageFloat(float[][] imageData, String filePath) {
+        if (imageData == null || imageData.length == 0 || imageData[0].length == 0) {
+            throw new IllegalArgumentException("Invalid image data");
+        }
+
+        int width = imageData.length;
+        int height = imageData[0].length;
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int pixelValue = Math.round(imageData[x][y]);
+                //pixelValue = (pixelValue + 1) * 128;
+                int rgb = (pixelValue << 16) | (pixelValue << 8) | pixelValue;
+                image.setRGB(x, y, rgb);
+            }
+        }
+
+        try {
+            File outputFile = new File(filePath);
+            ImageIO.write(image, "png", outputFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static float[][] normalizeDoGMinMax(float[][] dogImage) {
+        int width = dogImage.length;
+        int height = dogImage[0].length;
+        float[][] normalizedDoG = new float[width][height];
+
+        float sum = 0;
+        float sumOfSquares = 0;
+
+        // Calculate mean and standard deviation
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                float val = dogImage[x][y];
+                sum += val;
+                sumOfSquares += val * val;
+            }
+        }
+
+        float mean = sum / (width * height);
+        float stdDev = (float) Math.sqrt((sumOfSquares / (width * height)) - (mean * mean));
+
+        // Normalize using z-score
+        if (stdDev != 0) {
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    normalizedDoG[x][y] = (dogImage[x][y] - mean) / stdDev;
+                }
+            }
+        } else {
+            // Handle the case where stdDev is 0 (all values are the same)
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    normalizedDoG[x][y] = 0f;
+                }
+            }
+        }
+
+        return normalizedDoG;
+    }
 }
