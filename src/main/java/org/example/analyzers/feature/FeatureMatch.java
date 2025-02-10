@@ -11,4 +11,16 @@ public class FeatureMatch {
         this.keypoint2 = keypoint2;
         this.distance = distance;
     }
+
+    public Keypoint getKeypoint1() {
+        return keypoint1;
+    }
+
+    public Keypoint getKeypoint2() {
+        return keypoint2;
+    }
+
+    public double getDistance() {
+        return distance;
+    }
 }

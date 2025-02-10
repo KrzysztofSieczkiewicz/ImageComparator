@@ -5,8 +5,9 @@ import org.example.utils.VectorUtil;
 // TODO: parametrize bins size?
 public class DescriptorGenerator {
     /**
-     * Generates 128D descriptor vector by creating magnitudes histogram in different orientations.
+     * Generates 128D normalized descriptor vector by creating magnitudes histogram in different orientations.
      * Then concatenates 16 histograms into single 128D vector. Size of each cell is determined dynamically.
+     * Descriptor is normalized, clamped and normalized again.
      *
      * @param gradients matrix of gradient values {dx,dy} of pixels around described keypoint
      *

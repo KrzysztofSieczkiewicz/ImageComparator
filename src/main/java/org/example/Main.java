@@ -1,7 +1,6 @@
 package org.example;
 
-import org.example.analyzers.feature.Keypoint;
-import org.example.analyzers.feature.MatrixSIFTAnalyzer;
+import org.example.analyzers.feature.*;
 import org.example.utils.ImageDataUtil;
 import org.example.utils.ImageUtil;
 import org.example.utils.accessor.ImageAccessor;
@@ -27,7 +26,7 @@ public class Main {
         BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
         BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
 
-        //testImage = ImageUtil.resize(testImage, 1024, 512);
+        BufferedImage testImage2 = ImageUtil.resize(testImage, 1024, 512);
 //        File file = new File("src/baseImage.png");
 //        try {
 //            ImageIO.write(testImage, "PNG", file);
@@ -46,25 +45,17 @@ public class Main {
         long start = System.nanoTime();
 
         ArrayList<Keypoint> keypoints1 = new MatrixSIFTAnalyzer().computeImageKeypoints(testImage);
-        ArrayList<Keypoint> keypoints2 = new MatrixSIFTAnalyzer().computeImageKeypoints(testImage);
+        ArrayList<Keypoint> keypoints2 = new MatrixSIFTAnalyzer().computeImageKeypoints(testImage2);
 
-        System.out.println(keypoints1.size());
+        BufferedImage result = new FeatureVisualizer().drawKeypoints(testImage, keypoints1);
+        File keypointsOutputFile = new File("keypoints_output.png");
+        ImageIO.write(result, "png", keypointsOutputFile);
 
-        int num=0;
-        for (int i=0; i<keypoints1.size(); i++) {
-            if (keypoints1.get(i).getOctaveIndex() == 3) {
-                num++;
-            }
-        }
-        System.out.println("Octave: " + num);
+        ArrayList<FeatureMatch> matches = new SIFTMatcher().matchKeypoints(keypoints1, keypoints2, 0.8f);
 
-
-//        Graph<Keypoint, Double> test = new SIFTMatcher().matchKeypoints(keypoints1, keypoints2);
-//
-//        test.getEdges().forEach( edge -> {
-//                System.out.println("Edge: " + edge.toString());
-//            }
-//        );
+        BufferedImage matchingResult = new FeatureVisualizer().drawMatches(testImage, testImage2, keypoints1, keypoints2, matches);
+        File outputFile = new File("matches_output.png");
+        ImageIO.write(matchingResult, "png", outputFile);
 
 
         long end = System.nanoTime();

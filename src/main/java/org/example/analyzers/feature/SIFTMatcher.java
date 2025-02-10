@@ -1,33 +1,38 @@
 package org.example.analyzers.feature;
 
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.SparseMultigraph;;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class SIFTMatcher {
-    /**
-     * Distance above which keypoint is not considered matching
-     */
-    private final double distanceThreshold = 50.0;
 
-    public Graph<Keypoint, Double> matchKeypoints(List<Keypoint> keypoints1, List<Keypoint> keypoints2) {
-        List<FeatureMatch> matches = new ArrayList<>();
+    public ArrayList<FeatureMatch> matchKeypoints(List<Keypoint> keypoints1, List<Keypoint> keypoints2, float ratioThreshold) {
+        ArrayList<FeatureMatch> matches = new ArrayList<>();
 
-        Graph<Keypoint, Double> matchingGraph = new SparseMultigraph<>();
+        for (Keypoint keypoint1: keypoints1) {
+            Keypoint bestMatch = null;
+            double bestDistance = Double.MAX_VALUE;
+            double secondBestDistance = Double.MAX_VALUE;
 
-        for (Keypoint k1 : keypoints1) {
-            for (Keypoint k2 : keypoints2) {
-                double distance = calculateEuclideanDistance(k1.getDescriptor(), k2.getDescriptor());
-                if (distance < distanceThreshold) {
-                    matchingGraph.addVertex(k1);
-                    matchingGraph.addVertex(k2);
-                    matchingGraph.addEdge(distance, k1, k2); // Distance is the edge
+            for (Keypoint keypoint2: keypoints2) {
+                double distance = calculateEuclideanDistance(
+                        keypoint1.getDescriptor(),
+                        keypoint2.getDescriptor() );
+
+                if (distance < bestDistance) {
+                    secondBestDistance = bestDistance;
+                    bestDistance = distance;
+                    bestMatch = keypoint2;
+                } else if (distance < secondBestDistance) {
+                    secondBestDistance = distance;
                 }
             }
+
+            if (bestDistance < ratioThreshold * secondBestDistance) {
+                matches.add( new FeatureMatch(keypoint1, bestMatch, bestDistance) );
+            }
         }
-        return matchingGraph;
+
+        return matches;
     }
 
     private double calculateEuclideanDistance(float[] descriptor1, float[] descriptor2) {

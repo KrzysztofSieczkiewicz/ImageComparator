@@ -6,6 +6,7 @@ public class Keypoint {
     private float subPixelX, subPixelY;
     private float[] descriptor;
 
+    // TODO: when creating keypoints - multiply their position using proper octave scaling (downscaling factor)
     public Keypoint(int octaveIndex, float subPixelX, float subPixelY, float[] descriptor) {
         this.octaveIndex = octaveIndex;
         this.subPixelX = subPixelX;
