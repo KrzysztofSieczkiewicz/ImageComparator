@@ -13,7 +13,7 @@ public class ImageDataUtil {
         float[][] floatMatrix = new float[width][height];
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
-                floatMatrix[x][y] = (float) matrix[x][y];
+                floatMatrix[x][y] = matrix[x][y] & 0xFF;  // Extract only the grayscale
             }
         }
 
@@ -67,6 +67,7 @@ public class ImageDataUtil {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 result[x][y] = minuendImage[x][y] - subtrahendImage[x][y];
+                result[x][y] = result[x][y] * 10 + 128;
             }
         }
 
@@ -221,8 +222,8 @@ public class ImageDataUtil {
         // First pass: horizontal blur
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                double pixelValue = 0;
-                double weightSum = 0;
+                float pixelValue = 0;
+                float weightSum = 0;
 
                 for (int kx = -halfKernelSize; kx <= halfKernelSize; kx++) {
                     int mirroredX = Math.max(0, Math.min(x + kx, width - 1));
@@ -233,15 +234,15 @@ public class ImageDataUtil {
                     weightSum += kernelValue;
                 }
 
-                blurredImageData[x][y] = (float) (pixelValue / weightSum);
+                blurredImageData[x][y] = pixelValue / weightSum;
             }
         }
         // Second pass: vertical blur
         float[][] tempImageData = new float[width][height];
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                double pixelValue = 0;
-                double weightSum = 0;
+                float pixelValue = 0;
+                float weightSum = 0;
 
                 for (int ky = -halfKernelSize; ky <= halfKernelSize; ky++) {
                     int mirroredY = Math.max(0, Math.min(y + ky, height - 1));
@@ -252,7 +253,7 @@ public class ImageDataUtil {
                     weightSum += kernelValue;
                 }
 
-                tempImageData[x][y] = (float) (pixelValue / weightSum);
+                tempImageData[x][y] = pixelValue / weightSum;
             }
         }
 
@@ -343,22 +344,21 @@ public class ImageDataUtil {
      * @return awt Kernel
      */
     private static float[] generateGaussianKernelData(double sigma) {
-        int size = (int) (sigma * 6);
-        if (size % 2 == 0) size++;
+        int size = 2 * (int) Math.ceil(3 * sigma) + 1;  // Ensures odd size
+        // Ensure odd size
 
-        float[] kernelData = new float[size * size];
+        float[] kernelData = new float[size];
         int halfSize = size / 2;
         float sum = 0;
 
-        for (int x=-halfSize; x<=halfSize; x++) {
-            for (int y =-halfSize; y<=halfSize; y++) {
-                float value = (float) ((1 / (2 * Math.PI * sigma*sigma)) * Math.exp(-(x*x + y*y) / (2 * sigma*sigma)));
-                kernelData[(x+halfSize)*size + (y+halfSize)] = value;
-                sum += value;
-            }
+        for (int x = -halfSize; x <= halfSize; x++) {
+            float value = (float) ((1 / (Math.sqrt(2 * Math.PI) * sigma)) * Math.exp(-(x * x) / (2 * sigma * sigma)));
+            kernelData[x + halfSize] = value;
+            sum += value;
         }
 
-        for (int i=0; i<kernelData.length; i++) {
+        // Normalize the kernel
+        for (int i = 0; i < size; i++) {
             kernelData[i] /= sum;
         }
 
@@ -381,6 +381,27 @@ public class ImageDataUtil {
                 int greyscaleValue = (int) (0.299 * red + 0.587 * green + 0.114 * blue);
 
                 greyscaleImage[x][y] = greyscaleValue;
+            }
+        }
+
+        return greyscaleImage;
+    }
+
+    public static float[][] greyscaleToFloat(int[][] image) {
+        int width = image.length;
+        int height = image[0].length;
+        float[][] greyscaleImage = new float[width][height];
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int pixel = image[x][y];
+
+                int red = getRedChannel(pixel);
+                int green = getGreenChannel(pixel);
+                int blue = getBlueChannel(pixel);
+                float greyscaleValue = (float) (0.299 * red + 0.587 * green + 0.114 * blue);
+
+                greyscaleImage[x][y] = Math.max(0, Math.min(255, greyscaleValue));
             }
         }
 

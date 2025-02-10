@@ -3,16 +3,14 @@ package org.example.analyzers.feature;
 import org.example.utils.accessor.ImageAccessor;
 import org.example.utils.ImageDataUtil;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class MatrixSIFTAnalyzer {
-    private final MatrixGaussianHelper gaussianHelper;
-
-    /**
-     * Image size below which octaves won't be created
-     */
-    int minImageSizeThreshold = 32;
+    private final GaussianProcessor gaussianProcessor;
 
     /**
      * How many scales should be generated per one octave
@@ -25,38 +23,30 @@ public class MatrixSIFTAnalyzer {
     double baseSigma = 1.6;
 
     /**
-     * Downsampling factor by which the image is reduced between octaves
+     * Image size below which octaves won't be created
+     */
+    int minImageSizeThreshold = 32;
+
+    /**
+     * Downscaling factor by which the image is reduced between octaves
      */
     int downscalingFactor = 2;
 
 
     public MatrixSIFTAnalyzer() {
-        this.gaussianHelper = new MatrixGaussianHelper(baseSigma, scalesAmount);
+        this.gaussianProcessor = new GaussianProcessor(baseSigma, scalesAmount, downscalingFactor, minImageSizeThreshold);
     }
 
-
-    public void computeImageKeypoints(BufferedImage image) {
+    public ArrayList<Keypoint> computeImageKeypoints(BufferedImage image) {
         ImageAccessor accessor = ImageAccessor.create(image);
         int[][] imageData = accessor.getPixels();
 
-        int[][] greyscaleImageData = ImageDataUtil.greyscale(imageData);
+        float[][] greyscaleImageData = ImageDataUtil.greyscaleToFloat(imageData);
 
-        int octavesAmount = calculateOctavesNum(greyscaleImageData);
-
-        ArrayList<Keypoint> keypoints = gaussianHelper.processImageKeypoints(greyscaleImageData, octavesAmount, downscalingFactor);
+        return gaussianProcessor.processImageKeypoints(greyscaleImageData);
     }
 
-    public int calculateOctavesNum(int[][] imageData) {
-        int currWidth = imageData.length;
-        int currHeight = imageData[0].length;
+    public void compareKeypoints(ArrayList<Keypoint> main, ArrayList<Keypoint> checked) {
 
-        int octaves = 0;
-        while((currWidth/downscalingFactor >= minImageSizeThreshold) && (currHeight/downscalingFactor >= minImageSizeThreshold)) {
-            octaves++;
-            currWidth /= downscalingFactor;
-            currHeight /= downscalingFactor;
-        }
-
-        return octaves;
     }
 }
