@@ -72,14 +72,14 @@ public class GaussianProcessor {
      * @return ArrayList with all keypoints found in all scales within specified octave
      */
     private ArrayList<Keypoint> processOctave(float[][] imageData, int octaveIndex) {
+
+        imageData = ImageDataUtil.gaussianBlurGreyscaled(imageData, baseSigma);
+
         double gaussianSigma = baseSigma;
-        System.out.println(gaussianSigma);
         float[][] currentImage = ImageDataUtil.gaussianBlurGreyscaled(imageData, gaussianSigma);
         gaussianSigma *= sigmaInterval;
-        System.out.println(gaussianSigma);
         float[][] nextImage = ImageDataUtil.gaussianBlurGreyscaled(imageData, gaussianSigma);
         gaussianSigma *= sigmaInterval;
-        System.out.println(gaussianSigma);
         float[][] nextNextImage = ImageDataUtil.gaussianBlurGreyscaled(imageData, gaussianSigma);
 
         saveImageFloat(imageData, "ComputedGreyscaleImage_prev_"+ octaveIndex +".png");
@@ -88,11 +88,11 @@ public class GaussianProcessor {
         saveImageFloat(nextNextImage, "ComputedGreyscaleImage_nextNext_"+ octaveIndex +".png");
 
         float[][] previousDoGImage = ImageDataUtil.subtractImages(currentImage, imageData);
-        //previousDoGImage = normalizeDoGMinMax(previousDoGImage);
+        previousDoGImage = normalizeDoGMinMax(previousDoGImage);
         float[][] currentDoGImage = ImageDataUtil.subtractImages(nextImage, currentImage);
-        //currentDoGImage = normalizeDoGMinMax(currentDoGImage);
+        currentDoGImage = normalizeDoGMinMax(currentDoGImage);
         float[][] nextDoGImage = ImageDataUtil.subtractImages(nextNextImage, nextImage);
-        //nextDoGImage = normalizeDoGMinMax(nextDoGImage);
+        nextDoGImage = normalizeDoGMinMax(nextDoGImage);
 
         saveImageFloat(previousDoGImage, "ComputedDoGImage_prev_"+ octaveIndex +".png");
         saveImageFloat(currentDoGImage, "ComputedDoGImage_curr_"+ octaveIndex +".png");
@@ -104,7 +104,6 @@ public class GaussianProcessor {
             octaveKeypoints.addAll( keypointDetector.detectImageKeypoints(octaveIndex, previousDoGImage, currentDoGImage, nextDoGImage) );
 
             gaussianSigma *= sigmaInterval;
-            System.out.println(gaussianSigma);
             nextImage = nextNextImage;
             nextNextImage = ImageDataUtil.gaussianBlurGreyscaled(imageData, gaussianSigma);
 
@@ -113,6 +112,7 @@ public class GaussianProcessor {
             previousDoGImage = currentDoGImage;
             currentDoGImage = nextDoGImage;
             nextDoGImage = ImageDataUtil.subtractImages(nextNextImage, nextImage);
+            nextDoGImage = normalizeDoGMinMax(nextDoGImage);
 
             saveImageFloat(nextDoGImage, "ComputedDoGImage_nextNextImage_"+ octaveIndex+scale +".png");
         }
