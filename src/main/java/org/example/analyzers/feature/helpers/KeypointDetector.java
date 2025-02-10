@@ -3,10 +3,6 @@ package org.example.analyzers.feature.helpers;
 import org.example.analyzers.common.PixelPoint;
 import org.example.analyzers.feature.Keypoint;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 public class KeypointDetector {
     private final KeypointRefiner refiner;
@@ -49,10 +45,6 @@ public class KeypointDetector {
                 currentScaleData,
                 nextScaleData
         );
-
-//        saveImage(previousScaleData, "Keypoints_prev_" + octaveIndex + ".png");
-//        saveImage(currentScaleData, "Keypoints_curr_" + octaveIndex + ".png");
-//        saveImage(nextScaleData, "Keypoints_next_" + octaveIndex + ".png");
 
         ArrayList<PixelPoint> potentialCandidates = findLocalExtremes(scalesTriplet);
         if (potentialCandidates.isEmpty()) return imageKeypoints;
@@ -148,31 +140,4 @@ public class KeypointDetector {
 
         return keypointCandidates;
     }
-
-
-    public static void saveImage(float[][] imageData, String filePath) {
-        if (imageData == null || imageData.length == 0 || imageData[0].length == 0) {
-            throw new IllegalArgumentException("Invalid image data");
-        }
-
-        int width = imageData.length;
-        int height = imageData[0].length;
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                int pixelValue = (int) (imageData[x][y]);
-                int rgb = (pixelValue << 16) | (pixelValue << 8) | pixelValue;
-                image.setRGB(x, y, rgb);
-            }
-        }
-
-        try {
-            File outputFile = new File(filePath);
-            ImageIO.write(image, "png", outputFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 }

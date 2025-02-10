@@ -1,15 +1,12 @@
 package org.example;
 
-import edu.uci.ics.jung.graph.Graph;
 import org.example.analyzers.feature.Keypoint;
 import org.example.analyzers.feature.MatrixSIFTAnalyzer;
-import org.example.analyzers.feature.SIFTMatcher;
 import org.example.utils.ImageDataUtil;
 import org.example.utils.ImageUtil;
 import org.example.utils.accessor.ImageAccessor;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +27,7 @@ public class Main {
         BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
         BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
 
-//        testImage = ImageUtil.resize(testImage, 1024, 512);
+        //testImage = ImageUtil.resize(testImage, 1024, 512);
 //        File file = new File("src/baseImage.png");
 //        try {
 //            ImageIO.write(testImage, "PNG", file);
@@ -52,6 +49,14 @@ public class Main {
         ArrayList<Keypoint> keypoints2 = new MatrixSIFTAnalyzer().computeImageKeypoints(testImage);
 
         System.out.println(keypoints1.size());
+
+        int num=0;
+        for (int i=0; i<keypoints1.size(); i++) {
+            if (keypoints1.get(i).getOctaveIndex() == 3) {
+                num++;
+            }
+        }
+        System.out.println("Octave: " + num);
 
 
 //        Graph<Keypoint, Double> test = new SIFTMatcher().matchKeypoints(keypoints1, keypoints2);
@@ -116,14 +121,17 @@ public class Main {
         }
 
         for (Keypoint k: keypoints) {
-            if (k.getOctaveIndex() > 0) continue;
+            //if (k.getOctaveIndex() != 3) continue;
             if((int)k.getSubPixelX() > image.getWidth()-1 || (int)k.getSubPixelX() < 0) continue;
             if((int)k.getSubPixelY() > image.getHeight()-1 || (int)k.getSubPixelY() < 0) continue;
 
-            int rgb = (250 << 16) | (0 << 8) | 0;
+            int rgb = (255 << 16) | (0 << 8) | 0;
 
-            int x = Math.round(k.getSubPixelX());
-            int y = Math.round(k.getSubPixelY());
+            int tempX = Math.round(k.getSubPixelX());
+            int tempY = Math.round(k.getSubPixelY());
+
+            int x = tempX * (int) Math.pow(2, k.getOctaveIndex());
+            int y = tempY * (int) Math.pow(2, k.getOctaveIndex());
 
             try {
                 image.setRGB(x, y, rgb);
