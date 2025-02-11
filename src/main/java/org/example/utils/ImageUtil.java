@@ -41,21 +41,30 @@ public class ImageUtil {
      * @param image BufferedImage to be converted
      * @return new BuffedImage containing image in greyscale color space
      */
+//    public static BufferedImage greyscale(BufferedImage image) {
+//        BufferedImage greyscaleImg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+//        ImageAccessor imageAccessor = ImageAccessor.create(image);
+//        ImageAccessor greyscaleAccessor = ImageAccessor.create(greyscaleImg);
+//
+//        for (int y = 0; y < image.getHeight(); y++) {
+//            for (int x = 0; x < image.getWidth(); x++) {
+//                int grey = (int) (imageAccessor.getRed(x,y) * 0.21 +
+//                        imageAccessor.getGreen(x,y) * 0.72 +
+//                        imageAccessor.getBlue(x,y) * 0.07);
+//
+//                greyscaleAccessor.setPixel(x, y, 255, grey, grey, grey);
+////                greyscaleAccessor.setOpaquePixel(x, y, grey, grey, grey);
+//            }
+//        }
+//
+//        return greyscaleImg;
+//    }
+
     public static BufferedImage greyscale(BufferedImage image) {
         BufferedImage greyscaleImg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-        ImageAccessor imageAccessor = ImageAccessor.create(image);
-        ImageAccessor greyscaleAccessor = ImageAccessor.create(greyscaleImg);
-
-        for (int y = 0; y < image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
-                int r = (int) (imageAccessor.getRed(x,y) * 0.21);
-                int g = (int) (imageAccessor.getGreen(x,y) * 0.72);
-                int b = (int) (imageAccessor.getBlue(x,y) * 0.07);
-
-                greyscaleAccessor.setOpaquePixel(x, y, r, g, b);
-            }
-        }
-
+        Graphics g = greyscaleImg.getGraphics();
+        g.drawImage(image, 0, 0, null);
+        g.dispose();
         return greyscaleImg;
     }
 

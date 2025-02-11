@@ -3,14 +3,12 @@ package org.example.analyzers.feature;
 import org.example.utils.accessor.ImageAccessor;
 import org.example.utils.ImageDataUtil;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class MatrixSIFTAnalyzer {
     private final GaussianProcessor gaussianProcessor;
+    private final SIFTMatcher siftMatcher;
 
     /**
      * How many scales should be generated per one octave
@@ -35,6 +33,7 @@ public class MatrixSIFTAnalyzer {
 
     public MatrixSIFTAnalyzer() {
         this.gaussianProcessor = new GaussianProcessor(baseSigma, scalesAmount, downscalingFactor, minImageSizeThreshold);
+        this.siftMatcher = new SIFTMatcher();
     }
 
     public ArrayList<Keypoint> computeImageKeypoints(BufferedImage image) {
@@ -44,6 +43,13 @@ public class MatrixSIFTAnalyzer {
         float[][] greyscaleImageData = ImageDataUtil.greyscaleToFloat(imageData);
 
         return gaussianProcessor.processImageKeypoints(greyscaleImageData);
+    }
+
+    public ArrayList<FeatureMatch> matchKeypoints(ArrayList<Keypoint> baseKeypoints, ArrayList<Keypoint> comparedKeypoints) {
+        ArrayList<FeatureMatch> matches = siftMatcher.matchKeypoints(baseKeypoints, comparedKeypoints, 0.8f);
+
+
+        return matches;
     }
 
     public void compareKeypoints(ArrayList<Keypoint> main, ArrayList<Keypoint> checked) {

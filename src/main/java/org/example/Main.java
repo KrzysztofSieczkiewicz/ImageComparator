@@ -17,22 +17,28 @@ public class Main {
     //  check resize
     //  check gaussian
 
-    // TODO: Comparison should  be accessed via separate ComparatorObjects
-    //  ORBComparator, HashComparator and DirectComparator, all should be able to accept Config and Images
-    //  Excluded areas and should be accepted by "compare()" method
-
     public static void main(String[] args) throws IOException {
         BufferedImage testImage = ImageIO.read(new File("src/TestImage.jpg"));
         BufferedImage actualImage = ImageIO.read(new File("src/image3.png"));
         BufferedImage checkedImage = ImageIO.read(new File("src/image4.png"));
 
-        BufferedImage testImage2 = ImageUtil.resize(testImage, 1024, 512);
-//        File file = new File("src/baseImage.png");
-//        try {
-//            ImageIO.write(testImage, "PNG", file);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
+        // TODO: clean this up - it starts to get extremely cluttered
+        //  also - add a config param for SIFTMatcher to discard matches above certain distance
+        //  thoroughly check how util methods are performing and if they work accurately
+        //  then, check all the methods that process images for SIFT and especially blur/subtract images
+        //  it may strongly affect comparison stability
+
+        testImage = actualImage;
+
+        BufferedImage testImage2 = testImage;
+        //BufferedImage testImage2 = ImageUtil.resize(testImage, 924, 512);
+        testImage2 = ImageUtil.greyscale(testImage2);
+        File file = new File("src/baseImage.png");
+        try {
+            ImageIO.write(testImage2, "PNG", file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
 //        ImageAccessor testImageAccessor = ImageAccessor.create(testImage);
 //        int[][] pixels = testImageAccessor.getPixels();
@@ -47,13 +53,18 @@ public class Main {
         ArrayList<Keypoint> keypoints1 = new MatrixSIFTAnalyzer().computeImageKeypoints(testImage);
         ArrayList<Keypoint> keypoints2 = new MatrixSIFTAnalyzer().computeImageKeypoints(testImage2);
 
-        BufferedImage result = new FeatureVisualizer().drawKeypoints(testImage, keypoints1);
+        System.out.println(keypoints1.size());
+        System.out.println(keypoints2.size());
+
+        BufferedImage result = new SIFTVisualizer().drawKeypoints(testImage, keypoints1);
         File keypointsOutputFile = new File("keypoints_output.png");
         ImageIO.write(result, "png", keypointsOutputFile);
 
         ArrayList<FeatureMatch> matches = new SIFTMatcher().matchKeypoints(keypoints1, keypoints2, 0.8f);
 
-        BufferedImage matchingResult = new FeatureVisualizer().drawMatches(testImage, testImage2, keypoints1, keypoints2, matches);
+        System.out.println(matches.size());
+
+        BufferedImage matchingResult = new SIFTVisualizer().drawMatches(testImage, testImage2, matches);
         File outputFile = new File("matches_output.png");
         ImageIO.write(matchingResult, "png", outputFile);
 

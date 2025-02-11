@@ -3,6 +3,7 @@ package org.example.analyzers.feature;
 import org.example.analyzers.feature.helpers.KeypointDetector;
 import org.example.utils.ImageDataUtil;
 
+import java.awt.*;
 import java.util.ArrayList;
 
 public class GaussianProcessor {
