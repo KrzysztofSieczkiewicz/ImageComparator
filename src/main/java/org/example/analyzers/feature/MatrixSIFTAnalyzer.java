@@ -33,7 +33,7 @@ public class MatrixSIFTAnalyzer {
 
     public MatrixSIFTAnalyzer() {
         this.gaussianProcessor = new GaussianProcessor(baseSigma, scalesAmount, downscalingFactor, minImageSizeThreshold);
-        this.siftMatcher = new SIFTMatcher(150);
+        this.siftMatcher = new SIFTMatcher(150, 0.8f);
     }
 
     public ArrayList<Keypoint> computeImageKeypoints(BufferedImage image) {
@@ -45,14 +45,10 @@ public class MatrixSIFTAnalyzer {
         return gaussianProcessor.processImageKeypoints(greyscaleImageData);
     }
 
-    public ArrayList<FeatureMatch> matchKeypoints(ArrayList<Keypoint> baseKeypoints, ArrayList<Keypoint> comparedKeypoints) {
-        ArrayList<FeatureMatch> matches = siftMatcher.matchKeypoints(baseKeypoints, comparedKeypoints, 0.8f);
+    public ArrayList<FeatureMatch> matchKeypoints(ArrayList<Keypoint> base, ArrayList<Keypoint> checked) {
+        ArrayList<FeatureMatch> matches = siftMatcher.matchKeypoints(base, checked);
 
 
         return matches;
-    }
-
-    public void compareKeypoints(ArrayList<Keypoint> main, ArrayList<Keypoint> checked) {
-
     }
 }

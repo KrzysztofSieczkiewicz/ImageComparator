@@ -2,7 +2,7 @@ package org.example.utils;
 
 import org.example.utils.accessor.ImageAccessor;
 
-import java.awt.*;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
@@ -58,14 +58,6 @@ public class ImageUtil {
 
         return greyscaleImg;
     }
-//
-//    public static BufferedImage greyscale(BufferedImage image) {
-//        BufferedImage greyscaleImg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-//        Graphics g = greyscaleImg.getGraphics();
-//        g.drawImage(image, 0, 0, null);
-//        g.dispose();
-//        return greyscaleImg;
-//    }
 
     /**
      * Blurs image using convolve op with preset kernel.

@@ -17,7 +17,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         BufferedImage testImage = ImageIO.read(new File("src/TestImage.jpg"));
-        BufferedImage testImage2 = ImageUtil.resize(testImage, testImage.getWidth()-50, testImage.getHeight()-100);
+        BufferedImage testImage2 = ImageUtil.resize(testImage, 1024, 512);
 
         File file = new File("src/baseImage.png");
         File file2 = new File("src/baseImage2.png");
@@ -29,11 +29,9 @@ public class Main {
         //  it may strongly affect comparison stability
 
         // TODO: next step - increase keypoint stability
-        //  2. Consider computing DoG images from more than 2 scales
+        //  2. Allow computing DoG images from more than 2 scales
         //  4. Check if subpixel position calculation is correct and if it is stable - maybe better interpolation methods?
         //  now minor, but maybe important:
-        //  1. Make sure that greyscale methods are properly calculating the greyscale
-        //  2. In SIFTMatcher - split methods - one for checking keypoints against neighbours, another - for additional check that keypoints are in the same or neighbouring scale
 
         long start = System.nanoTime();
 
@@ -46,7 +44,7 @@ public class Main {
         File keypointsOutputFile = new File("keypoints_output.png");
         ImageIO.write(result, "png", keypointsOutputFile);
 
-        ArrayList<FeatureMatch> matches = new SIFTMatcher(150).matchKeypoints(keypoints1, keypoints2, 0.8f);
+        ArrayList<FeatureMatch> matches = new SIFTMatcher(150f, 0.8f).matchKeypoints(keypoints1, keypoints2);
         System.out.println(matches.size());
 
         BufferedImage matchingResult = new SIFTVisualizer().drawMatches(testImage, testImage2, matches);
