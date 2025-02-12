@@ -2,8 +2,11 @@ package org.example.analyzers.feature.helpers;
 
 import org.example.analyzers.common.PixelPoint;
 import org.example.analyzers.feature.Keypoint;
+import org.example.config.SobelKernelSize;
+import org.example.utils.MatrixUtil;
 
 import java.util.ArrayList;
+
 public class KeypointDetector {
     private final KeypointRefiner refiner;
 
@@ -30,9 +33,24 @@ public class KeypointDetector {
      */
     int baseNeighboursWindowSize = 16;
 
+    /**
+     * How large should the window for local extreme search be around each point.
+     */
+    int localExtremeRadius = 1;
+
+    /**
+     * Size of the Sobel kernel used for 2nd order derivatives approximation
+     */
+    SobelKernelSize sobelKernelSize = SobelKernelSize.SOBEL5x5;
+
+
+    private final int[][] relativeNeighboursCoordinates;
+
 
     public KeypointDetector() {
-        this.refiner = new KeypointRefiner(offsetMagnitudeThreshold, keypointContrastThreshold, keypointEdgeResponseRatio);
+        this.refiner = new KeypointRefiner(offsetMagnitudeThreshold, keypointContrastThreshold, keypointEdgeResponseRatio, sobelKernelSize);
+
+        this.relativeNeighboursCoordinates = generateWindowRelativeCoordinates(localExtremeRadius);
     }
 
     // TODO: EITHER REMOVE ScalesTriplet OR INITIALIZE IT IN THE GAUSSIAN PROCESSOR TO PASS IT AS AN ARG
@@ -104,18 +122,22 @@ public class KeypointDetector {
         int rows = currentImage.length;
         int cols = currentImage[0].length;
 
-        int[] dRow = {-1, 1, 0, 0, -1, -1, 1, 1};
-        int[] dCol = {0, 0, -1, 1, -1, 1, -1, 1};
+        int[] dRow = relativeNeighboursCoordinates[0];
+        int[] dCol = relativeNeighboursCoordinates[1];
+        int radius = localExtremeRadius;
 
-        for (int row=1; row<rows-1; row++) {
-            for (int col=1; col<cols-1; col++) {
+//        dRow = new int[]{-1, 1, 0, 0, -1, -1, 1, 1};
+//        dCol = new int[]{0, 0, -1, 1, -1, 1, -1, 1};
+
+        for (int row=0; row<rows; row++) {
+            for (int col=0; col<cols; col++) {
                 float currentPixel = currentImage[row][col];
                 boolean isMinimum = true;
                 boolean isMaximum = true;
 
                 for (int k=0; k<dRow.length; k++) {
-                    int currRow = row + dRow[k];
-                    int currCol = col + dCol[k];
+                    int currRow = MatrixUtil.safeReflectCoordinate( row + dRow[k], rows );
+                    int currCol = MatrixUtil.safeReflectCoordinate( col + dCol[k], cols );
 
                     float neighbourValue = currentImage[currRow][currCol];
                     if (currentPixel >= neighbourValue) isMinimum = false;
@@ -139,5 +161,28 @@ public class KeypointDetector {
         }
 
         return keypointCandidates;
+    }
+
+    /**
+     * Generates relative coordinates for an n-neighbours radius
+     * @param radius how many neighbours should be added into a window
+     * @return int[2][2*radius+1] {dRows, dCols}
+     */
+    private int[][] generateWindowRelativeCoordinates(int radius) {
+        int size = (2 * radius + 1) * (2 * radius + 1) - 1;
+        int[] dRows = new int[size];
+        int[] dCols = new int[size];
+
+        int index = 0;
+        for (int x=-radius; x<=radius; x++) {
+            for (int y=-radius; y<=radius; y++) {
+                if (x==0 && y==0) continue;
+                dRows[index] = x;
+                dCols[index] = y;
+                index++;
+            }
+        }
+
+        return new int[][]{dRows, dCols};
     }
 }

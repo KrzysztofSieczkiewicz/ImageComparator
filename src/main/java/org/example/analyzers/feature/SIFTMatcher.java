@@ -5,6 +5,15 @@ import java.util.List;
 
 public class SIFTMatcher {
 
+    /**
+     * Threshold above which keypoints won't be matched
+     */
+    private final float distanceThreshold;
+
+    public SIFTMatcher(float distanceThreshold) {
+        this.distanceThreshold = distanceThreshold;
+    }
+
     public ArrayList<FeatureMatch> matchKeypoints(List<Keypoint> keypoints1, List<Keypoint> keypoints2, float ratioThreshold) {
         ArrayList<FeatureMatch> matches = new ArrayList<>();
 
@@ -27,7 +36,8 @@ public class SIFTMatcher {
                 }
             }
 
-            if (bestDistance < ratioThreshold * secondBestDistance) {
+            if (bestDistance < ratioThreshold * secondBestDistance &&
+                bestDistance < distanceThreshold) {
                 matches.add( new FeatureMatch(keypoint1, bestMatch, bestDistance) );
             }
         }

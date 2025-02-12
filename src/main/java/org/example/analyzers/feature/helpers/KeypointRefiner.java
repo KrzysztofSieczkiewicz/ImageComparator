@@ -2,6 +2,7 @@ package org.example.analyzers.feature.helpers;
 
 import org.example.analyzers.common.PixelPoint;
 import org.example.analyzers.feature.Keypoint;
+import org.example.config.SobelKernelSize;
 import org.example.utils.DerivativeUtil;
 import org.example.utils.MatrixUtil;
 import org.example.utils.VectorUtil;
@@ -27,11 +28,19 @@ public class KeypointRefiner {
      */
     private final float edgeResponseThreshold;
 
-    public KeypointRefiner(float magnitudeThreshold, float contrastThreshold, float keypointEdgeResponseRatio) {
+    /**
+     * Size of the Sobel kernel used for 2nd order derivatives approximation
+     */
+    private final SobelKernelSize sobelKernelSize;
+
+    public KeypointRefiner(float magnitudeThreshold, float contrastThreshold, float keypointEdgeResponseRatio, SobelKernelSize sobelKernelSize) {
         this.magnitudeThreshold = magnitudeThreshold;
         this.contrastThreshold = contrastThreshold;
         this.edgeResponseThreshold = ((keypointEdgeResponseRatio+1)*(keypointEdgeResponseRatio+1)) / keypointEdgeResponseRatio;
+        this.sobelKernelSize = sobelKernelSize;
+
         this.descriptorGenerator = new DescriptorGenerator();
+
     }
 
     public Keypoint refineKeypointCandidate(ScalesTriplet scalesTriplet, PixelPoint candidate, int neighboursWindowSize) {
@@ -45,7 +54,9 @@ public class KeypointRefiner {
                 pixelY );
         if ( !isCandidateValid(hessianMatrix) ) return null;
 
-        float[] gradientVector = DerivativeUtil.approximateGradientVector(
+        float[] gradientVector;
+
+        gradientVector = DerivativeUtil.approximateGradientVector(
                 scalesTriplet.getPreviousScale(),
                 scalesTriplet.getCurrentScale(),
                 scalesTriplet.getNextScale(),
@@ -71,10 +82,18 @@ public class KeypointRefiner {
      * @return float[][] Hessian matrix
      */
     private float[][] calculateKeypointHessian(ScalesTriplet scalesTriplet, int pixelX, int pixelY) {
-        float[] spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives(
-                scalesTriplet.getCurrentScale(),
-                pixelX,
-                pixelY );
+        float[] spaceDerivatives;
+        if (sobelKernelSize.equals(SobelKernelSize.SOBEL3x3)) {
+            spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives3x3(
+                    scalesTriplet.getCurrentScale(),
+                    pixelX,
+                    pixelY );
+        } else {
+            spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives5x5(
+                    scalesTriplet.getCurrentScale(),
+                    pixelX,
+                    pixelY );
+        }
 
         float[] scaleDerivatives = DerivativeUtil.approximateScaleDerivatives(
                 scalesTriplet.getPreviousScale(),
@@ -155,7 +174,7 @@ public class KeypointRefiner {
         int radius = windowSize / 2;
         for (int i=-radius; i<radius; i++) {
             for (int j = -radius; j < radius; j++) {
-                localGradients[i+radius][j+radius] = DerivativeUtil.approximateGradientVector(imageData, x+i, y+j);
+                localGradients[i + radius][j + radius] = DerivativeUtil.approximateGradientVector(imageData, x + i, y + j);
             }
         }
         return localGradients;

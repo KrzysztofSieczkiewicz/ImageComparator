@@ -14,26 +14,51 @@ public class DerivativeUtil {
             { 1,  2,  1}
     };
 
-    private static int[][] sobelDxx = {
+
+    private static int[][] sobel3x3Dxx = {
             { 1, -2,  1},
             { 2, -4,  2},
             { 1, -2,  1}
     };
 
-    private static int[][] sobelDyy = {
+    private static int[][] sobel5x5Dxx = {
+            { 1,  0, -2,  0,  1},
+            { 2,  0, -4,  0,  2},
+            { 4,  0, -8,  0,  4},
+            { 2,  0, -4,  0,  2},
+            { 1,  0, -2,  0,  1}
+    };
+
+    private static int[][] sobel3x3Dyy = {
             { 1,  2,  1},
             {-2, -4, -2},
             { 1,  2,  1}
     };
 
-    private static int[][] sobelDxy = {
+    private static int[][] sobel5x5Dyy = {
+            { 1,  2,  4,  2,  1},
+            { 0,  0,  0,  0,  0},
+            {-2, -4, -8, -4, -2},
+            { 0,  0,  0,  0,  0},
+            { 1,  2,  4,  2,  1}
+    };
+
+    private static int[][] sobel3x3Dxy = {
             { 1,  0, -1},
             { 0,  0,  0},
             {-1,  0,  1}
     };
 
+    private static int[][] sobel5x5Dxy = {
+            { 1,  2,  0, -2, -1},
+            { 2,  4,  0, -4, -2},
+            { 0,  0,  0,  0,  0},
+            {-2, -4,  0,  4,  2},
+            {-1, -2,  0,  2,  1}
+    };
+
     /**
-     * Approximates first order derivatives using sobel kernel for image x,y dimensions
+     * Approximates first order derivatives around (X,Y) point using 3x3 sobel kernel
      *
      * @param imageData float[][] matrix with image data
      * @param x pixel width coordinate
@@ -41,20 +66,22 @@ public class DerivativeUtil {
      * @return array containing derivatives {dx, dy}
      */
     public static float[] approximateGradientVector(float[][] imageData, int x, int y) {
-        int range = 1;
-        int width = imageData.length;
-        int height = imageData[0].length;
+
+        int sobelRadius = (sobelDx.length - 1) / 2;
+
+        int maxWidth = imageData.length;
+        int maxHeight = imageData[0].length;
 
         float dx=0, dy=0;
         int safeX, safeY;
 
-        for (int i = -range; i <= range; i++) {
-            for (int j = -range; j <= range; j++) {
-                safeX = MatrixUtil.safeReflectCoordinate(x + i, width);
-                safeY = MatrixUtil.safeReflectCoordinate(y + j, height);
+        for (int i = -sobelRadius; i <= sobelRadius; i++) {
+            for (int j = -sobelRadius; j <= sobelRadius; j++) {
+                safeX = MatrixUtil.safeReflectCoordinate(x + i, maxWidth);
+                safeY = MatrixUtil.safeReflectCoordinate(y + j, maxHeight);
                 float pixel = imageData[safeX][safeY];
-                dx += pixel * sobelDx[i + 1][j + 1];
-                dy += pixel * sobelDy[i + 1][j + 1];
+                dx += pixel * sobelDx[i + sobelRadius][j + sobelRadius];
+                dy += pixel * sobelDy[i + sobelRadius][j + sobelRadius];
             }
         }
 
@@ -62,7 +89,7 @@ public class DerivativeUtil {
     }
 
     /**
-     * Approximates first order derivatives using sobel kernel for space and central difference for scale
+     * Approximates first order derivatives using 3x3 sobel kernel for space and central difference for scale
      *
      * @param previousScale image data from the previous scale (scale-1)
      * @param currentScale main image data (from the current scale)
@@ -79,22 +106,54 @@ public class DerivativeUtil {
     }
 
     /**
-     * Approximates space derivatives (XY) of the image. Uses sobel kernels
+     * Approximates space derivatives (XY) of the image using 3x3 sobel kernels.
      *
      * @param imageData image data
      * @param x pixel width coordinate
      * @param y pixel height coordinate
      * @return array of derivatives {dxx, dxy, dyy}
      */
-    public static float[] approximateSpaceDerivatives(float[][] imageData, int x, int y) {
-        int kernelRadius = 1;
-        float[][] imageSlice = MatrixUtil.getSafeMatrixSlice(imageData, x, y, kernelRadius);
+    public static float[] approximateSpaceDerivatives3x3(float[][] imageData, int x, int y) {
+        return approximateSpaceDerivatives(
+                imageData, x, y,
+                sobel3x3Dxx, sobel3x3Dyy, sobel3x3Dxy
+        );
+    }
+
+    /**
+     * Approximates space derivatives (XY) of the image using 5x5 sobel kernels.
+     *
+     * @param imageData image data
+     * @param x pixel width coordinate
+     * @param y pixel height coordinate
+     * @return array of derivatives {dxx, dxy, dyy}
+     */
+    public static float[] approximateSpaceDerivatives5x5(float[][] imageData, int x, int y) {
+        return approximateSpaceDerivatives(
+          imageData, x, y,
+          sobel5x5Dxx, sobel5x5Dyy, sobel5x5Dxy
+        );
+    }
+
+    /**
+     * Internal method. Approximates space derivatives (XY) of the image using provided kernels.
+     * @return array of derivatives {dxx, dxy, dyy}
+     */
+    private static float[] approximateSpaceDerivatives(
+            float[][] imageData, int x, int y,
+            int[][] sobelDxx, int[][] sobelDyy, int[][] sobelDxy) {
+
+        int maxWidth = imageData.length;
+        int maxHeight = imageData[0].length;
+        int kernelRadius = (sobelDxx.length - 1) / 2;
 
         float dxx = 0, dyy = 0, dxy = 0;
-        for (int dx=-kernelRadius; dx<=kernelRadius; dx++) {
-            for (int dy=-kernelRadius; dy<=kernelRadius; dy++) {
+        for (int dx = -kernelRadius; dx <= kernelRadius; dx++) {
+            for (int dy = -kernelRadius; dy <= kernelRadius; dy++) {
+                int currX = MatrixUtil.safeReflectCoordinate(x + dx, maxWidth);
+                int currY = MatrixUtil.safeReflectCoordinate(y + dy, maxHeight);
 
-                float intensity = imageSlice[dx + kernelRadius][dy + kernelRadius];
+                float intensity = imageData[currX][currY];
 
                 dxx += intensity * sobelDxx[dx + kernelRadius][dy + kernelRadius];
                 dyy += intensity * sobelDyy[dx + kernelRadius][dy + kernelRadius];

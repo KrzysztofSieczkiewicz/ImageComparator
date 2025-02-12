@@ -33,7 +33,7 @@ public class MatrixSIFTAnalyzer {
 
     public MatrixSIFTAnalyzer() {
         this.gaussianProcessor = new GaussianProcessor(baseSigma, scalesAmount, downscalingFactor, minImageSizeThreshold);
-        this.siftMatcher = new SIFTMatcher();
+        this.siftMatcher = new SIFTMatcher(150);
     }
 
     public ArrayList<Keypoint> computeImageKeypoints(BufferedImage image) {

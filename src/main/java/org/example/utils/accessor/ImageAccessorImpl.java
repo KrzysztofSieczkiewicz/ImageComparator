@@ -115,16 +115,6 @@ public abstract class ImageAccessorImpl implements ImageAccessor {
         setBlue(index, b);
     }
 
-    @Override
-    public void setOpaquePixel(int index, int r, int g, int b) {
-        setPixel(index, 255, r, g, b);
-    }
-
-    @Override
-    public void setOpaquePixel(int x, int y, int r, int g, int b) {
-        setPixel(x, y, 255, r, g, b);
-    }
-
 
     /*
         ALPHA CHANNEL
