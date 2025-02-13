@@ -191,5 +191,4 @@ public class DerivativeUtil {
 
         return new float[] { dss, dxs, dys };
     }
-
 }

@@ -11,9 +11,9 @@ public class MatrixSIFTAnalyzer {
     private final SIFTMatcher siftMatcher;
 
     /**
-     * How many scales should be generated per one octave
+     * How many Gaussian images should be generated per one octave
      */
-    int scalesAmount = 2;
+    int imagesPerOctave = 5;
 
     /**
      * Base sigma value determining initial image blur
@@ -32,7 +32,7 @@ public class MatrixSIFTAnalyzer {
 
 
     public MatrixSIFTAnalyzer() {
-        this.gaussianProcessor = new GaussianProcessor(baseSigma, scalesAmount, downscalingFactor, minImageSizeThreshold);
+        this.gaussianProcessor = new GaussianProcessor(baseSigma, imagesPerOctave, downscalingFactor, minImageSizeThreshold);
         this.siftMatcher = new SIFTMatcher(150, 0.8f);
     }
 

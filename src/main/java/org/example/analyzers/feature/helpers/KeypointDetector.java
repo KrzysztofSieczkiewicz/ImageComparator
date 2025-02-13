@@ -29,7 +29,7 @@ public class KeypointDetector {
     float keypointEdgeResponseRatio = 10;
 
     /**
-     * How large should the window of neighbours around keypoint be. Will be further scaled by each octave
+     * How large should the window of neighbours around keypoint be. Will be scaled by each octave
      */
     int baseNeighboursWindowSize = 16;
 
@@ -48,27 +48,20 @@ public class KeypointDetector {
 
 
     public KeypointDetector() {
-        this.refiner = new KeypointRefiner(offsetMagnitudeThreshold, keypointContrastThreshold, keypointEdgeResponseRatio, sobelKernelSize);
+        this.refiner = new KeypointRefiner(offsetMagnitudeThreshold, keypointContrastThreshold, keypointEdgeResponseRatio, sobelKernelSize, baseNeighboursWindowSize);
 
         this.relativeNeighboursCoordinates = generateWindowRelativeCoordinates(localExtremeRadius);
     }
 
     // TODO: EITHER REMOVE ScalesTriplet OR INITIALIZE IT IN THE GAUSSIAN PROCESSOR TO PASS IT AS AN ARG
-    public ArrayList<Keypoint> detectImageKeypoints(int octaveIndex, float[][] previousScaleData, float[][] currentScaleData, float[][] nextScaleData) {
+    public ArrayList<Keypoint> detectImageKeypoints(ScalesTriplet scalesTriplet) {
         ArrayList<Keypoint> imageKeypoints = new ArrayList<>();
-
-        ScalesTriplet scalesTriplet = new ScalesTriplet(
-                octaveIndex,
-                previousScaleData,
-                currentScaleData,
-                nextScaleData
-        );
 
         ArrayList<PixelPoint> potentialCandidates = findLocalExtremes(scalesTriplet);
         if (potentialCandidates.isEmpty()) return imageKeypoints;
 
         for (PixelPoint candidate: potentialCandidates) {
-            Keypoint keypoint = refiner.refineKeypointCandidate(scalesTriplet, candidate, baseNeighboursWindowSize);
+            Keypoint keypoint = refiner.refineKeypointCandidate(scalesTriplet, candidate);
             if (keypoint != null) imageKeypoints.add(keypoint);
         }
 
@@ -96,7 +89,7 @@ public class KeypointDetector {
                 if (potentialCandidates.isEmpty()) continue;
 
                 for (PixelPoint candidate: potentialCandidates) {
-                    Keypoint keypoint = refiner.refineKeypointCandidate(scalesTriplet, candidate, baseNeighboursWindowSize);
+                    Keypoint keypoint = refiner.refineKeypointCandidate(scalesTriplet, candidate);
                     if (keypoint != null) imageKeypoints.add(keypoint);
                 }
 
@@ -124,10 +117,6 @@ public class KeypointDetector {
 
         int[] dRow = relativeNeighboursCoordinates[0];
         int[] dCol = relativeNeighboursCoordinates[1];
-        int radius = localExtremeRadius;
-
-//        dRow = new int[]{-1, 1, 0, 0, -1, -1, 1, 1};
-//        dCol = new int[]{0, 0, -1, 1, -1, 1, -1, 1};
 
         for (int row=0; row<rows; row++) {
             for (int col=0; col<cols; col++) {
@@ -140,16 +129,16 @@ public class KeypointDetector {
                     int currCol = MatrixUtil.safeReflectCoordinate( col + dCol[k], cols );
 
                     float neighbourValue = currentImage[currRow][currCol];
-                    if (currentPixel >= neighbourValue) isMinimum = false;
-                    if (currentPixel <= neighbourValue) isMaximum = false;
+                    if (currentPixel > neighbourValue) isMinimum = false;
+                    if (currentPixel < neighbourValue) isMaximum = false;
 
                     neighbourValue = previousImage[currRow][currCol];
-                    if (currentPixel >= neighbourValue) isMinimum = false;
-                    if (currentPixel <= neighbourValue) isMaximum = false;
+                    if (currentPixel > neighbourValue) isMinimum = false;
+                    if (currentPixel < neighbourValue) isMaximum = false;
 
                     neighbourValue = nextImage[currRow][currCol];
-                    if (currentPixel >= neighbourValue) isMinimum = false;
-                    if (currentPixel <= neighbourValue) isMaximum = false;
+                    if (currentPixel > neighbourValue) isMinimum = false;
+                    if (currentPixel < neighbourValue) isMaximum = false;
 
                     if (!isMinimum && !isMaximum) break;
                 }
@@ -164,19 +153,18 @@ public class KeypointDetector {
     }
 
     /**
-     * Generates relative coordinates for an n-neighbours radius
+     * Generates relative coordinates for an n-neighbours radius (including central pixel)
      * @param radius how many neighbours should be added into a window
-     * @return int[2][2*radius+1] {dRows, dCols}
+     * @return int[2][(2*radius+1) * (2*radius+1)] {dRows, dCols}
      */
     private int[][] generateWindowRelativeCoordinates(int radius) {
-        int size = (2 * radius + 1) * (2 * radius + 1) - 1;
+        int size = (2 * radius + 1) * (2 * radius + 1);
         int[] dRows = new int[size];
         int[] dCols = new int[size];
 
         int index = 0;
         for (int x=-radius; x<=radius; x++) {
             for (int y=-radius; y<=radius; y++) {
-                if (x==0 && y==0) continue;
                 dRows[index] = x;
                 dCols[index] = y;
                 index++;

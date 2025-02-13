@@ -33,17 +33,23 @@ public class KeypointRefiner {
      */
     private final SobelKernelSize sobelKernelSize;
 
-    public KeypointRefiner(float magnitudeThreshold, float contrastThreshold, float keypointEdgeResponseRatio, SobelKernelSize sobelKernelSize) {
+    /**
+     * How many keypoint neighbours will be used for local gradients calculation (for descriptor)
+     */
+    private final int neighboursWindowSize;
+
+    public KeypointRefiner(float magnitudeThreshold, float contrastThreshold, float keypointEdgeResponseRatio, SobelKernelSize sobelKernelSize, int neighboursWindowSize) {
         this.magnitudeThreshold = magnitudeThreshold;
         this.contrastThreshold = contrastThreshold;
         this.edgeResponseThreshold = ((keypointEdgeResponseRatio+1)*(keypointEdgeResponseRatio+1)) / keypointEdgeResponseRatio;
         this.sobelKernelSize = sobelKernelSize;
+        this.neighboursWindowSize = neighboursWindowSize;
 
         this.descriptorGenerator = new DescriptorGenerator();
 
     }
 
-    public Keypoint refineKeypointCandidate(ScalesTriplet scalesTriplet, PixelPoint candidate, int neighboursWindowSize) {
+    public Keypoint refineKeypointCandidate(ScalesTriplet scalesTriplet, PixelPoint candidate) {
         int pixelX = candidate.getX();
         int pixelY = candidate.getY();
         int octaveIndex = scalesTriplet.getOctaveIndex();
@@ -67,7 +73,7 @@ public class KeypointRefiner {
         float subPixelY = pixelY + offsets[1];
         if (verifySubpixelMagnitudeAndContrast(offsets) ) return null;
 
-        float[][][] localGradients = computeKeypointLocalGradients(scalesTriplet.getCurrentScale(), pixelX, pixelY, neighboursWindowSize );
+        float[][][] localGradients = computeKeypointLocalGradients(scalesTriplet.getCurrentScale(), pixelX, pixelY );
         float[] keypointDescriptor = descriptorGenerator.constructDescriptor(localGradients);
 
         return new Keypoint(octaveIndex, subPixelX, subPixelY, keypointDescriptor);
@@ -164,14 +170,13 @@ public class KeypointRefiner {
      * @param imageData float matrix containing image pixel values
      * @param x central point x coordinate
      * @param y central point y coordinate
-     * @param windowSize width/height of sliced window
      *
      * @return matrix of {dx, dy} gradients
      */
-    private float[][][] computeKeypointLocalGradients(float[][] imageData, int x, int y, int windowSize) {
-        float[][][] localGradients = new float[windowSize][windowSize][2];
+    private float[][][] computeKeypointLocalGradients(float[][] imageData, int x, int y) {
+        float[][][] localGradients = new float[neighboursWindowSize][neighboursWindowSize][2];
 
-        int radius = windowSize / 2;
+        int radius = neighboursWindowSize / 2;
         for (int i=-radius; i<radius; i++) {
             for (int j = -radius; j < radius; j++) {
                 localGradients[i + radius][j + radius] = DerivativeUtil.approximateGradientVector(imageData, x + i, y + j);

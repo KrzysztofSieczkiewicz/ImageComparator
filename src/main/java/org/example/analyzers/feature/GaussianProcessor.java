@@ -1,9 +1,9 @@
 package org.example.analyzers.feature;
 
 import org.example.analyzers.feature.helpers.KeypointDetector;
+import org.example.analyzers.feature.helpers.ScalesTriplet;
 import org.example.utils.ImageDataUtil;
 
-import java.awt.*;
 import java.util.ArrayList;
 
 public class GaussianProcessor {
@@ -25,20 +25,20 @@ public class GaussianProcessor {
     private final double baseSigma;
 
     /**
-     * Number of DoG images for single octave
+     * Number of Gaussian images for a single octave
      */
-    private final int numberDoGImages;
+    private final int imagesPerOctave;
 
     /**
      * Value by which gaussian sima is multiplied for consecutive scales within octave
      */
     private final double sigmaInterval;
 
-    public GaussianProcessor(double sigma, int numberDoGImages, int downscalingFactor, int minImageSizeThreshold) {
+    public GaussianProcessor(double sigma, int imagesPerOctave, int downscalingFactor, int minImageSizeThreshold) {
         keypointDetector = new KeypointDetector();
 
         this.baseSigma = sigma;
-        this.numberDoGImages = numberDoGImages;
+        this.imagesPerOctave = imagesPerOctave;
         this.downscalingFactor = downscalingFactor;
         this.minImageSizeThreshold = minImageSizeThreshold;
 
@@ -85,8 +85,20 @@ public class GaussianProcessor {
 
         ArrayList<Keypoint> octaveKeypoints = new ArrayList<>();
 
-        for (int scale = 1; scale < numberDoGImages; scale++) {
-            octaveKeypoints.addAll( keypointDetector.detectImageKeypoints(octaveIndex, previousDoGImage, currentDoGImage, nextDoGImage) );
+        for (int scale = 1; scale < imagesPerOctave-1; scale++) {
+
+            // TODO: Do I really need the scalesTriplet? Better object would be sth
+            //  that'd contain float[][][] dogImages, octaveIndex, scalesNum(dogImages.lenght), and centralScaleIndex
+            //  all methods would not depend on ScalesTriplet, but on the provided images instead
+
+            ScalesTriplet scalesTriplet = new ScalesTriplet(
+                    octaveIndex,
+                    previousDoGImage,
+                    currentDoGImage,
+                    nextDoGImage
+            );
+
+            octaveKeypoints.addAll( keypointDetector.detectImageKeypoints(scalesTriplet) );
 
             gaussianSigma *= sigmaInterval;
             nextImage = nextNextImage;
@@ -106,7 +118,7 @@ public class GaussianProcessor {
      * @return sigma multiplier
      */
     private double calculateScaleIntervals() {
-        double p = 1d/numberDoGImages;
+        double p = 1d/ imagesPerOctave;
         return Math.pow(2, p);
     }
 
