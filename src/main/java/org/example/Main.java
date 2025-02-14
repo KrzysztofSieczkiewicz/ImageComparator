@@ -10,10 +10,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Main {
-    // TODO: test all ImageUtil method:
-    //  check greyscale
-    //  check resize
-    //  check gaussian
 
     public static void main(String[] args) throws IOException {
         BufferedImage testImage = ImageIO.read(new File("src/TestImage.jpg"));
@@ -24,14 +20,17 @@ public class Main {
         ImageIO.write(testImage, "PNG", file);
         ImageIO.write(testImage2, "PNG", file2);
 
-        // TODO:
+        // TODO [Current]: RANSAC, image matching, orientation
+
+        // TODO: next step - increase keypoint stability
+        //  1. Check if subpixel position calculation is correct and if it is stable - maybe better interpolation methods?
         //  then, check all the methods that process images for SIFT and especially blur/subtract images
         //  it may strongly affect comparison stability
 
-        // TODO: next step - increase keypoint stability
-        //  2. Allow computing DoG images from more than 2 scales
-        //  4. Check if subpixel position calculation is correct and if it is stable - maybe better interpolation methods?
-        //  now minor, but maybe important:
+        // TODO: last step: test all ImageUtil/ImageDataUtil/DerivativeUtil methods:
+        //  check greyscale
+        //  check resize
+        //  check gaussian
 
         long start = System.nanoTime();
 
