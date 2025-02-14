@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Main {
 
@@ -49,6 +50,9 @@ public class Main {
         BufferedImage matchingResult = new SIFTVisualizer().drawMatches(testImage, testImage2, matches);
         File outputFile = new File("matches_output.png");
         ImageIO.write(matchingResult, "png", outputFile);
+
+        double[][] homography = new RANSAC().estimateHomography(matches);
+        System.out.println("Homography: \n" + Arrays.deepToString(homography));
 
         long end = System.nanoTime();
         System.out.println("Time taken: " + (end-start) + "ns");

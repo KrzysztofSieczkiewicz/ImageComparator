@@ -1,5 +1,7 @@
 package org.example.utils;
 
+import java.util.Arrays;
+
 // TODO: FIX MATRIX INDICES:
 //  is x for width or y
 public class MatrixUtil {
@@ -155,15 +157,14 @@ public class MatrixUtil {
     /**
      * Solves square matrix using vector with in-place LU decomposition (Doolittle's method).
      */
-    public static float[] getMatrixSolution(float[][] matrix, float[] vector) {
+    public static float[] solveMatrix(float[][] matrix, float[] vector) {
         int size = matrix.length;
         float[][] LU = new float[size][size];
 
         for (int x=0; x<size; x++) { // clone the matrix
                 LU[x] = matrix[x].clone();
         }
-
-        for (int k = 0; k < size; k++) { // Perform LU decomposition
+        for (int k = 0; k < size; k++) { // LU decomposition
             for (int i = k + 1; i < size; i++) {
                 LU[i][k] = LU[i][k] / LU[k][k];
                 for (int j = k + 1; j < size; j++) {
@@ -171,7 +172,6 @@ public class MatrixUtil {
                 }
             }
         }
-
         float[] intermediateSolution = new float[size];
         for (int i = 0; i < size; i++) { // solve lower matrix with forward substitution
             intermediateSolution[i] = vector[i];
@@ -179,7 +179,6 @@ public class MatrixUtil {
                 intermediateSolution[i] -= LU[i][j] * intermediateSolution[j];
             }
         }
-
         float[] finalSolution = new float[size];
         for (int i = size - 1; i >= 0; i--) { // solve upper matrix with backward substitution
             finalSolution[i] = intermediateSolution[i];
@@ -194,7 +193,7 @@ public class MatrixUtil {
 
     /**
      * Regularizes the matrix with default lambda = 0.001 (Diagonal).
-     * Works only on square matrices.
+     * Work only on square matrices.
      *
      * @return new modified matrix
      */

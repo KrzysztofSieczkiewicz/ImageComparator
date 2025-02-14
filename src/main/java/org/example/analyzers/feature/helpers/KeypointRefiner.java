@@ -142,7 +142,7 @@ public class KeypointRefiner {
      */
     private float[] calculatePixelPositionsOffsets(float[][] hessianMatrix, float[] gradientsVector) {
         float[][] regularizedHessianMatrix = MatrixUtil.diagonalRegularization(hessianMatrix);
-        return MatrixUtil.getMatrixSolution(regularizedHessianMatrix, VectorUtil.multiplyVector(gradientsVector, -1.0f) );
+        return MatrixUtil.solveMatrix(regularizedHessianMatrix, VectorUtil.multiplyVector(gradientsVector, -1.0f) );
     }
 
     /**
