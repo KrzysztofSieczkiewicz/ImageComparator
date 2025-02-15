@@ -1,9 +1,5 @@
 package org.example.utils;
 
-import java.util.Arrays;
-
-// TODO: FIX MATRIX INDICES:
-//  is x for width or y
 public class MatrixUtil {
 
     public static double[][] transpose(double[][] matrix) {

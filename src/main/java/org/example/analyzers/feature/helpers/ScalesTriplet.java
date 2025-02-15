@@ -3,6 +3,8 @@ package org.example.analyzers.feature.helpers;
 /**
  * Helper class holding three consecutive scales from the octave
  */
+
+// TODO: to be removed
 public class ScalesTriplet {
 
     private int octaveIndex;

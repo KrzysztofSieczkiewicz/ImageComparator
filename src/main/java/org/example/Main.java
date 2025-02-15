@@ -1,7 +1,8 @@
 package org.example;
 
 import org.example.analyzers.feature.*;
-import org.example.analyzers.feature.HomographyEvaluator;
+import org.example.analyzers.feature.homography.Homography;
+import org.example.analyzers.feature.homography.HomographyEvaluator;
 import org.example.utils.ImageUtil;
 
 import javax.imageio.ImageIO;
@@ -54,8 +55,8 @@ public class Main {
         File outputFile = new File("matches_output.png");
         ImageIO.write(matchingResult, "png", outputFile);
 
-        double[][] homography = new HomographyEvaluator().estimateHomography(matches);
-        System.out.println("Homography: \n" + Arrays.deepToString(homography));
+        Homography homography = new HomographyEvaluator().estimateHomography(matches);
+        System.out.println("Homography: \n" + Arrays.deepToString( homography.getMatrix() ));
 
         long end = System.nanoTime();
         System.out.println("Time taken: " + (end-start) + "ns");

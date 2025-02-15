@@ -1,8 +1,9 @@
-package org.example.analyzers.feature;
+package org.example.analyzers.feature.homography;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
+import org.example.analyzers.feature.FeatureMatch;
 import org.example.utils.MatrixUtil;
 
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public class HomographyEvaluator {
         this.rand = new Random();
     }
 
-    public double[][] estimateHomography(List<FeatureMatch> matches) {
+    public Homography estimateHomography(List<FeatureMatch> matches) {
         double[][] bestH = null;
         int maxInliers = 0;
 
@@ -49,21 +50,7 @@ public class HomographyEvaluator {
         // 5. Refine the output using inliers
         List<FeatureMatch> inlierMatches = getInliers(matches, bestH);
 
-        // 6. Check the homography validity - inliers ratio - TODO: move this later on
-        if ( inlierMatches.size() *2 < matches.size()) {
-            throw new RuntimeException("Not enough inliers matched");
-        }
-
-        // 7. Check the homography validity - matrix determinant range - TODO: move this later on
-        double homographyDeterminant = MatrixUtil.get3x3MatrixDeterminant(bestH);
-        if ( homographyDeterminant > 10 || homographyDeterminant < 0.1) {
-            throw new RuntimeException("Homography determinant outside of range");
-        }
-
-        System.out.println("Final inliers: " + inlierMatches.size());
-        System.out.println("Valid homography: " + (inlierMatches.size() * 2 >= matches.size()) );
-
-        return computeHomography(inlierMatches);
+        return new Homography( bestH, inlierMatches, matches.size() );
     }
 
 
