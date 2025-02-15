@@ -1,5 +1,8 @@
 package org.example.analyzers.feature;
 
+import org.example.analyzers.feature.keypoints.FeatureMatch;
+import org.example.analyzers.feature.keypoints.Keypoint;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;

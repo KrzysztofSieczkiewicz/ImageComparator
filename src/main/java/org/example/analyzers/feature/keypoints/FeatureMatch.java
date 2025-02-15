@@ -1,4 +1,4 @@
-package org.example.analyzers.feature;
+package org.example.analyzers.feature.keypoints;
 
 public class FeatureMatch {
 

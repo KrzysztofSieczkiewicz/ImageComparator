@@ -1,7 +1,7 @@
-package org.example.analyzers.feature.helpers;
+package org.example.analyzers.feature.keypoints;
 
 import org.example.analyzers.common.PixelPoint;
-import org.example.analyzers.feature.Keypoint;
+import org.example.analyzers.feature.helpers.ScalesTriplet;
 import org.example.config.SobelKernelSize;
 import org.example.utils.DerivativeUtil;
 import org.example.utils.MatrixUtil;

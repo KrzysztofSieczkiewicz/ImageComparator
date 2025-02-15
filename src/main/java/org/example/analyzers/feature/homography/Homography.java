@@ -1,6 +1,6 @@
 package org.example.analyzers.feature.homography;
 
-import org.example.analyzers.feature.FeatureMatch;
+import org.example.analyzers.feature.keypoints.FeatureMatch;
 
 import java.util.List;
 

@@ -3,7 +3,7 @@ package org.example.analyzers.feature.homography;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
-import org.example.analyzers.feature.FeatureMatch;
+import org.example.analyzers.feature.keypoints.FeatureMatch;
 
 import java.util.ArrayList;
 import java.util.List;

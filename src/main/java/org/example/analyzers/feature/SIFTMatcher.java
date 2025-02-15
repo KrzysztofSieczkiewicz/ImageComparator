@@ -1,5 +1,8 @@
 package org.example.analyzers.feature;
 
+import org.example.analyzers.feature.keypoints.FeatureMatch;
+import org.example.analyzers.feature.keypoints.Keypoint;
+
 import java.util.ArrayList;
 import java.util.List;
 

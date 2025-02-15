@@ -2,6 +2,9 @@ package org.example.analyzers.feature;
 
 import org.example.analyzers.feature.homography.Homography;
 import org.example.analyzers.feature.homography.HomographyEvaluator;
+import org.example.analyzers.feature.keypoints.FeatureMatch;
+import org.example.analyzers.feature.keypoints.GaussianProcessor;
+import org.example.analyzers.feature.keypoints.Keypoint;
 import org.example.utils.MatrixUtil;
 import org.example.utils.accessor.ImageAccessor;
 import org.example.utils.ImageDataUtil;
@@ -9,7 +12,7 @@ import org.example.utils.ImageDataUtil;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
-public class MatrixSIFTAnalyzer {
+public class SIFTAnalyzer {
     private final GaussianProcessor gaussianProcessor;
     private final SIFTMatcher siftMatcher;
     private final HomographyEvaluator homographyEvaluator;
@@ -52,7 +55,10 @@ public class MatrixSIFTAnalyzer {
     int downscalingFactor = 2;
 
 
-    public MatrixSIFTAnalyzer() {
+    // TODO: introduce distance limitations (matchKeypointsWithLimitedDistance from SIFT Matcher)
+    //  maxDistance flag? - if 0 - call (matchKeypoints), otherwise - call (matchKeypointsWithLimitedDistance);
+
+    public SIFTAnalyzer() {
         this.gaussianProcessor = new GaussianProcessor(baseSigma, imagesPerOctave, downscalingFactor, minImageSizeThreshold);
         this.siftMatcher = new SIFTMatcher(150, 0.8f);
         this.homographyEvaluator = new HomographyEvaluator();

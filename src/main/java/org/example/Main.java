@@ -3,6 +3,8 @@ package org.example;
 import org.example.analyzers.feature.*;
 import org.example.analyzers.feature.homography.Homography;
 import org.example.analyzers.feature.homography.HomographyEvaluator;
+import org.example.analyzers.feature.keypoints.FeatureMatch;
+import org.example.analyzers.feature.keypoints.Keypoint;
 import org.example.utils.ImageUtil;
 
 import javax.imageio.ImageIO;
@@ -39,8 +41,8 @@ public class Main {
 
         long start = System.nanoTime();
 
-        ArrayList<Keypoint> keypoints1 = new MatrixSIFTAnalyzer().findImageKeypoints(testImage);
-        ArrayList<Keypoint> keypoints2 = new MatrixSIFTAnalyzer().findImageKeypoints(testImage2);
+        ArrayList<Keypoint> keypoints1 = new SIFTAnalyzer().findImageKeypoints(testImage);
+        ArrayList<Keypoint> keypoints2 = new SIFTAnalyzer().findImageKeypoints(testImage2);
         System.out.println(keypoints1.size());
         System.out.println(keypoints2.size());
 

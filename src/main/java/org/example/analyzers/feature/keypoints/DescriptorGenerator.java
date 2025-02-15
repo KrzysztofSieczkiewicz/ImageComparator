@@ -1,4 +1,4 @@
-package org.example.analyzers.feature.helpers;
+package org.example.analyzers.feature.keypoints;
 
 import org.example.utils.VectorUtil;
 

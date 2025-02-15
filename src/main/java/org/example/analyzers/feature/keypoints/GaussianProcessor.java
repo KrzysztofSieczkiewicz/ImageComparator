@@ -1,6 +1,7 @@
-package org.example.analyzers.feature;
+package org.example.analyzers.feature.keypoints;
 
-import org.example.analyzers.feature.helpers.KeypointDetector;
+import org.example.analyzers.feature.keypoints.Keypoint;
+import org.example.analyzers.feature.keypoints.KeypointDetector;
 import org.example.analyzers.feature.helpers.ScalesTriplet;
 import org.example.utils.ImageDataUtil;
 
