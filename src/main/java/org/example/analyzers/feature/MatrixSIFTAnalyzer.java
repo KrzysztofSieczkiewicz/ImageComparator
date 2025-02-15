@@ -15,6 +15,23 @@ public class MatrixSIFTAnalyzer {
     private final HomographyEvaluator homographyEvaluator;
 
     /**
+     * Threshold value for homography determinant below which homography is rejected as invalid
+     */
+    private double homographyMinDeterminantThreshold = 0.1;
+
+    /**
+     * Threshold value for homography determinant above which homography is rejected as invalid
+     */
+    private double homographyMaxDeterminanThreshold = 10;
+
+    /**
+     * Ratio of inliers from the keypoints matches. If inliers to total matches ratio is below this number,
+     * the homography is marked as invalid
+     */
+    private double inliersNumberRatio = 0.5;
+
+
+    /**
      * How many Gaussian images should be generated per one octave
      */
     int imagesPerOctave = 5;
@@ -41,7 +58,11 @@ public class MatrixSIFTAnalyzer {
         this.homographyEvaluator = new HomographyEvaluator();
     }
 
-    public ArrayList<Keypoint> computeImageKeypoints(BufferedImage image) {
+    /**
+     * Computes keypoints candidates and refines them into feature keypoints.
+     * @return ArrayList of the Keypoints found
+     */
+    public ArrayList<Keypoint> findImageKeypoints(BufferedImage image) {
         ImageAccessor accessor = ImageAccessor.create(image);
         int[][] imageData = accessor.getPixels();
 
@@ -50,29 +71,49 @@ public class MatrixSIFTAnalyzer {
         return gaussianProcessor.processImageKeypoints(greyscaleImageData);
     }
 
+    /**
+     * Iterates through base keypoint list and searches for matching keypoints in checked list.
+     * @return ArrayList of matches
+     */
     public ArrayList<FeatureMatch> matchKeypoints(ArrayList<Keypoint> base, ArrayList<Keypoint> checked) {
-        ArrayList<FeatureMatch> matches = siftMatcher.matchKeypoints(base, checked);
+        return siftMatcher.matchKeypoints(base, checked);
+    }
+
+    /**
+     * Finds and matches keypoints from the images, then estimates and validates homography.
+     * @return valid Homography or null if the Homography is invalid
+     */
+    public Homography matchImages(BufferedImage base, BufferedImage checked) {
+        ArrayList<Keypoint> baseKeypoints = findImageKeypoints(base);
+        ArrayList<Keypoint> checkedKeypoints = findImageKeypoints(checked);
+        ArrayList<FeatureMatch> matches = matchKeypoints(baseKeypoints, checkedKeypoints);
 
         Homography homography = homographyEvaluator.estimateHomography(matches);
 
-        if (isHomographyValid(homography)) {
+        if ( homography==null || validateHomography(homography) ) {
             return null;
         }
 
-        return matches;
+        return homography;
     }
 
-    // TODO: parametrize thresholds
-    private boolean isHomographyValid(Homography homography) {
+    /**
+     * Checks if homography matrix determinant lies within thresholds and
+     * checks if number of inliers is within acceptable ratio to the total matches number
+     * @return true if homography is valid
+     */
+    public boolean validateHomography(Homography homography) {
         int inliersNumber = homography.getInlierMatches().size();
         int totalMatchesNumber = homography.getTotalMatchesNumber();
-        double homographyDeterminant = MatrixUtil.get3x3MatrixDeterminant( homography.getMatrix() );
+        double determinant = MatrixUtil.get3x3MatrixDeterminant( homography.getMatrix() );
+        double determinantAbs = Math.abs(determinant);
 
-        if ( inliersNumber*2 < totalMatchesNumber ) {
+        if ( inliersNumber < totalMatchesNumber * inliersNumberRatio) {
             return false;
         }
 
-        if ( homographyDeterminant > 10 || homographyDeterminant < 0.1) {
+        if (determinantAbs > homographyMaxDeterminanThreshold ||
+            determinantAbs < homographyMinDeterminantThreshold) {
             return false;
         }
 

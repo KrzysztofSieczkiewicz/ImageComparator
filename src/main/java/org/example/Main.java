@@ -39,8 +39,8 @@ public class Main {
 
         long start = System.nanoTime();
 
-        ArrayList<Keypoint> keypoints1 = new MatrixSIFTAnalyzer().computeImageKeypoints(testImage);
-        ArrayList<Keypoint> keypoints2 = new MatrixSIFTAnalyzer().computeImageKeypoints(testImage2);
+        ArrayList<Keypoint> keypoints1 = new MatrixSIFTAnalyzer().findImageKeypoints(testImage);
+        ArrayList<Keypoint> keypoints2 = new MatrixSIFTAnalyzer().findImageKeypoints(testImage2);
         System.out.println(keypoints1.size());
         System.out.println(keypoints2.size());
 

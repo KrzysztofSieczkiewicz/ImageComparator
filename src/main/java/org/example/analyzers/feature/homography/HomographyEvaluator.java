@@ -4,7 +4,6 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.example.analyzers.feature.FeatureMatch;
-import org.example.utils.MatrixUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,9 +41,9 @@ public class HomographyEvaluator {
             }
         }
 
-        // Early exit if no H was found - TODO: replace by returning null?
+        // Early exit if no H was found
         if ( bestH == null) {
-            throw new RuntimeException("No valid homography found");
+            return null;
         }
 
         // 5. Refine the output using inliers
