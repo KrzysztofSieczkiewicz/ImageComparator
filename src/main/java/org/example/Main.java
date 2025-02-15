@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.analyzers.feature.*;
+import org.example.analyzers.feature.HomographyEvaluator;
 import org.example.utils.ImageUtil;
 
 import javax.imageio.ImageIO;
@@ -14,7 +15,9 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         BufferedImage testImage = ImageIO.read(new File("src/TestImage.jpg"));
+        //BufferedImage testImage2 = ImageIO.read(new File("src/Image3.png"));
         BufferedImage testImage2 = ImageUtil.resize(testImage, 1024, 512);
+        testImage2 = ImageUtil.greyscale(testImage2);
 
         File file = new File("src/baseImage.png");
         File file2 = new File("src/baseImage2.png");
@@ -51,7 +54,7 @@ public class Main {
         File outputFile = new File("matches_output.png");
         ImageIO.write(matchingResult, "png", outputFile);
 
-        double[][] homography = new RANSAC().estimateHomography(matches);
+        double[][] homography = new HomographyEvaluator().estimateHomography(matches);
         System.out.println("Homography: \n" + Arrays.deepToString(homography));
 
         long end = System.nanoTime();

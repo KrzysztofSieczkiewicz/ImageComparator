@@ -3,20 +3,20 @@ package org.example.analyzers.feature;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
+import org.example.utils.MatrixUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-// TODO: start from the beggining
-public class RANSAC {
+public class HomographyEvaluator {
     private final Random rand;
 
-    private final int NUMBER_OF_ITERATIONS = 500;
+    private final int NUMBER_OF_ITERATIONS = 1000;
     private final double THRESHOLD = 3.0;
 
 
-    public RANSAC() {
+    public HomographyEvaluator() {
         this.rand = new Random();
     }
 
@@ -34,15 +34,35 @@ public class RANSAC {
             // 3. Count inliers
             int inliers = countInliers(matches, H);
 
-            // 4. Keep save the best homography
+            // 4. Keep the best homography
             if (inliers > maxInliers) {
                 maxInliers = inliers;
                 bestH = H;
             }
         }
 
+        // Early exit if no H was found - TODO: replace by returning null?
+        if ( bestH == null) {
+            throw new RuntimeException("No valid homography found");
+        }
+
         // 5. Refine the output using inliers
         List<FeatureMatch> inlierMatches = getInliers(matches, bestH);
+
+        // 6. Check the homography validity - inliers ratio - TODO: move this later on
+        if ( inlierMatches.size() *2 < matches.size()) {
+            throw new RuntimeException("Not enough inliers matched");
+        }
+
+        // 7. Check the homography validity - matrix determinant range - TODO: move this later on
+        double homographyDeterminant = MatrixUtil.get3x3MatrixDeterminant(bestH);
+        if ( homographyDeterminant > 10 || homographyDeterminant < 0.1) {
+            throw new RuntimeException("Homography determinant outside of range");
+        }
+
+        System.out.println("Final inliers: " + inlierMatches.size());
+        System.out.println("Valid homography: " + (inlierMatches.size() * 2 >= matches.size()) );
+
         return computeHomography(inlierMatches);
     }
 
@@ -113,11 +133,11 @@ public class RANSAC {
             double x2 = match.getKeypoint2().getSubPixelX();
             double y2 = match.getKeypoint2().getSubPixelY();
 
-            double[] point1Homog = {x1, y1, 1};  // Source point in homogeneous coordinates
+            double[] k1Homog = {x1, y1, 1};
             double[] transformedPoint = new double[3];
 
             for (int i = 0; i < 3; i++) {
-                transformedPoint[i] = H[i][0] * point1Homog[0] + H[i][1] * point1Homog[1] + H[i][2] * point1Homog[2];
+                transformedPoint[i] = H[i][0] * k1Homog[0] + H[i][1] * k1Homog[1] + H[i][2] * k1Homog[2];
             }
 
             double x1Prime = transformedPoint[0] / transformedPoint[2];

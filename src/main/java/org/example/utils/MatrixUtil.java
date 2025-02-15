@@ -120,18 +120,14 @@ public class MatrixUtil {
         return trace;
     }
 
-    /**
-     * Calculates matrix determinant.
-     * Works only with square matrices with max size 2x2
-     */
     public static float get2x2MatrixDeterminant(float[][] matrix) {
-        int length = matrix.length;
+        return (matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0]);
+    }
 
-        if (length == 1) {
-            return matrix[0][0];
-        } else {
-            return (matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0]);
-        }
+    public static double get3x3MatrixDeterminant(double[][] matrix) {
+        return matrix[0][0] * (matrix[1][1] * matrix[2][2] - matrix[1][2] * matrix[2][1])
+                - matrix[0][1] * (matrix[1][0] * matrix[2][2] - matrix[1][2] * matrix[2][0])
+                + matrix[0][2] * (matrix[1][0] * matrix[2][1] - matrix[1][1] * matrix[2][0]);
     }
 
     /**
