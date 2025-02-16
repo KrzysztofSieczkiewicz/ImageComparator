@@ -106,6 +106,23 @@ public class DerivativeUtil {
     }
 
     /**
+     * Approximates first order derivatives using 3x3 sobel kernel for space and central difference for scale
+     *
+     * @param images odd-numbered array of consecutive scales from single octave
+     * @param x pixel width coordinate
+     * @param y pixel height coordinate
+     * @return array containing derivatives {dx, dy, ds}
+     */
+    public static float[] approximateGradientVector(float[][][] images, int x, int y) {
+        int lastIndex = images.length - 1;
+        int middleIndex = lastIndex / 2;
+        float[] spaceGradients = approximateGradientVector(images[middleIndex], x, y);
+        float ds = (images[lastIndex][x][y] - images[0][x][y]) / 2f;
+
+        return new float[] {spaceGradients[0], spaceGradients[1], ds};
+    }
+
+    /**
      * Approximates space derivatives (XY) of the image using 3x3 sobel kernels.
      *
      * @param imageData image data

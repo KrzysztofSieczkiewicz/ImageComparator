@@ -1,8 +1,6 @@
 package org.example.analyzers.feature.keypoints;
 
-import org.example.analyzers.feature.keypoints.Keypoint;
-import org.example.analyzers.feature.keypoints.KeypointDetector;
-import org.example.analyzers.feature.helpers.ScalesTriplet;
+import org.example.analyzers.feature.OctaveSlice;
 import org.example.utils.ImageDataUtil;
 
 import java.util.ArrayList;
@@ -88,18 +86,12 @@ public class GaussianProcessor {
 
         for (int scale = 1; scale < imagesPerOctave-1; scale++) {
 
-            // TODO: Do I really need the scalesTriplet? Better object would be sth
-            //  that'd contain float[][][] dogImages, octaveIndex, scalesNum(dogImages.lenght), and centralScaleIndex
-            //  all methods would not depend on ScalesTriplet, but on the provided images instead
-
-            ScalesTriplet scalesTriplet = new ScalesTriplet(
-                    octaveIndex,
-                    previousDoGImage,
-                    currentDoGImage,
-                    nextDoGImage
+            OctaveSlice octaveSlice = new OctaveSlice(
+                    new float[][][] { previousDoGImage, currentDoGImage, nextDoGImage },
+                    octaveIndex
             );
 
-            octaveKeypoints.addAll( keypointDetector.detectImageKeypoints(scalesTriplet) );
+            octaveKeypoints.addAll( keypointDetector.detectImageKeypoints(octaveSlice) );
 
             gaussianSigma *= sigmaInterval;
             nextImage = nextNextImage;

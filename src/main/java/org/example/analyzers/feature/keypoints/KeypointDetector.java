@@ -1,7 +1,7 @@
 package org.example.analyzers.feature.keypoints;
 
 import org.example.analyzers.common.PixelPoint;
-import org.example.analyzers.feature.helpers.ScalesTriplet;
+import org.example.analyzers.feature.OctaveSlice;
 import org.example.config.SobelKernelSize;
 import org.example.utils.MatrixUtil;
 
@@ -53,47 +53,15 @@ public class KeypointDetector {
         this.refiner = new KeypointRefiner(offsetMagnitudeThreshold, keypointContrastThreshold, keypointEdgeResponseRatio, sobelKernelSize, baseNeighboursWindowSize);
     }
 
-    // TODO: EITHER REMOVE ScalesTriplet OR INITIALIZE IT IN THE GAUSSIAN PROCESSOR TO PASS IT AS AN ARG
-    public ArrayList<Keypoint> detectImageKeypoints(ScalesTriplet scalesTriplet) {
+    public ArrayList<Keypoint> detectImageKeypoints(OctaveSlice octaveSlice) {
         ArrayList<Keypoint> imageKeypoints = new ArrayList<>();
 
-        ArrayList<PixelPoint> potentialCandidates = findLocalExtremes(scalesTriplet);
+        ArrayList<PixelPoint> potentialCandidates = findLocalExtremes(octaveSlice);
         if (potentialCandidates.isEmpty()) return imageKeypoints;
 
         for (PixelPoint candidate: potentialCandidates) {
-            Keypoint keypoint = refiner.refineKeypointCandidate(scalesTriplet, candidate);
+            Keypoint keypoint = refiner.refineKeypointCandidate(octaveSlice, candidate);
             if (keypoint != null) imageKeypoints.add(keypoint);
-        }
-
-        return imageKeypoints;
-    }
-
-    public ArrayList<Keypoint> detectPyramidKeypoints(float[][][][] dogPyramid) {
-        int octavesNum = dogPyramid.length;
-        int scalesNum = dogPyramid[0].length;
-
-        ArrayList<Keypoint> imageKeypoints = new ArrayList<>();
-
-        for (int octaveIndex=0; octaveIndex<octavesNum; octaveIndex++) {
-            float[][][] octave = dogPyramid[octaveIndex];
-
-            for (int scaleIndex = 1; scaleIndex < scalesNum - 1; scaleIndex++) {
-                ScalesTriplet scalesTriplet = new ScalesTriplet(
-                        octaveIndex,
-                        octave[scaleIndex-1],
-                        octave[scaleIndex],
-                        octave[scaleIndex+1]
-                );
-
-                ArrayList<PixelPoint> potentialCandidates = findLocalExtremes(scalesTriplet);
-                if (potentialCandidates.isEmpty()) continue;
-
-                for (PixelPoint candidate: potentialCandidates) {
-                    Keypoint keypoint = refiner.refineKeypointCandidate(scalesTriplet, candidate);
-                    if (keypoint != null) imageKeypoints.add(keypoint);
-                }
-
-            }
         }
 
         return imageKeypoints;
@@ -101,46 +69,38 @@ public class KeypointDetector {
 
     /**
      * Searches through provided octave slice (three consecutive scales within single octave) for potential
-     * keypoint candidates. Requires that the images are the same size
+     * keypoint candidates. Requires that the images are the same size.
      *
-     * @param scalesTriplet images within the same octave to find extremes in
+     * @param octaveSlice containing images that contain the extreme.
      * @return ArrayList containing pixel coordinates of potential keypoint candidates
      */
-    private ArrayList<PixelPoint> findLocalExtremes(ScalesTriplet scalesTriplet) {
-        float[][] previousImage = scalesTriplet.getPreviousScale();
-        float[][] currentImage = scalesTriplet.getCurrentScale();
-        float[][] nextImage = scalesTriplet.getNextScale();
+    private ArrayList<PixelPoint> findLocalExtremes(OctaveSlice octaveSlice) {
+        float[][] centralImage = octaveSlice.getMainImage();
         ArrayList<PixelPoint> keypointCandidates = new ArrayList<>();
 
-        int rows = currentImage.length;
-        int cols = currentImage[0].length;
+        int rows = centralImage.length;
+        int cols = centralImage[0].length;
 
         int[] dRow = relativeNeighboursCoordinates[0];
         int[] dCol = relativeNeighboursCoordinates[1];
 
         for (int row=0; row<rows; row++) {
             for (int col=0; col<cols; col++) {
-                float currentPixel = currentImage[row][col];
+                float currentPixel = centralImage[row][col];
                 boolean isMinimum = true;
                 boolean isMaximum = true;
 
-                for (int k=0; k<dRow.length; k++) {
-                    int currRow = MatrixUtil.safeReflectCoordinate( row + dRow[k], rows );
-                    int currCol = MatrixUtil.safeReflectCoordinate( col + dCol[k], cols );
+                for ( float[][] image: octaveSlice.getImages() ) {
+                    for (int k=0; k<dRow.length; k++) {
+                        int currRow = MatrixUtil.safeReflectCoordinate( row + dRow[k], rows );
+                        int currCol = MatrixUtil.safeReflectCoordinate( col + dCol[k], cols );
 
-                    float neighbourValue = currentImage[currRow][currCol];
-                    if (currentPixel > neighbourValue) isMinimum = false;
-                    if (currentPixel < neighbourValue) isMaximum = false;
+                        float neighbourValue = image[currRow][currCol];
+                        if (currentPixel > neighbourValue) isMinimum = false;
+                        if (currentPixel < neighbourValue) isMaximum = false;
 
-                    neighbourValue = previousImage[currRow][currCol];
-                    if (currentPixel > neighbourValue) isMinimum = false;
-                    if (currentPixel < neighbourValue) isMaximum = false;
-
-                    neighbourValue = nextImage[currRow][currCol];
-                    if (currentPixel > neighbourValue) isMinimum = false;
-                    if (currentPixel < neighbourValue) isMaximum = false;
-
-                    if (!isMinimum && !isMaximum) break;
+                        if (!isMinimum && !isMaximum) break;
+                    }
                 }
 
                 if (isMaximum || isMinimum) {

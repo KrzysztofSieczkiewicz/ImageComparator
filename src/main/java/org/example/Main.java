@@ -20,7 +20,7 @@ public class Main {
         BufferedImage testImage = ImageIO.read(new File("src/TestImage.jpg"));
         //BufferedImage testImage2 = ImageIO.read(new File("src/Image3.png"));
         BufferedImage testImage2 = ImageUtil.resize(testImage, 1024, 512);
-        testImage2 = ImageUtil.greyscale(testImage2);
+        //testImage2 = ImageUtil.greyscale(testImage2);
 
         File file = new File("src/baseImage.png");
         File file2 = new File("src/baseImage2.png");
@@ -28,7 +28,7 @@ public class Main {
         ImageIO.write(testImage2, "PNG", file2);
 
         // TODO: fix keypoint positions depending on octaves
-        // TODO: consider adding Pyramid class to provide data throughout other classes
+        // TODO: dissolve scalesTriplet and replace it with array of images and octaveIndex (or modify scalesTriplet [with name change to OctaveSlice or sth])
 
         // TODO: last step: test all ImageUtil/ImageDataUtil/DerivativeUtil methods:
         //  check greyscale

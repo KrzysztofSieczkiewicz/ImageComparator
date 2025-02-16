@@ -1,7 +1,7 @@
 package org.example.analyzers.feature.keypoints;
 
 import org.example.analyzers.common.PixelPoint;
-import org.example.analyzers.feature.helpers.ScalesTriplet;
+import org.example.analyzers.feature.OctaveSlice;
 import org.example.config.SobelKernelSize;
 import org.example.utils.DerivativeUtil;
 import org.example.utils.MatrixUtil;
@@ -49,13 +49,13 @@ public class KeypointRefiner {
 
     }
 
-    public Keypoint refineKeypointCandidate(ScalesTriplet scalesTriplet, PixelPoint candidate) {
+    public Keypoint refineKeypointCandidate(OctaveSlice octaveSlice, PixelPoint candidate) {
         int pixelX = candidate.getX();
         int pixelY = candidate.getY();
-        int octaveIndex = scalesTriplet.getOctaveIndex();
+        int octaveIndex = octaveSlice.getOctaveIndex();
 
         float[][] hessianMatrix = calculateKeypointHessian(
-                scalesTriplet,
+                octaveSlice,
                 pixelX,
                 pixelY );
         if ( !isCandidateValid(hessianMatrix) ) return null;
@@ -63,9 +63,7 @@ public class KeypointRefiner {
         float[] gradientVector;
 
         gradientVector = DerivativeUtil.approximateGradientVector(
-                scalesTriplet.getPreviousScale(),
-                scalesTriplet.getCurrentScale(),
-                scalesTriplet.getNextScale(),
+                octaveSlice.getImages(),
                 pixelX, pixelY);
 
         float[] offsets = calculatePixelPositionsOffsets(hessianMatrix, gradientVector);
@@ -73,7 +71,7 @@ public class KeypointRefiner {
         float subPixelY = pixelY + offsets[1];
         if (verifySubpixelMagnitudeAndContrast(offsets) ) return null;
 
-        float[][][] localGradients = computeKeypointLocalGradients(scalesTriplet.getCurrentScale(), pixelX, pixelY );
+        float[][][] localGradients = computeKeypointLocalGradients(octaveSlice.getMainImage(), pixelX, pixelY );
         float[] keypointDescriptor = descriptorGenerator.constructDescriptor(localGradients);
 
         return new Keypoint(octaveIndex, subPixelX, subPixelY, keypointDescriptor);
@@ -81,30 +79,32 @@ public class KeypointRefiner {
 
     /**
      * Generates 3x3 approximated Hessian matrix for {x,y,x} dimensions
-     * @param scalesTriplet three consecutive scales from within single octave
+     * @param octaveSlice for heesians to be found in
      * @param pixelX candidate's width coordinate
      * @param pixelY candidate's height coordinate
      *
      * @return float[][] Hessian matrix
      */
-    private float[][] calculateKeypointHessian(ScalesTriplet scalesTriplet, int pixelX, int pixelY) {
+    private float[][] calculateKeypointHessian(OctaveSlice octaveSlice, int pixelX, int pixelY) {
+        int lastImageIndex = octaveSlice.getImages().length - 1;
+
         float[] spaceDerivatives;
         if (sobelKernelSize.equals(SobelKernelSize.SOBEL3x3)) {
             spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives3x3(
-                    scalesTriplet.getCurrentScale(),
+                    octaveSlice.getMainImage(),
                     pixelX,
                     pixelY );
         } else {
             spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives5x5(
-                    scalesTriplet.getCurrentScale(),
+                    octaveSlice.getMainImage(),
                     pixelX,
                     pixelY );
         }
 
         float[] scaleDerivatives = DerivativeUtil.approximateScaleDerivatives(
-                scalesTriplet.getPreviousScale(),
-                scalesTriplet.getCurrentScale(),
-                scalesTriplet.getNextScale(),
+                octaveSlice.getImages()[0],
+                octaveSlice.getMainImage(),
+                octaveSlice.getImages()[lastImageIndex],
                 pixelX,
                 pixelY );
 
