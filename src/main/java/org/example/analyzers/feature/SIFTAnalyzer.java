@@ -12,6 +12,8 @@ import org.example.utils.ImageDataUtil;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
+import static java.util.stream.Collectors.toCollection;
+
 public class SIFTAnalyzer {
     private final GaussianProcessor gaussianProcessor;
     private final SIFTMatcher siftMatcher;
@@ -33,6 +35,10 @@ public class SIFTAnalyzer {
      */
     private double inliersNumberRatio = 0.5;
 
+    /**
+     * Max distance above which kyepoints are no longer matched. Set to 0 if no limit should be applied
+     */
+    private int matchDistanceThreshold = 0;
 
     /**
      * How many Gaussian images should be generated per one octave
@@ -60,7 +66,7 @@ public class SIFTAnalyzer {
 
     public SIFTAnalyzer() {
         this.gaussianProcessor = new GaussianProcessor(baseSigma, imagesPerOctave, downscalingFactor, minImageSizeThreshold);
-        this.siftMatcher = new SIFTMatcher(150, 0.8f);
+        this.siftMatcher = new SIFTMatcher(0.8f);
         this.homographyEvaluator = new HomographyEvaluator();
     }
 
@@ -82,7 +88,12 @@ public class SIFTAnalyzer {
      * @return ArrayList of matches
      */
     public ArrayList<FeatureMatch> matchKeypoints(ArrayList<Keypoint> base, ArrayList<Keypoint> checked) {
-        return siftMatcher.matchKeypoints(base, checked);
+        ArrayList<FeatureMatch> matches = siftMatcher.matchKeypoints(base, checked);
+
+        if (matchDistanceThreshold != 0) {
+            matches.removeIf(match -> match.distance >= matchDistanceThreshold);
+        }
+        return matches;
     }
 
     /**

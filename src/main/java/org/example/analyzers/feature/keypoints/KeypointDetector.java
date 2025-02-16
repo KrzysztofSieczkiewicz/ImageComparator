@@ -48,9 +48,9 @@ public class KeypointDetector {
 
 
     public KeypointDetector() {
-        this.refiner = new KeypointRefiner(offsetMagnitudeThreshold, keypointContrastThreshold, keypointEdgeResponseRatio, sobelKernelSize, baseNeighboursWindowSize);
-
         this.relativeNeighboursCoordinates = generateWindowRelativeCoordinates(localExtremeRadius);
+
+        this.refiner = new KeypointRefiner(offsetMagnitudeThreshold, keypointContrastThreshold, keypointEdgeResponseRatio, sobelKernelSize, baseNeighboursWindowSize);
     }
 
     // TODO: EITHER REMOVE ScalesTriplet OR INITIALIZE IT IN THE GAUSSIAN PROCESSOR TO PASS IT AS AN ARG

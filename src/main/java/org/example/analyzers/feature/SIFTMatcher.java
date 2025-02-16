@@ -6,32 +6,20 @@ import org.example.analyzers.feature.keypoints.Keypoint;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SIFTMatcher {
+import static java.util.stream.Collectors.toCollection;
 
-    /**
-     * Threshold above which keypoints won't be registered as matched
-     */
-    private final float distanceThreshold;
+public class SIFTMatcher {
 
     /**
      * Lowe's ratio threshold for match filtering
      */
     private final float loweRatio;
 
-    public SIFTMatcher(float distanceThreshold, float loweRatio) {
+    public SIFTMatcher(float loweRatio) {
         this.loweRatio = loweRatio;
-        this.distanceThreshold = distanceThreshold;
-    }
-
-    public ArrayList<FeatureMatch> matchKeypointsWithLimitedDistance(List<Keypoint> keypoints1, List<Keypoint> keypoints2) {
-        return matchKeypointsGeneric(keypoints1, keypoints2, true);
     }
 
     public ArrayList<FeatureMatch> matchKeypoints(List<Keypoint> keypoints1, List<Keypoint> keypoints2) {
-        return matchKeypointsGeneric(keypoints1, keypoints2, false);
-    }
-
-    private ArrayList<FeatureMatch> matchKeypointsGeneric(List<Keypoint> keypoints1, List<Keypoint> keypoints2, boolean useDistanceThreshold) {
         ArrayList<FeatureMatch> matches = new ArrayList<>();
 
         for (Keypoint keypoint1 : keypoints1) {
@@ -53,8 +41,7 @@ public class SIFTMatcher {
                 }
             }
 
-            if (bestDistance < loweRatio * secondBestDistance &&
-                    (!useDistanceThreshold || bestDistance < distanceThreshold)) {
+            if (bestDistance < loweRatio * secondBestDistance) {
                 matches.add(new FeatureMatch(keypoint1, bestMatch, bestDistance));
             }
         }
