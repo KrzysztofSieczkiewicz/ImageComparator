@@ -10,6 +10,9 @@ import java.util.ArrayList;
 public class KeypointDetector {
     private final KeypointRefiner refiner;
 
+    private final int[][] relativeNeighboursCoordinates;
+
+
     /**
      * Contrast threshold below which keypoint will be discarded as noise.
      * Usually between 0.01 and 0.04
@@ -43,8 +46,6 @@ public class KeypointDetector {
      */
     SobelKernelSize sobelKernelSize = SobelKernelSize.SOBEL5x5;
 
-
-    private final int[][] relativeNeighboursCoordinates;
 
 
     public KeypointDetector() {

@@ -44,11 +44,11 @@ public class SIFTVisualizer {
             Keypoint kp2 = match.getKeypoint2();
             double distance = match.getDistance();
 
-            int x1 = (int) kp1.getSubPixelX() * (int) Math.pow(2, kp1.getOctaveIndex());
-            int y1 = (int) kp1.getSubPixelY() * (int) Math.pow(2, kp1.getOctaveIndex());
+            int x1 = (int) kp1.getSubPixelX();
+            int y1 = (int) kp1.getSubPixelY();
 
-            int x2 = (int) kp2.getSubPixelX() * (int) Math.pow(2, kp2.getOctaveIndex()) + img1.getWidth();
-            int y2 = (int) kp2.getSubPixelY() * (int) Math.pow(2, kp2.getOctaveIndex());
+            int x2 = (int) kp2.getSubPixelX() + img1.getWidth();
+            int y2 = (int) kp2.getSubPixelY();
 
             if (distance > 100) { // Very bad / to be discarded
                 g.setColor(Color.BLACK);

@@ -88,7 +88,8 @@ public class GaussianProcessor {
 
             OctaveSlice octaveSlice = new OctaveSlice(
                     new float[][][] { previousDoGImage, currentDoGImage, nextDoGImage },
-                    octaveIndex
+                    octaveIndex,
+                    downscalingFactor
             );
 
             octaveKeypoints.addAll( keypointDetector.detectImageKeypoints(octaveSlice) );

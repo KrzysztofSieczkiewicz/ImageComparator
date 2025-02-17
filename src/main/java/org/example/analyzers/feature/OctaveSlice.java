@@ -5,10 +5,12 @@ public class OctaveSlice {
     private final float[][][] images;
     private final int octaveIndex;
     private final int centralIndex;
+    private final double downscalingRatio;
 
-    public OctaveSlice(float[][][] images, int octaveIndex) {
+    public OctaveSlice(float[][][] images, int octaveIndex, double downscalingFactor) {
         this.images = images;
         this.octaveIndex = octaveIndex;
+        this.downscalingRatio = Math.pow(downscalingFactor, octaveIndex);
 
         this.centralIndex = (images.length - 1) / 2;
     }
@@ -27,5 +29,9 @@ public class OctaveSlice {
 
     public int getCentralIndex() {
         return centralIndex;
+    }
+
+    public double getDownscalingRatio() {
+        return downscalingRatio;
     }
 }

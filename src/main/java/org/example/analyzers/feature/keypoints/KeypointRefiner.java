@@ -53,6 +53,7 @@ public class KeypointRefiner {
         int pixelX = candidate.getX();
         int pixelY = candidate.getY();
         int octaveIndex = octaveSlice.getOctaveIndex();
+        double keypointPositionRatio = octaveSlice.getDownscalingRatio();
 
         float[][] hessianMatrix = calculateKeypointHessian(
                 octaveSlice,
@@ -67,8 +68,8 @@ public class KeypointRefiner {
                 pixelX, pixelY);
 
         float[] offsets = calculatePixelPositionsOffsets(hessianMatrix, gradientVector);
-        float subPixelX = pixelX + offsets[0];
-        float subPixelY = pixelY + offsets[1];
+        float subPixelX = (float) (pixelX*keypointPositionRatio) + offsets[0];
+        float subPixelY = (float) (pixelY*keypointPositionRatio) + offsets[1];
         if (verifySubpixelMagnitudeAndContrast(offsets) ) return null;
 
         float[][][] localGradients = computeKeypointLocalGradients(octaveSlice.getMainImage(), pixelX, pixelY );

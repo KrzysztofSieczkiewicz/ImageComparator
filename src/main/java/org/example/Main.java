@@ -27,14 +27,10 @@ public class Main {
         ImageIO.write(testImage, "PNG", file);
         ImageIO.write(testImage2, "PNG", file2);
 
-        // TODO: fix keypoint positions depending on octaves
-        // TODO: dissolve scalesTriplet and replace it with array of images and octaveIndex (or modify scalesTriplet [with name change to OctaveSlice or sth])
-
         // TODO: last step: test all ImageUtil/ImageDataUtil/DerivativeUtil methods:
         //  check greyscale
         //  check resize
         //  check gaussian
-
 
         long start = System.nanoTime();
 
