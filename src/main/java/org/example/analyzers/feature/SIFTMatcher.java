@@ -6,16 +6,14 @@ import org.example.analyzers.feature.keypoints.Keypoint;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.stream.Collectors.toCollection;
-
 public class SIFTMatcher {
 
     /**
      * Lowe's ratio threshold for match filtering
      */
-    private final float loweRatio;
+    private final double loweRatio;
 
-    public SIFTMatcher(float loweRatio) {
+    public SIFTMatcher(double loweRatio) {
         this.loweRatio = loweRatio;
     }
 

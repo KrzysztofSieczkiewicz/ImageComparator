@@ -4,7 +4,7 @@ public class FeatureMatch {
 
     private Keypoint keypoint1;
     private Keypoint keypoint2;
-    public double distance;
+    private double distance;
 
     public FeatureMatch(Keypoint keypoint1, Keypoint keypoint2, double distance) {
         this.keypoint1 = keypoint1;

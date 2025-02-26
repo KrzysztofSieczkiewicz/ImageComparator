@@ -7,7 +7,7 @@ import org.example.utils.MatrixUtil;
 
 import java.util.ArrayList;
 
-public class KeypointDetector {
+public class KeypointFinder {
     private final KeypointRefiner refiner;
 
     private final int[][] relativeNeighboursCoordinates;
@@ -17,55 +17,58 @@ public class KeypointDetector {
      * Contrast threshold below which keypoint will be discarded as noise.
      * Usually between 0.01 and 0.04
      */
-    float keypointContrastThreshold = 0.04f;
+    private final float contrastThreshold;
 
     /**
      * Offset magnitude threshold above which keypoint will be discarded.
      * Usually around 0.55
      */
-    float offsetMagnitudeThreshold = 0.55f;
+    private final float offsetMagnitudeThreshold;
 
     /**
      * Hessian eigenvalues ratio below which keypoint will be discarded as edge keypoint.
      * Usually between 5 and 20
      */
-    float keypointEdgeResponseRatio = 10;
+    private final float edgeResponseRatio;
 
     /**
      * How large should the window of neighbours around keypoint be. Will be scaled by each octave
      */
-    int baseNeighboursWindowSize = 16;
+    private final int neighbourWindowSize;
 
     /**
      * How large should the window for local extreme search be around each point.
      */
-    int localExtremeRadius = 1;
+    private final int localExtremeSearchRadius;
 
     /**
      * Size of the Sobel kernel used for 2nd order derivatives approximation
      */
     SobelKernelSize sobelKernelSize = SobelKernelSize.SOBEL5x5;
 
+    public KeypointFinder(float contrastThreshold, float offsetMagnitudeThreshold, float edgeResponseRatio, int neighbourWindowSize, int localExtremeSearchRadius) {
+        this.contrastThreshold = contrastThreshold;
+        this.offsetMagnitudeThreshold = offsetMagnitudeThreshold;
+        this.edgeResponseRatio = edgeResponseRatio;
+        this.neighbourWindowSize = neighbourWindowSize;
+        this.localExtremeSearchRadius = localExtremeSearchRadius;
 
-
-    public KeypointDetector() {
-        this.relativeNeighboursCoordinates = generateWindowRelativeCoordinates(localExtremeRadius);
-
-        this.refiner = new KeypointRefiner(offsetMagnitudeThreshold, keypointContrastThreshold, keypointEdgeResponseRatio, sobelKernelSize, baseNeighboursWindowSize);
+        this.relativeNeighboursCoordinates = generateWindowRelativeCoordinates(this.localExtremeSearchRadius);
+        this.refiner = new KeypointRefiner(offsetMagnitudeThreshold, contrastThreshold, edgeResponseRatio, sobelKernelSize, neighbourWindowSize);
     }
 
-    public ArrayList<Keypoint> detectImageKeypoints(OctaveSlice octaveSlice) {
-        ArrayList<Keypoint> imageKeypoints = new ArrayList<>();
+    public ArrayList<Keypoint> findKeypoints(OctaveSlice octaveSlice) {
+        ArrayList<Keypoint> keypoints = new ArrayList<>();
 
         ArrayList<PixelPoint> potentialCandidates = findLocalExtremes(octaveSlice);
-        if (potentialCandidates.isEmpty()) return imageKeypoints;
+        if (potentialCandidates.isEmpty()) return keypoints;
 
         for (PixelPoint candidate: potentialCandidates) {
             Keypoint keypoint = refiner.refineKeypointCandidate(octaveSlice, candidate);
-            if (keypoint != null) imageKeypoints.add(keypoint);
+            if (keypoint != null) keypoints.add(keypoint);
         }
 
-        return imageKeypoints;
+        return keypoints;
     }
 
     /**

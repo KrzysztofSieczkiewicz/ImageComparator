@@ -5,8 +5,8 @@ import org.example.utils.ImageDataUtil;
 
 import java.util.ArrayList;
 
-public class GaussianProcessor {
-    private final KeypointDetector keypointDetector;
+public class GaussianPyramidProcessor {
+    private final KeypointFinder keypointDetector;
 
     /**
      * Image size below which octaves won't be created
@@ -16,7 +16,7 @@ public class GaussianProcessor {
     /**
      * Downscaling factor by which the image is reduced between octaves
      */
-    int downscalingFactor;
+    double downscalingFactor;
 
     /**
      * Determines base sigma from which blurring in an octave will start
@@ -33,8 +33,8 @@ public class GaussianProcessor {
      */
     private final double sigmaInterval;
 
-    public GaussianProcessor(double sigma, int imagesPerOctave, int downscalingFactor, int minImageSizeThreshold) {
-        keypointDetector = new KeypointDetector();
+    public GaussianPyramidProcessor(double sigma, int imagesPerOctave, double downscalingFactor, int minImageSizeThreshold) {
+        this.keypointDetector = new KeypointFinder(); //contrastThreshold, offsetMagnitudeThreshold, edgeResponseRatio, neighbourWindowSize, localExtremeSearchRadius
 
         this.baseSigma = sigma;
         this.imagesPerOctave = imagesPerOctave;
@@ -44,18 +44,55 @@ public class GaussianProcessor {
         this.sigmaInterval = calculateScaleIntervals();
     }
 
-    public ArrayList<Keypoint> processImageKeypoints(float[][] imageData) {
+    public float[][][] generateConsecutiveGaussians(float[][] image, int scale, int numberOfGaussians) {
+        double sigma = baseSigma * Math.pow(sigmaInterval, scale);
+
+        float[][][] gaussians = new float
+                [numberOfGaussians]
+                [image.length]
+                [image[0].length];
+
+        gaussians[0] = image;
+        for (int i=1; i<numberOfGaussians; i++) {
+            gaussians[i] = ImageDataUtil.gaussianBlurGreyscaled(image, sigma);
+            sigma *= sigmaInterval;
+        }
+
+        return gaussians;
+    }
+
+    public OctaveSlice processSingleDoGSlice(float[][][] gaussians, int octave) {
+        int numberOfGaussians = gaussians.length - 1;
+
+        float[][][] DoGs = new float
+                [numberOfGaussians-1]
+                [gaussians[0].length]
+                [gaussians[0][0].length];
+
+        for (int s=0; s<numberOfGaussians; s++) {
+            DoGs[s] = ImageDataUtil.subtractImages(gaussians[s], gaussians[s+1]);
+        }
+
+        return new OctaveSlice(
+                DoGs,
+                octave,
+                downscalingFactor
+        );
+    }
+
+
+    public ArrayList<Keypoint> findKeypoints(float[][] imageData) {
         int octavesNum = calculateNumberOfOctaves(imageData);
 
         ArrayList<Keypoint> keypoints = new ArrayList<>();
-        for (int octave = 0; octave < octavesNum; octave++) {
+        for (int octave=0; octave<octavesNum; octave++) {
             ArrayList<Keypoint> octaveKeypoints = processOctave(imageData, octave);
             keypoints.addAll(octaveKeypoints);
 
             imageData = ImageDataUtil.resizeWithAveraging(
                     imageData,
-                    imageData.length / downscalingFactor,
-                    imageData[0].length / downscalingFactor);
+                    (int)(imageData.length / downscalingFactor),
+                    (int)(imageData[0].length / downscalingFactor));
         }
 
         return keypoints;
@@ -84,7 +121,7 @@ public class GaussianProcessor {
 
         ArrayList<Keypoint> octaveKeypoints = new ArrayList<>();
 
-        for (int scale = 1; scale < imagesPerOctave-1; scale++) {
+        for (int scale = 0; scale < imagesPerOctave-2; scale++) {
 
             OctaveSlice octaveSlice = new OctaveSlice(
                     new float[][][] { previousDoGImage, currentDoGImage, nextDoGImage },
@@ -92,7 +129,7 @@ public class GaussianProcessor {
                     downscalingFactor
             );
 
-            octaveKeypoints.addAll( keypointDetector.detectImageKeypoints(octaveSlice) );
+            octaveKeypoints.addAll( keypointDetector.findKeypoints(octaveSlice) );
 
             gaussianSigma *= sigmaInterval;
             nextImage = nextNextImage;
@@ -117,18 +154,19 @@ public class GaussianProcessor {
     }
 
     /**
-     * Checks how many times image can be downsized with provided downscalingFactor and minimal image size (config)
+     * Checks how many times image can be downsized with provided downscalingFactor and minimal image size
      * @return number of octaves that can be created
      */
-    private int calculateNumberOfOctaves(float[][] imageData) {
+    public int calculateNumberOfOctaves(float[][] imageData) {
         int currWidth = imageData.length;
         int currHeight = imageData[0].length;
 
         int octaves = 0;
-        while((currWidth/downscalingFactor >= minImageSizeThreshold) && (currHeight/downscalingFactor >= minImageSizeThreshold)) {
+        while( (currWidth/downscalingFactor >= minImageSizeThreshold) &&
+               (currHeight/downscalingFactor >= minImageSizeThreshold) ) {
             octaves++;
-            currWidth /= downscalingFactor;
-            currHeight /= downscalingFactor;
+            currWidth = (int)(currWidth / downscalingFactor);
+            currHeight = (int)(currHeight / downscalingFactor);
         }
 
         return octaves;

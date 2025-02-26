@@ -2,112 +2,115 @@ package org.example.analyzers.feature;
 
 import org.example.analyzers.feature.homography.Homography;
 import org.example.analyzers.feature.homography.HomographyEvaluator;
-import org.example.analyzers.feature.keypoints.FeatureMatch;
-import org.example.analyzers.feature.keypoints.GaussianProcessor;
-import org.example.analyzers.feature.keypoints.Keypoint;
+import org.example.analyzers.feature.keypoints.*;
+import org.example.config.SIFTComparatorConfig;
 import org.example.utils.MatrixUtil;
 import org.example.utils.accessor.ImageAccessor;
 import org.example.utils.ImageDataUtil;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-
-import static java.util.stream.Collectors.toCollection;
+import java.util.List;
 
 public class SIFTAnalyzer {
-    private final GaussianProcessor gaussianProcessor;
+    private final GaussianPyramidProcessor pyramidProcessor;
+    private final KeypointFinder keypointFinder;
     private final SIFTMatcher siftMatcher;
     private final HomographyEvaluator homographyEvaluator;
 
-    /**
-     * Threshold value for homography determinant below which homography is rejected as invalid
-     */
-    private double homographyMinDeterminantThreshold = 0.1;
+    private final int matchDistanceThreshold;
+    private final double inliersNumberRatio;
+    private final double homographyMinDeterminantThreshold;
+    private final double homographyMaxDeterminantThreshold;
+    private final int dogsPerOctave;
+    private final double downscalingFactor;
 
-    /**
-     * Threshold value for homography determinant above which homography is rejected as invalid
-     */
-    private double homographyMaxDeterminanThreshold = 10;
-
-    /**
-     * Ratio of inliers from the keypoints matches. If inliers to total matches ratio is below this number,
-     * the homography is marked as invalid
-     */
-    private double inliersNumberRatio = 0.5;
-
-    /**
-     * Max distance above which kyepoints are no longer matched. Set to 0 if no limit should be applied
-     */
-    private int matchDistanceThreshold = 0;
-
-    /**
-     * How many Gaussian images should be generated per one octave
-     */
-    int imagesPerOctave = 5;
-
-    /**
-     * Base sigma value determining initial image blur
-     */
-    double baseSigma = 1.6;
-
-    /**
-     * Image size below which octaves won't be created
-     */
-    int minImageSizeThreshold = 32;
-
-    /**
-     * Downscaling factor by which the image is reduced between octaves
-     */
-    int downscalingFactor = 2;
-
-
-    // TODO: introduce distance limitations (matchKeypointsWithLimitedDistance from SIFT Matcher)
-    //  maxDistance flag? - if 0 - call (matchKeypoints), otherwise - call (matchKeypointsWithLimitedDistance);
 
     public SIFTAnalyzer() {
-        this.gaussianProcessor = new GaussianProcessor(baseSigma, imagesPerOctave, downscalingFactor, minImageSizeThreshold);
-        this.siftMatcher = new SIFTMatcher(0.8f);
+        this(new SIFTComparatorConfig());
+    }
+
+    public SIFTAnalyzer(SIFTComparatorConfig config) {
+        this.inliersNumberRatio = config.getInliersNumberRatio();
+        this.matchDistanceThreshold = config.getMatchDistanceThreshold();
+        this.homographyMinDeterminantThreshold = config.getHomographyMinDeterminantThreshold();
+        this.homographyMaxDeterminantThreshold = config.getHomographyMaxDeterminantThreshold();
+        this.dogsPerOctave = config.getDogsPerOctave();
+
+        this.downscalingFactor = config.getDownscalingFactor();
+
+        double gaussianSigma = config.getGaussianSigma();
+        int gaussianScalesPerOctave = config.getDogsPerOctave();
+        int minImageSize = config.getMinImageSize();
+        double loweRatio = config.getLoweRatio();
+
+        this.pyramidProcessor = new GaussianPyramidProcessor(gaussianSigma, gaussianScalesPerOctave, downscalingFactor, minImageSize);
+        this.keypointFinder = new KeypointFinder(contrastThreshold, offsetMagnitudeThreshold, edgeResponseRatio, neighbourWindowSize, localExtremeSearchRadius);
+        this.siftMatcher = new SIFTMatcher(loweRatio);
         this.homographyEvaluator = new HomographyEvaluator();
     }
 
+    // TODO: merge keypoint finder and keypoint refiner
+
+    public List<Keypoint> findAllKeypoints(BufferedImage image) {
+        ImageAccessor accessor = ImageAccessor.create(image);
+        float[][] imageData = ImageDataUtil.greyscaleToFloat( accessor.getPixels() );
+
+        int octaves = pyramidProcessor.calculateNumberOfOctaves(imageData);
+        int scales = dogsPerOctave;
+
+        List<Keypoint> keypoints = new ArrayList<>();
+
+        float[][] currentImage = imageData;
+        for (int octave=0; octave<octaves; octave++) {
+
+            for (int scale=0; scale<scales; scale++) {
+                float[][][] gaussians = pyramidProcessor.generateConsecutiveGaussians(currentImage, scale, 2);
+                OctaveSlice octaveSlice = pyramidProcessor.processSingleDoGSlice(gaussians, octave);
+
+                keypoints.addAll( keypointFinder.findKeypoints(octaveSlice) );
+            }
+
+            currentImage = ImageDataUtil.resizeWithAveraging(
+                    currentImage,
+                    (int)(currentImage.length / downscalingFactor),
+                    (int)(currentImage[0].length / downscalingFactor));
+        }
+
+        return keypoints;
+    }
+
+
     /**
-     * Computes keypoints candidates and refines them into feature keypoints.
-     * @return ArrayList of the Keypoints found
+     * Computes keypoint candidates and refines them into SIFT keypoints.
+     * @return ArrayList<Keypoint> of found and refined keypoints
      */
-    public ArrayList<Keypoint> findImageKeypoints(BufferedImage image) {
+    public ArrayList<Keypoint> findKeypoints(BufferedImage image) {
         ImageAccessor accessor = ImageAccessor.create(image);
         int[][] imageData = accessor.getPixels();
 
         float[][] greyscaleImageData = ImageDataUtil.greyscaleToFloat(imageData);
 
-        return gaussianProcessor.processImageKeypoints(greyscaleImageData);
+        return pyramidProcessor.findKeypoints(greyscaleImageData);
     }
 
     /**
-     * Iterates through base keypoint list and searches for matching keypoints in checked list.
+     * Iterates through base keypoint list and searches for matches in checked list.
      * @return ArrayList of matches
      */
-    public ArrayList<FeatureMatch> matchKeypoints(ArrayList<Keypoint> base, ArrayList<Keypoint> checked) {
+    public ArrayList<FeatureMatch> matchKeypoints(List<Keypoint> base, List<Keypoint> checked) {
         ArrayList<FeatureMatch> matches = siftMatcher.matchKeypoints(base, checked);
 
         if (matchDistanceThreshold != 0) {
-            matches.removeIf(match -> match.distance >= matchDistanceThreshold);
+            matches.removeIf(match -> match.getDistance() >= matchDistanceThreshold);
         }
         return matches;
     }
 
-    /**
-     * Finds and matches keypoints from the images, then estimates and validates homography.
-     * @return valid Homography or null if the Homography is invalid
-     */
-    public Homography matchImages(BufferedImage base, BufferedImage checked) {
-        ArrayList<Keypoint> baseKeypoints = findImageKeypoints(base);
-        ArrayList<Keypoint> checkedKeypoints = findImageKeypoints(checked);
-        ArrayList<FeatureMatch> matches = matchKeypoints(baseKeypoints, checkedKeypoints);
-
+    public Homography evaluateAndValidateHomography(ArrayList<FeatureMatch> matches) {
         Homography homography = homographyEvaluator.estimateHomography(matches);
 
-        if ( homography==null || validateHomography(homography) ) {
+        if ( homography.getMatrix()==null || !validateHomography(homography) ) {
             return null;
         }
 
@@ -119,7 +122,7 @@ public class SIFTAnalyzer {
      * checks if number of inliers is within acceptable ratio to the total matches number
      * @return true if homography is valid
      */
-    public boolean validateHomography(Homography homography) {
+    private boolean validateHomography(Homography homography) {
         int inliersNumber = homography.getInlierMatches().size();
         int totalMatchesNumber = homography.getTotalMatchesNumber();
         double determinant = MatrixUtil.get3x3MatrixDeterminant( homography.getMatrix() );
@@ -129,7 +132,7 @@ public class SIFTAnalyzer {
             return false;
         }
 
-        if (determinantAbs > homographyMaxDeterminanThreshold ||
+        if (determinantAbs > homographyMaxDeterminantThreshold ||
             determinantAbs < homographyMinDeterminantThreshold) {
             return false;
         }

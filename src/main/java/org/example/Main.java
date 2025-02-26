@@ -34,15 +34,14 @@ public class Main {
 
         long start = System.nanoTime();
 
-        ArrayList<Keypoint> keypoints1 = new SIFTAnalyzer().findImageKeypoints(testImage);
-        ArrayList<Keypoint> keypoints2 = new SIFTAnalyzer().findImageKeypoints(testImage2);
+        ArrayList<Keypoint> keypoints1 = new SIFTAnalyzer().findKeypoints(testImage);
+        ArrayList<Keypoint> keypoints2 = new SIFTAnalyzer().findKeypoints(testImage2);
 
-        ArrayList<FeatureMatch> matches = new SIFTMatcher(0.8f).matchKeypoints(keypoints1, keypoints2);
+        ArrayList<FeatureMatch> matches = new SIFTAnalyzer().matchKeypoints(keypoints1, keypoints2);
         Homography homography = new HomographyEvaluator().estimateHomography(matches);
 
         long end = System.nanoTime();
         System.out.println("Time taken: " + (end-start) + "ns");
-
 
         BufferedImage result = new SIFTVisualizer().drawKeypoints(testImage, keypoints1);
         File keypointsOutputFile = new File("keypoints_output.png");

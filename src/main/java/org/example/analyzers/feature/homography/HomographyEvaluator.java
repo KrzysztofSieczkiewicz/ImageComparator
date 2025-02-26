@@ -43,7 +43,7 @@ public class HomographyEvaluator {
 
         // Early exit if no H was found
         if ( bestH == null) {
-            return null;
+            return new Homography( null, null, matches.size() );
         }
 
         // 5. Refine the output using inliers

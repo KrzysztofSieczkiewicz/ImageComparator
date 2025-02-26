@@ -7,6 +7,8 @@ import org.example.utils.DerivativeUtil;
 import org.example.utils.MatrixUtil;
 import org.example.utils.VectorUtil;
 
+import java.util.Arrays;
+
 public class KeypointRefiner {
     private final DescriptorGenerator descriptorGenerator;
 
@@ -55,7 +57,7 @@ public class KeypointRefiner {
         int octaveIndex = octaveSlice.getOctaveIndex();
         double keypointPositionRatio = octaveSlice.getDownscalingRatio();
 
-        float[][] hessianMatrix = calculateKeypointHessian(
+        float[][] hessianMatrix = approxKeypointHessian(
                 octaveSlice,
                 pixelX,
                 pixelY );
@@ -86,7 +88,7 @@ public class KeypointRefiner {
      *
      * @return float[][] Hessian matrix
      */
-    private float[][] calculateKeypointHessian(OctaveSlice octaveSlice, int pixelX, int pixelY) {
+    private float[][] approxKeypointHessian(OctaveSlice octaveSlice, int pixelX, int pixelY) {
         int lastImageIndex = octaveSlice.getImages().length - 1;
 
         float[] spaceDerivatives;
@@ -131,7 +133,6 @@ public class KeypointRefiner {
 
         return r <= edgeResponseThreshold;
     }
-
 
     /**
      * Calculates subpixel position offset of the keypoint.
