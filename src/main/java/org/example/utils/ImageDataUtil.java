@@ -139,8 +139,7 @@ public class ImageDataUtil {
 
                 for (int i = startX; i < endX; i++) {
                     for (int j = startY; j < endY; j++) {
-                        int pixel = (int) imageData[i][j];
-                        pixelSum += pixel & 0xFF;
+                        pixelSum += imageData[i][j];
                         count++;
                     }
                 }

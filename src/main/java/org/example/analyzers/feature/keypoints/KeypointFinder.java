@@ -3,12 +3,15 @@ package org.example.analyzers.feature.keypoints;
 import org.example.analyzers.common.PixelPoint;
 import org.example.analyzers.feature.OctaveSlice;
 import org.example.config.SobelKernelSize;
+import org.example.utils.DerivativeUtil;
 import org.example.utils.MatrixUtil;
+import org.example.utils.VectorUtil;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class KeypointFinder {
-    private final KeypointRefiner refiner;
+    private final DescriptorGenerator descriptorGenerator;
 
     private final int[][] relativeNeighboursCoordinates;
 
@@ -36,10 +39,6 @@ public class KeypointFinder {
      */
     private final int neighbourWindowSize;
 
-    /**
-     * How large should the window for local extreme search be around each point.
-     */
-    private final int localExtremeSearchRadius;
 
     /**
      * Size of the Sobel kernel used for 2nd order derivatives approximation
@@ -51,20 +50,19 @@ public class KeypointFinder {
         this.offsetMagnitudeThreshold = offsetMagnitudeThreshold;
         this.edgeResponseRatio = edgeResponseRatio;
         this.neighbourWindowSize = neighbourWindowSize;
-        this.localExtremeSearchRadius = localExtremeSearchRadius;
 
-        this.relativeNeighboursCoordinates = generateWindowRelativeCoordinates(this.localExtremeSearchRadius);
-        this.refiner = new KeypointRefiner(offsetMagnitudeThreshold, contrastThreshold, edgeResponseRatio, sobelKernelSize, neighbourWindowSize);
+        this.relativeNeighboursCoordinates = generateWindowRelativeCoordinates(localExtremeSearchRadius);
+        this.descriptorGenerator = new DescriptorGenerator();
     }
 
     public ArrayList<Keypoint> findKeypoints(OctaveSlice octaveSlice) {
         ArrayList<Keypoint> keypoints = new ArrayList<>();
 
-        ArrayList<PixelPoint> potentialCandidates = findLocalExtremes(octaveSlice);
+        ArrayList<PixelPoint> potentialCandidates = findKeypointCandidates(octaveSlice);
         if (potentialCandidates.isEmpty()) return keypoints;
 
         for (PixelPoint candidate: potentialCandidates) {
-            Keypoint keypoint = refiner.refineKeypointCandidate(octaveSlice, candidate);
+            Keypoint keypoint = refineKeypointCandidate(octaveSlice, candidate);
             if (keypoint != null) keypoints.add(keypoint);
         }
 
@@ -72,13 +70,12 @@ public class KeypointFinder {
     }
 
     /**
-     * Searches through provided octave slice (three consecutive scales within single octave) for potential
-     * keypoint candidates. Requires that the images are the same size.
+     * Searches for local extremes in provided octave slice. Uses all provided scales for scale dimension and neighbour window size for xy dimension.
      *
      * @param octaveSlice containing images that contain the extreme.
      * @return ArrayList containing pixel coordinates of potential keypoint candidates
      */
-    private ArrayList<PixelPoint> findLocalExtremes(OctaveSlice octaveSlice) {
+    public ArrayList<PixelPoint> findKeypointCandidates(OctaveSlice octaveSlice) {
         float[][] centralImage = octaveSlice.getMainImage();
         ArrayList<PixelPoint> keypointCandidates = new ArrayList<>();
 
@@ -116,6 +113,47 @@ public class KeypointFinder {
         return keypointCandidates;
     }
 
+    private Keypoint refineKeypointCandidate(OctaveSlice octaveSlice, PixelPoint candidate) {
+        int pixelX = candidate.getX();
+        int pixelY = candidate.getY();
+        int octaveIndex = octaveSlice.getOctaveIndex();
+        double keypointPositionRatio = octaveSlice.getDownscalingRatio();
+
+        float[][] hessianMatrix = approxKeypointHessian(
+                octaveSlice,
+                pixelX,
+                pixelY );
+        if ( !isCandidateValid(hessianMatrix) ) return null;
+
+        float[] gradientVector;
+
+        gradientVector = DerivativeUtil.approximateGradientVector(
+                octaveSlice.getImages(),
+                pixelX, pixelY);
+
+        float[] offsets = calculatePixelPositionsOffsets(hessianMatrix, gradientVector);
+        float subPixelX = (float) (pixelX*keypointPositionRatio) + offsets[0];
+        float subPixelY = (float) (pixelY*keypointPositionRatio) + offsets[1];
+        if (verifySubpixelMagnitudeAndContrast(offsets) ) return null;
+
+        float[][][] localGradients = computeKeypointLocalGradients(octaveSlice.getMainImage(), pixelX, pixelY );
+        float[] keypointDescriptor = descriptorGenerator.constructDescriptor(localGradients);
+
+        return new Keypoint(octaveIndex, subPixelX, subPixelY, keypointDescriptor);
+    }
+
+    // TODO: can be merged with refineKeypointCandidate later on
+    public List<Keypoint> refineKeypointCandidates(OctaveSlice octaveSlice, List<PixelPoint> candidates) {
+        List<Keypoint> keypoints = new ArrayList<>();
+
+        for (PixelPoint candidate : candidates) {
+            Keypoint keypoint = refineKeypointCandidate(octaveSlice, candidate);
+            if (keypoint != null) keypoints.add(keypoint);
+        }
+
+        return keypoints;
+    }
+
     /**
      * Generates relative coordinates for an n-neighbours radius (including central pixel)
      * @param radius how many neighbours should be added into a window
@@ -137,4 +175,112 @@ public class KeypointFinder {
 
         return new int[][]{dRows, dCols};
     }
+
+    /**
+     * Generates approximated Hessian matrix for {x,y,x} dimensions using Sobel kernels
+     * @param octaveSlice for heesians to be found in
+     * @param pixelX candidate's width coordinate
+     * @param pixelY candidate's height coordinate
+     *
+     * @return float[][] Hessian matrix
+     */
+    private float[][] approxKeypointHessian(OctaveSlice octaveSlice, int pixelX, int pixelY) {
+        int lastImageIndex = octaveSlice.getImages().length - 1;
+
+        float[] spaceDerivatives;
+        if (sobelKernelSize.equals(SobelKernelSize.SOBEL3x3)) {
+            spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives3x3(
+                    octaveSlice.getMainImage(),
+                    pixelX,
+                    pixelY );
+        } else {
+            spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives5x5(
+                    octaveSlice.getMainImage(),
+                    pixelX,
+                    pixelY );
+        }
+
+        float[] scaleDerivatives = DerivativeUtil.approximateScaleDerivatives(
+                octaveSlice.getImages()[0],
+                octaveSlice.getMainImage(),
+                octaveSlice.getImages()[lastImageIndex],
+                pixelX,
+                pixelY );
+
+        return new float[][] {
+                { spaceDerivatives[0], spaceDerivatives[1],  scaleDerivatives[1]},
+                { spaceDerivatives[1], spaceDerivatives[2],  scaleDerivatives[2]},
+                { scaleDerivatives[1], scaleDerivatives[2],  scaleDerivatives[0]} };
+    }
+
+    /**
+     * Validates keypoint candidate by checking for edge responses and low contrasts
+     * @return true if candidate's contrast is valid
+     */
+    private boolean isCandidateValid(float[][] hessianMatrix) {
+        float trace = MatrixUtil.getMatrixTrace(hessianMatrix, 2);
+        float determinant = MatrixUtil.get2x2MatrixDeterminant(hessianMatrix);
+        float discriminant = MatrixUtil.get2x2MatrixDiscriminant(trace, determinant);
+        float[] eigenvalues = MatrixUtil.get2x2MatrixEigenvalues(trace, discriminant);
+
+        if ( (eigenvalues[0] * eigenvalues[1]) < contrastThreshold) return false;
+
+        float r = (trace*trace) / determinant;
+
+        return r <= edgeResponseRatio;
+    }
+
+    /**
+     * Calculates subpixel position offset of the keypoint.
+     *
+     * @param hessianMatrix 3x3 hessian matrix of the keypoint
+     * @param gradientsVector {dx, dy, ds} vector with gradients in each dimension
+     *
+     * @return offsets float[2] array containing {x,y}. Adding these values to initial pixel coordinates, gives precise keypoint location
+     */
+    private float[] calculatePixelPositionsOffsets(float[][] hessianMatrix, float[] gradientsVector) {
+        float[][] regularizedHessianMatrix = MatrixUtil.diagonalRegularization(hessianMatrix);
+        return MatrixUtil.solveMatrix(regularizedHessianMatrix, VectorUtil.multiplyVector(gradientsVector, -1.0f) );
+    }
+
+    /**
+     * Validates keypoint by checking if the subpixel offset is significant enough.
+     * Achieved by comparing keypoint magnitude and associated contrast against thresholds.
+     *
+     * @param offsets array[2] of subpixel position offsets {x, y}
+     * @return true if the subpixel offset passes both checks
+     */
+    private boolean verifySubpixelMagnitudeAndContrast(float[] offsets) {
+        float offsetMagnitude = VectorUtil.getVectorNorm(offsets);
+        if (offsetMagnitude > offsetMagnitudeThreshold) {
+            return false;
+        }
+
+        float contrast = VectorUtil.getVectorDotProduct(offsets);
+
+        return !(Math.abs(contrast) >= contrastThreshold);
+    }
+
+    /**
+     * Calculates local gradients of pixels inside window around given x,y coordinate.
+     * Handles out of bound by edge reflection.
+     *
+     * @param imageData float matrix containing image pixel values
+     * @param x central point x coordinate
+     * @param y central point y coordinate
+     *
+     * @return matrix of {dx, dy} gradients
+     */
+    private float[][][] computeKeypointLocalGradients(float[][] imageData, int x, int y) {
+        float[][][] localGradients = new float[neighbourWindowSize][neighbourWindowSize][2];
+
+        int radius = neighbourWindowSize / 2;
+        for (int i=-radius; i<radius; i++) {
+            for (int j = -radius; j < radius; j++) {
+                localGradients[i + radius][j + radius] = DerivativeUtil.approximateGradientVector(imageData, x + i, y + j);
+            }
+        }
+        return localGradients;
+    }
+
 }
