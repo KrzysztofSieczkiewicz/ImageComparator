@@ -39,6 +39,11 @@ public class KeypointFinder {
      */
     private final int neighbourWindowSize;
 
+    /**
+     * How large should the window of neighbours around keypoint be for local extremes search
+     */
+    private final int localExtremesSearchRadius;
+
 
     /**
      * Size of the Sobel kernel used for 2nd order derivatives approximation
@@ -50,6 +55,7 @@ public class KeypointFinder {
         this.offsetMagnitudeThreshold = offsetMagnitudeThreshold;
         this.edgeResponseRatio = edgeResponseRatio;
         this.neighbourWindowSize = neighbourWindowSize;
+        this.localExtremesSearchRadius = localExtremeSearchRadius;
 
         this.relativeNeighboursCoordinates = generateWindowRelativeCoordinates(localExtremeSearchRadius);
         this.descriptorGenerator = new DescriptorGenerator();
@@ -82,26 +88,41 @@ public class KeypointFinder {
         int rows = centralImage.length;
         int cols = centralImage[0].length;
 
+        int edgeOffset = localExtremesSearchRadius;
         int[] dRow = relativeNeighboursCoordinates[0];
         int[] dCol = relativeNeighboursCoordinates[1];
 
-        for (int row=0; row<rows; row++) {
-            for (int col=0; col<cols; col++) {
+        for (int row=edgeOffset; row<rows-edgeOffset; row++) {
+            for (int col=edgeOffset; col<cols-edgeOffset; col++) {
                 float currentPixel = centralImage[row][col];
                 boolean isMinimum = true;
                 boolean isMaximum = true;
 
-                for ( float[][] image: octaveSlice.getImages() ) {
+                // check main image
+                for ( int k=0; k<dRow.length; k++) {
+                    int currRow = row + dRow[k];
+                    int currCol = col + dCol[k];
+                    if (currRow == row && currCol == col) continue;
+
+                    float neighbourValue = centralImage[currRow][currCol];
+                    if (currentPixel >= neighbourValue) isMinimum = false;
+                    if (currentPixel <= neighbourValue) isMaximum = false;
+                    if (!isMinimum && !isMaximum) break;
+                }
+                if (!isMinimum && !isMaximum) continue;
+
+                // check neighbouring images
+                for ( float[][] image: octaveSlice.getSideImages() ) {
                     for (int k=0; k<dRow.length; k++) {
-                        int currRow = MatrixUtil.safeReflectCoordinate( row + dRow[k], rows );
-                        int currCol = MatrixUtil.safeReflectCoordinate( col + dCol[k], cols );
+                        int currRow = row + dRow[k];
+                        int currCol = col + dCol[k];
 
                         float neighbourValue = image[currRow][currCol];
-                        if (currentPixel > neighbourValue) isMinimum = false;
-                        if (currentPixel < neighbourValue) isMaximum = false;
-
+                        if (currentPixel >= neighbourValue) isMinimum = false;
+                        if (currentPixel <= neighbourValue) isMaximum = false;
                         if (!isMinimum && !isMaximum) break;
                     }
+                    if (!isMinimum && !isMaximum) break;
                 }
 
                 if (isMaximum || isMinimum) {
@@ -113,7 +134,20 @@ public class KeypointFinder {
         return keypointCandidates;
     }
 
-    private Keypoint refineKeypointCandidate(OctaveSlice octaveSlice, PixelPoint candidate) {
+    public PixelPoint refineCandidate(OctaveSlice slice, PixelPoint candidate) {
+        int pixelX = candidate.getX();
+        int pixelY = candidate.getY();
+
+        float[][] hessianMatrix = approxKeypointHessian(
+                slice,
+                pixelX,
+                pixelY );
+        if ( !isCandidateValid(hessianMatrix) ) return null;
+
+        return candidate;
+    }
+
+    public Keypoint refineKeypointCandidate(OctaveSlice octaveSlice, PixelPoint candidate) {
         int pixelX = candidate.getX();
         int pixelY = candidate.getY();
         int octaveIndex = octaveSlice.getOctaveIndex();

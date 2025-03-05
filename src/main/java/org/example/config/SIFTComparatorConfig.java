@@ -33,7 +33,7 @@ public class SIFTComparatorConfig {
     /**
      * How many Gaussian images should be generated per one octave
      */
-    private int dogsPerOctave = 5;
+    private int numberOfScales = 3;
 
     /**
      * Factor by which images will be downscaled between octaves in the gaussian pyramid
@@ -105,8 +105,8 @@ public class SIFTComparatorConfig {
         return gaussianSigma;
     }
 
-    public int getDogsPerOctave() {
-        return dogsPerOctave;
+    public int getNumberOfScales() {
+        return numberOfScales;
     }
 
     public int getDownscalingFactor() {

@@ -22,16 +22,16 @@ public class PyramidProcessor {
     private final double baseSigma;
 
     /**
-     * Number of Gaussian images for a single octave
+     * Number of scales for a single octave in the dog pyramid
      */
-    private final int imagesPerOctave;
+    private final int numberOfScales;
 
     /**
      * Value by which gaussian sima is multiplied for consecutive scales within octave
      */
     private final double sigmaInterval;
 
-    public PyramidProcessor(double sigma, int imagesPerOctave, double downscalingFactor, int minImageSizeThreshold) {
+    public PyramidProcessor(double sigma, int numberOfScales, double downscalingFactor, int minImageSizeThreshold) {
         this.keypointDetector = new KeypointFinder(
                 0.04f,
                 0.55f,
@@ -41,7 +41,7 @@ public class PyramidProcessor {
         ); //contrastThreshold, offsetMagnitudeThreshold, edgeResponseRatio, neighbourWindowSize, localExtremeSearchRadius
 
         this.baseSigma = sigma;
-        this.imagesPerOctave = imagesPerOctave;
+        this.numberOfScales = numberOfScales;
         this.downscalingFactor = downscalingFactor;
         this.minImageSizeThreshold = minImageSizeThreshold;
 
@@ -84,7 +84,7 @@ public class PyramidProcessor {
      * @return sigma multiplier
      */
     private double calculateScaleIntervals() {
-        double p = 1d/ imagesPerOctave;
+        double p = 1d / numberOfScales;
         return Math.pow(2, p);
     }
 

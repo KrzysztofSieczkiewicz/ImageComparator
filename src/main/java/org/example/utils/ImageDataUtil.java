@@ -249,7 +249,8 @@ public class ImageDataUtil {
     public static float[][] gaussianBlurGreyscaled(float[][] imageData, double sigma) {
         int width = imageData.length;
         int height = imageData[0].length;
-        float[][] blurredImageData = new float[width][height];
+        float[][] horizontalBlurredImageData = new float[width][height];
+        float[][] finalBlurredImageData = new float[width][height]; // Separate array for final result
 
         float[] kernelData = generateGaussianKernelData(sigma);
         int kernelSize = kernelData.length;
@@ -259,7 +260,6 @@ public class ImageDataUtil {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 float pixelValue = 0;
-                float weightSum = 0;
 
                 for (int kx = -halfKernelSize; kx <= halfKernelSize; kx++) {
                     int mirroredX = Math.max(0, Math.min(x + kx, width - 1));
@@ -269,28 +269,27 @@ public class ImageDataUtil {
                     pixelValue += pixel * kernelValue;
                 }
 
-                blurredImageData[x][y] = pixelValue;
+                horizontalBlurredImageData[x][y] = pixelValue;
             }
         }
         // Second pass: vertical blur
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 float pixelValue = 0;
-                float weightSum = 0;
 
                 for (int ky = -halfKernelSize; ky <= halfKernelSize; ky++) {
                     int mirroredY = Math.max(0, Math.min(y + ky, height - 1));
-                    float pixel = blurredImageData[x][mirroredY];
+                    float pixel = horizontalBlurredImageData[x][mirroredY]; // Use the horizontally blurred data
                     float kernelValue = kernelData[ky + halfKernelSize];
 
                     pixelValue += pixel * kernelValue;
                 }
 
-                blurredImageData[x][y] = pixelValue;
+                finalBlurredImageData[x][y] = pixelValue; // Store the final result in a separate array
             }
         }
 
-        return blurredImageData;
+        return finalBlurredImageData;
     }
 
     /**
@@ -376,8 +375,9 @@ public class ImageDataUtil {
      * @return awt Kernel
      */
     private static float[] generateGaussianKernelData(double sigma) {
-        int size = 2 * (int) Math.ceil(3 * sigma) + 1;  // Ensures odd size
-        // Ensure odd size
+        int size = Math.round( (float)(6 * sigma + 1) );
+        if (size % 2 == 0) size++;
+        if (size < 3) size = 3;
 
         float[] kernelData = new float[size];
         int halfSize = size / 2;

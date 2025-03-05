@@ -1,5 +1,6 @@
 package org.example.analyzers.feature;
 
+import org.example.analyzers.common.PixelPoint;
 import org.example.analyzers.feature.keypoints.FeatureMatch;
 import org.example.analyzers.feature.keypoints.Keypoint;
 
@@ -20,7 +21,7 @@ public class SIFTVisualizer {
             int x = (int) kp.getSubPixelX() * (int) Math.pow(2, kp.getOctaveIndex());
             int y = (int) kp.getSubPixelY() * (int) Math.pow(2, kp.getOctaveIndex());
             int octave = kp.getOctaveIndex();
-            int radius = 3 * (octave + 1); // Increase radius based on octave
+            int radius = 8 * (octave + 1); // Increase radius based on octave
 
             g.drawOval(x - radius, y - radius, 2 * radius, 2 * radius);
             g.fillOval(x - 2, y - 2, 4, 4); // Draw center dot
@@ -63,6 +64,25 @@ public class SIFTVisualizer {
             g.fillOval(x1 - 3, y1 - 3, 6, 6);  // Draw keypoint 1
             g.fillOval(x2 - 3, y2 - 3, 6, 6);  // Draw keypoint 2
             g.drawLine(x1, y1, x2, y2);        // Draw line connecting matches
+        }
+
+        g.dispose();
+        return output;
+    }
+
+    public BufferedImage drawCandidates(BufferedImage image, int octaveIndex, List<PixelPoint> keypointCandidates) {
+        BufferedImage output = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = output.createGraphics();
+
+        g.drawImage(image, 0, 0, null);
+        g.setColor(Color.BLUE);
+
+        for (PixelPoint point : keypointCandidates) {
+            int x = point.getX() * (int) Math.pow(2, octaveIndex);
+            int y = point.getY() * (int) Math.pow(2, octaveIndex);
+            int radius = 5;
+
+            g.drawOval(x - radius, y - radius, 2 * radius, 2 * radius);
         }
 
         g.dispose();
