@@ -21,7 +21,7 @@ public class SIFTVisualizer {
             int x = (int) kp.getSubPixelX() * (int) Math.pow(2, kp.getOctaveIndex());
             int y = (int) kp.getSubPixelY() * (int) Math.pow(2, kp.getOctaveIndex());
             int octave = kp.getOctaveIndex();
-            int radius = 8 * (octave + 1); // Increase radius based on octave
+            int radius = (int) (8 * Math.pow(2, octave)); // Increase radius based on octave
 
             g.drawOval(x - radius, y - radius, 2 * radius, 2 * radius);
             g.fillOval(x - 2, y - 2, 4, 4); // Draw center dot

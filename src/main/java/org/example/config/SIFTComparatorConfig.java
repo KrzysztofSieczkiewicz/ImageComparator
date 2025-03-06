@@ -58,19 +58,19 @@ public class SIFTComparatorConfig {
      * Contrast threshold below which keypoint will be discarded as noise.
      * Usually between 0.01 and 0.04
      */
-    private float contrastThreshold = 0.04f;
-
-    /**
-     * Offset magnitude threshold above which keypoint will be discarded.
-     * Usually around 0.55
-     */
-    private float offsetMagnitudeThreshold = 0.55f;
+    private float contrastThreshold = 0.05f;
 
     /**
      * Hessian eigenvalues ratio below which keypoint will be discarded as edge keypoint.
      * Usually between 5 and 20
      */
     private float edgeResponseRatio = 10;
+
+    /**
+     * Offset magnitude threshold above which keypoint will be discarded.
+     * Usually around 0.55
+     */
+    private float offsetMagnitudeThreshold = 0.55f;
 
     /**
      * How large should the window of neighbours around keypoint be. Will be scaled by each octave
@@ -127,12 +127,12 @@ public class SIFTComparatorConfig {
         return contrastThreshold;
     }
 
-    public float getOffsetMagnitudeThreshold() {
-        return offsetMagnitudeThreshold;
-    }
-
     public float getEdgeResponseRatio() {
         return edgeResponseRatio;
+    }
+
+    public float getOffsetMagnitudeThreshold() {
+        return offsetMagnitudeThreshold;
     }
 
     public int getNeighbourWindowSize() {

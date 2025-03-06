@@ -5,6 +5,7 @@ import org.example.analyzers.feature.homography.Homography;
 import org.example.analyzers.feature.homography.HomographyEvaluator;
 import org.example.analyzers.feature.keypoints.*;
 import org.example.config.SIFTComparatorConfig;
+import org.example.utils.ImageUtil;
 import org.example.utils.MatrixUtil;
 import org.example.utils.accessor.ImageAccessor;
 import org.example.utils.ImageDataUtil;
@@ -13,8 +14,11 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.example.utils.ImageUtil.deepCopy;
 
 public class SIFTAnalyzer {
     private final PyramidProcessor pyramidProcessor;
@@ -94,10 +98,6 @@ public class SIFTAnalyzer {
             blurred[1] = pyramidProcessor.generateGaussian(imageData, 2);
             dogs[1] = ImageDataUtil.subtractImages(blurred[1], blurred[0]);
 
-            blurred[0] = blurred[1];
-            blurred[1] = pyramidProcessor.generateGaussian(imageData, 3);
-            dogs[2] = ImageDataUtil.subtractImages(blurred[1], blurred[0]);
-
             for (int scale=0; scale<scalesNum; scale++) {
 
                 blurred[0] = blurred[1];
@@ -115,6 +115,18 @@ public class SIFTAnalyzer {
                 List<PixelPoint> localCandidates = keypointFinder.findKeypointCandidates(octaveSlice);
                 candidates.addAll( localCandidates );
 
+                List<PixelPoint> localRefinedCandidates = new ArrayList<>();
+                for (PixelPoint candidate : candidates) {
+                    PixelPoint keypoint = keypointFinder.refineCandidate(octaveSlice, candidate);
+                    if (keypoint != null) localRefinedCandidates.add(keypoint);
+                }
+
+                saveImageWithNormalizationAndPoints(
+                        dogs[1],
+                        "src/Candidates_o" + octave + "_s" + scale + ".png",
+                        localRefinedCandidates
+                );
+
                 for (int k=0; k<2; k++) {
                     dogs[k] = dogs[k+1];
                 }
@@ -125,7 +137,6 @@ public class SIFTAnalyzer {
                     "src/Candidates_o" + octave + ".png",
                     candidates
             );
-            System.out.println("octave " + octave + "keypoints: " + candidates.size());
 
             imageData = ImageDataUtil.resizeWithAveraging(
                     blurred[1],
@@ -338,4 +349,5 @@ public class SIFTAnalyzer {
             throw new RuntimeException(e);
         }
     }
+
 }

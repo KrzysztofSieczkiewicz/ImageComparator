@@ -8,6 +8,7 @@ import org.example.utils.MatrixUtil;
 import org.example.utils.VectorUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class KeypointFinder {
@@ -48,7 +49,7 @@ public class KeypointFinder {
     /**
      * Size of the Sobel kernel used for 2nd order derivatives approximation
      */
-    SobelKernelSize sobelKernelSize = SobelKernelSize.SOBEL5x5;
+    SobelKernelSize sobelKernelSize = SobelKernelSize.SOBEL7x7;
 
     public KeypointFinder(float contrastThreshold, float offsetMagnitudeThreshold, float edgeResponseRatio, int neighbourWindowSize, int localExtremeSearchRadius) {
         this.contrastThreshold = contrastThreshold;
@@ -112,12 +113,13 @@ public class KeypointFinder {
                 if (!isMinimum && !isMaximum) continue;
 
                 // check neighbouring images
-                for ( float[][] image: octaveSlice.getSideImages() ) {
+                for ( float[][] image: octaveSlice.getPeripheralImages() ) {
                     for (int k=0; k<dRow.length; k++) {
                         int currRow = row + dRow[k];
                         int currCol = col + dCol[k];
 
                         float neighbourValue = image[currRow][currCol];
+
                         if (currentPixel >= neighbourValue) isMinimum = false;
                         if (currentPixel <= neighbourValue) isMaximum = false;
                         if (!isMinimum && !isMaximum) break;
@@ -227,8 +229,13 @@ public class KeypointFinder {
                     octaveSlice.getMainImage(),
                     pixelX,
                     pixelY );
-        } else {
+        } else if (sobelKernelSize.equals(SobelKernelSize.SOBEL5x5)){
             spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives5x5(
+                    octaveSlice.getMainImage(),
+                    pixelX,
+                    pixelY );
+        } else {
+            spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives7x7(
                     octaveSlice.getMainImage(),
                     pixelX,
                     pixelY );
@@ -257,7 +264,16 @@ public class KeypointFinder {
         float discriminant = MatrixUtil.get2x2MatrixDiscriminant(trace, determinant);
         float[] eigenvalues = MatrixUtil.get2x2MatrixEigenvalues(trace, discriminant);
 
-        if ( (eigenvalues[0] * eigenvalues[1]) < contrastThreshold) return false;
+        System.out.println(
+                "Trace: " + trace + ", Determinant: " + determinant + ", Discriminant: "
+                        + discriminant + ", Eigenvalues: " + Arrays.toString(eigenvalues)
+                        + ", Contrast: " + (eigenvalues[0] * eigenvalues[1])
+                        + ", Edge response: " + ( (trace*trace) / determinant )
+        );
+
+        if ( Math.abs(eigenvalues[0] * eigenvalues[1]) < contrastThreshold) return false;
+
+        System.out.println("Passed contrast check");
 
         float r = (trace*trace) / determinant;
 

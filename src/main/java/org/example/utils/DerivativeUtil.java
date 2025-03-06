@@ -29,6 +29,16 @@ public class DerivativeUtil {
             { 1,  0, -2,  0,  1}
     };
 
+    private static int[][] sobel7x7Dxx = {
+            { 1,  0, -2,  0,  1,  0, -2},
+            { 2,  0, -4,  0,  2,  0, -4},
+            { 4,  0, -8,  0,  4,  0, -8},
+            { 6,  0, -12, 0,  6,  0, -12},
+            { 4,  0, -8,  0,  4,  0, -8},
+            { 2,  0, -4,  0,  2,  0, -4},
+            { 1,  0, -2,  0,  1,  0, -2}
+    };
+
     private static int[][] sobel3x3Dyy = {
             { 1,  2,  1},
             {-2, -4, -2},
@@ -43,6 +53,17 @@ public class DerivativeUtil {
             { 1,  2,  4,  2,  1}
     };
 
+    private static int[][] sobel7x7Dyy = {
+            { 1,  2,  4,  6,  4,  2,  1},
+            { 2,  4,  8, 12,  8,  4,  2},
+            { 4,  8, 16, 24, 16,  8,  4},
+            { 6, 12, 24, 36, 24, 12,  6},
+            { 4,  8, 16, 24, 16,  8,  4},
+            { 2,  4,  8, 12,  8,  4,  2},
+            { 1,  2,  4,  6,  4,  2,  1}
+    };
+
+
     private static int[][] sobel3x3Dxy = {
             { 1,  0, -1},
             { 0,  0,  0},
@@ -56,6 +77,17 @@ public class DerivativeUtil {
             {-2, -4,  0,  4,  2},
             {-1, -2,  0,  2,  1}
     };
+
+    private static int[][] sobel7x7Dxy = {
+            { 1,  2,  0, -2, -1, -2,  0},
+            { 2,  4,  0, -4, -2, -4,  0},
+            { 0,  0,  0,  0,  0,  0,  0},
+            {-2, -4,  0,  4,  2,  4,  0},
+            {-1, -2,  0,  2,  1,  2,  0},
+            {-2, -4,  0,  4,  2,  4,  0},
+            { 0,  0,  0,  0,  0,  0,  0}
+    };
+
 
     /**
      * Approximates first order derivatives around (X,Y) point using 3x3 sobel kernel
@@ -149,6 +181,21 @@ public class DerivativeUtil {
         return approximateSpaceDerivatives(
           imageData, x, y,
           sobel5x5Dxx, sobel5x5Dyy, sobel5x5Dxy
+        );
+    }
+
+    /**
+     * Approximates space derivatives (XY) of the image using 5x5 sobel kernels.
+     *
+     * @param imageData image data
+     * @param x pixel width coordinate
+     * @param y pixel height coordinate
+     * @return array of derivatives {dxx, dxy, dyy}
+     */
+    public static float[] approximateSpaceDerivatives7x7(float[][] imageData, int x, int y) {
+        return approximateSpaceDerivatives(
+                imageData, x, y,
+                sobel7x7Dxx, sobel7x7Dyy, sobel7x7Dxy
         );
     }
 

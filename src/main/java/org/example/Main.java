@@ -25,6 +25,7 @@ public class Main {
 //        BufferedImage testImage2 = ImageUtil.resize(testImage, 1024, 512);
 
         //testImage2 = ImageUtil.greyscale(testImage2);
+        //testImage = ImageUtil.resize(testImage, testImage.getWidth()/2, testImage.getHeight()/2);
 
 //        BufferedImage testImage = ImageIO.read(new File("src/Eiffel1.jpg"));
 //        BufferedImage testImage2 = ImageIO.read(new File("src/Eiffel2.jpg"));
@@ -47,7 +48,8 @@ public class Main {
         File keypointsOutputFile1 = new File("keypoints_output_1.png");
         ImageIO.write(result1, "png", keypointsOutputFile1);
         System.out.println("I managed with keypoints 1: " + keypoints1.size());
-//
+
+
 //        List<Keypoint> keypoints2 = new SIFTAnalyzer().findKeypoints(testImage2);
 //        BufferedImage result2 = new SIFTVisualizer().drawKeypoints(testImage2, keypoints2);
 //        File keypointsOutputFile2 = new File("keypoints_output_2.png");
