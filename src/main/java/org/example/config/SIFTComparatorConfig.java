@@ -23,7 +23,7 @@ public class SIFTComparatorConfig {
     /**
      * Threshold value for homography determinant above which homography is rejected as invalid
      */
-    private double homographyMaxDeterminantThreshold = 10;
+    private double homographyMaxDeterminantThreshold = 5;
 
     /**
      * Base sigma value determining initial image blur
@@ -58,13 +58,13 @@ public class SIFTComparatorConfig {
      * Contrast threshold below which keypoint will be discarded as noise.
      * Usually between 0.01 and 0.04
      */
-    private float contrastThreshold = 0.05f;
+    private float contrastThreshold = 0.075f;
 
     /**
      * Hessian eigenvalues ratio below which keypoint will be discarded as edge keypoint.
      * Usually between 5 and 20
      */
-    private float edgeResponseRatio = 10;
+    private float edgeResponseRatio = 5;
 
     /**
      * Offset magnitude threshold above which keypoint will be discarded.
@@ -80,7 +80,7 @@ public class SIFTComparatorConfig {
     /**
      * How large should the window for local extreme search be around each point.
      */
-    private int localExtremeSearchRadius = 1;
+    private int localExtremeSearchRadius = 3;
 
 
 

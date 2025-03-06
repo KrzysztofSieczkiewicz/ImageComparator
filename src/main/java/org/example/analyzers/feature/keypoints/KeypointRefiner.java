@@ -125,7 +125,7 @@ public class KeypointRefiner {
         float trace = MatrixUtil.getMatrixTrace(hessianMatrix, 2);
         float determinant = MatrixUtil.get2x2MatrixDeterminant(hessianMatrix);
         float discriminant = MatrixUtil.get2x2MatrixDiscriminant(trace, determinant);
-        float[] eigenvalues = MatrixUtil.get2x2MatrixEigenvalues(trace, discriminant);
+        double[] eigenvalues = MatrixUtil.get2x2MatrixEigenvalues(trace, discriminant);
 
         if ( (eigenvalues[0] * eigenvalues[1]) < contrastThreshold) return false;
 

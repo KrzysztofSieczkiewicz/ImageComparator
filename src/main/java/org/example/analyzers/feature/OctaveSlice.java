@@ -3,15 +3,17 @@ package org.example.analyzers.feature;
 public class OctaveSlice {
     private final float[][][] images;
     private final int octaveIndex;
+    private final int scaleIndex;
     private final double downscalingRatio;
 
     private final int centralIndex;
     private final float[][][] peripheralImages;
 
 
-    public OctaveSlice(float[][][] images, int octaveIndex, double downscalingFactor) {
+    public OctaveSlice(float[][][] images, int octaveIndex, int scaleIndex, double downscalingFactor) {
         this.images = images;
         this.octaveIndex = octaveIndex;
+        this.scaleIndex = scaleIndex;
         this.downscalingRatio = Math.pow(downscalingFactor, octaveIndex);
 
         this.centralIndex = (images.length-1) / 2;
@@ -49,6 +51,10 @@ public class OctaveSlice {
 
     public int getOctaveIndex() {
         return octaveIndex;
+    }
+
+    public int getScaleIndex() {
+        return scaleIndex;
     }
 
     public int getCentralIndex() {

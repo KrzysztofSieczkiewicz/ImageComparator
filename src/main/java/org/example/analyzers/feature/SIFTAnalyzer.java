@@ -5,7 +5,6 @@ import org.example.analyzers.feature.homography.Homography;
 import org.example.analyzers.feature.homography.HomographyEvaluator;
 import org.example.analyzers.feature.keypoints.*;
 import org.example.config.SIFTComparatorConfig;
-import org.example.utils.ImageUtil;
 import org.example.utils.MatrixUtil;
 import org.example.utils.accessor.ImageAccessor;
 import org.example.utils.ImageDataUtil;
@@ -14,11 +13,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.example.utils.ImageUtil.deepCopy;
 
 public class SIFTAnalyzer {
     private final PyramidProcessor pyramidProcessor;
@@ -98,6 +94,18 @@ public class SIFTAnalyzer {
             blurred[1] = pyramidProcessor.generateGaussian(imageData, 2);
             dogs[1] = ImageDataUtil.subtractImages(blurred[1], blurred[0]);
 
+//            float smallest = 0;
+//            float largest = 0;
+//            for (int x=0; x<dogs[1].length; x++) {
+//                for (int y=0; y<dogs[1][0].length; y++) {
+//                    if (dogs[1][x][y] > largest) largest = dogs[1][x][y];
+//                    if (dogs[1][x][y] < smallest) smallest = dogs[1][x][y];
+//                    //System.out.println(dogs[1][x][y]);
+//                }
+//            }
+//            System.out.println("Smallest: " + smallest);
+//            System.out.println("Largest: " + largest);
+
             for (int scale=0; scale<scalesNum; scale++) {
 
                 blurred[0] = blurred[1];
@@ -107,19 +115,21 @@ public class SIFTAnalyzer {
                 OctaveSlice octaveSlice = new OctaveSlice(
                         dogs,
                         octave,
+                        scale,
                         downscalingFactor
                 );
 
                 keypoints.addAll( keypointFinder.findKeypoints(octaveSlice) );
 
                 List<PixelPoint> localCandidates = keypointFinder.findKeypointCandidates(octaveSlice);
-                candidates.addAll( localCandidates );
 
                 List<PixelPoint> localRefinedCandidates = new ArrayList<>();
-                for (PixelPoint candidate : candidates) {
+                for (PixelPoint candidate : localCandidates) {
                     PixelPoint keypoint = keypointFinder.refineCandidate(octaveSlice, candidate);
                     if (keypoint != null) localRefinedCandidates.add(keypoint);
                 }
+                System.out.println(localRefinedCandidates.size());
+                candidates.addAll( localRefinedCandidates );
 
                 saveImageWithNormalizationAndPoints(
                         dogs[1],

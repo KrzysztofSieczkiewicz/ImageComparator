@@ -134,16 +134,16 @@ public class MatrixUtil {
         return (trace * trace) - (4 * determinant);
     }
 
-    public static float[] get2x2MatrixEigenvalues(float trace, float discriminant) {
+    public static double[] get2x2MatrixEigenvalues(float trace, float discriminant) {
         if (discriminant < 0 && Math.abs(discriminant) > 1e-10) {
-            return new float[]{Float.NaN, Float.NaN};
+            return new double[]{Double.NaN, Double.NaN};
         }
 
         float sqrtDiscriminant = (float) Math.sqrt(discriminant);
-        float lambda1 = (trace + sqrtDiscriminant) / 2f;
-        float lambda2 = (trace - sqrtDiscriminant) / 2f;
+        double lambda1 = (trace + sqrtDiscriminant) / 2.0;
+        double lambda2 = (trace - sqrtDiscriminant) / 2.0;
 
-        return new float[]{lambda1, lambda2};
+        return new double[]{lambda1, lambda2};
     }
 
     /**

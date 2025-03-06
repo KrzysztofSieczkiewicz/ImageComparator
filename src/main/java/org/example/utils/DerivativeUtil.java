@@ -1,7 +1,7 @@
 package org.example.utils;
 
 public class DerivativeUtil {
-
+    // TODO: replace with normalized kernels
     private static int[][] sobelDx = {
             {-1,  0,  1},
             {-2,  0,  2},
@@ -203,6 +203,7 @@ public class DerivativeUtil {
      * Internal method. Approximates space derivatives (XY) of the image using provided kernels.
      * @return array of derivatives {dxx, dxy, dyy}
      */
+    // TODO: write second method that uses central difference instead - should be better
     private static float[] approximateSpaceDerivatives(
             float[][] imageData, int x, int y,
             int[][] sobelDxx, int[][] sobelDyy, int[][] sobelDxy) {
@@ -226,6 +227,19 @@ public class DerivativeUtil {
         }
 
         return new float[] {dxx, dxy, dyy};
+    }
+
+    public static float[] approxSpaceDerivatives(float[][] imageData, int x, int y, float sigma) {
+        int radius = 1;
+        float dxx = ( imageData[x+radius][y] - 2*imageData[x][y] + imageData[x-radius][y] ) * sigma * sigma * 255;
+        float dyy = ( imageData[x][y+radius] - 2*imageData[x][y] + imageData[x][y-radius] ) * sigma * sigma * 255;
+        float dxy = ( (imageData[x+radius][y+radius] - imageData[x+radius][y-radius] - imageData[x-radius][y+radius] + imageData[x-radius][y-radius]) / 4.0f ) * sigma * sigma * 255;
+
+        System.out.println("Dxx: " + dxx);
+        System.out.println("Dyy: " + dyy);
+        System.out.println("Dxy: " + dxy);
+
+        return new float[] {dxx, dyy, dxy};
     }
 
     /**

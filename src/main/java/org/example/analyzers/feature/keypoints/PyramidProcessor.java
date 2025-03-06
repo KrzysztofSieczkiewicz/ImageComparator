@@ -59,25 +59,6 @@ public class PyramidProcessor {
         return ImageDataUtil.subtractImages(firstImage, secondImage);
     }
 
-    // TODO: finish
-    public OctaveSlice processSingleDoGSlice(float[][][] gaussians, int octave) {
-        int numberOfDoGs = gaussians.length - 1;
-
-        float[][][] DoGs = new float
-                [numberOfDoGs]
-                [gaussians[0].length]
-                [gaussians[0][0].length];
-
-        for (int s=0; s<numberOfDoGs; s++) {
-            DoGs[s] = ImageDataUtil.subtractImages(gaussians[s], gaussians[s+1]);
-        }
-
-        return new OctaveSlice(
-                DoGs,
-                octave,
-                downscalingFactor
-        );
-    }
 
     /**
      * Calculates sigma multiplier which determines blurring progression within single octave

@@ -223,23 +223,27 @@ public class KeypointFinder {
     private float[][] approxKeypointHessian(OctaveSlice octaveSlice, int pixelX, int pixelY) {
         int lastImageIndex = octaveSlice.getImages().length - 1;
 
-        float[] spaceDerivatives;
-        if (sobelKernelSize.equals(SobelKernelSize.SOBEL3x3)) {
-            spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives3x3(
-                    octaveSlice.getMainImage(),
-                    pixelX,
-                    pixelY );
-        } else if (sobelKernelSize.equals(SobelKernelSize.SOBEL5x5)){
-            spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives5x5(
-                    octaveSlice.getMainImage(),
-                    pixelX,
-                    pixelY );
-        } else {
-            spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives7x7(
-                    octaveSlice.getMainImage(),
-                    pixelX,
-                    pixelY );
-        }
+        float[] spaceDerivatives = DerivativeUtil.approxSpaceDerivatives(
+                octaveSlice.getMainImage(),
+                pixelX,
+                pixelY,
+                (float)(1.6*Math.pow(1.41f, octaveSlice.getScaleIndex())) );
+//        if (sobelKernelSize.equals(SobelKernelSize.SOBEL3x3)) {
+//            spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives3x3(
+//                    octaveSlice.getMainImage(),
+//                    pixelX,
+//                    pixelY );
+//        } else if (sobelKernelSize.equals(SobelKernelSize.SOBEL5x5)){
+//            spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives5x5(
+//                    octaveSlice.getMainImage(),
+//                    pixelX,
+//                    pixelY );
+//        } else {
+//            spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives7x7(
+//                    octaveSlice.getMainImage(),
+//                    pixelX,
+//                    pixelY );
+//        }
 
         float[] scaleDerivatives = DerivativeUtil.approximateScaleDerivatives(
                 octaveSlice.getImages()[0],
@@ -262,20 +266,19 @@ public class KeypointFinder {
         float trace = MatrixUtil.getMatrixTrace(hessianMatrix, 2);
         float determinant = MatrixUtil.get2x2MatrixDeterminant(hessianMatrix);
         float discriminant = MatrixUtil.get2x2MatrixDiscriminant(trace, determinant);
-        float[] eigenvalues = MatrixUtil.get2x2MatrixEigenvalues(trace, discriminant);
+        double[] eigenvalues = MatrixUtil.get2x2MatrixEigenvalues(trace, discriminant);
 
+//        System.out.println(Arrays.deepToString(hessianMatrix));
         System.out.println(
-                "Trace: " + trace + ", Determinant: " + determinant + ", Discriminant: "
-                        + discriminant + ", Eigenvalues: " + Arrays.toString(eigenvalues)
-                        + ", Contrast: " + (eigenvalues[0] * eigenvalues[1])
+//                "Trace: " + trace + ", Determinant: " + determinant + ", Discriminant: " +
+//                        discriminant + ", Eigenvalues: " + Arrays.toString(eigenvalues) +
+                        ", Contrast: " + (eigenvalues[0] * eigenvalues[1])
                         + ", Edge response: " + ( (trace*trace) / determinant )
         );
 
-        if ( Math.abs(eigenvalues[0] * eigenvalues[1]) < contrastThreshold) return false;
+        if (Math.abs(eigenvalues[0] * eigenvalues[1]) < contrastThreshold) return false;
 
-        System.out.println("Passed contrast check");
-
-        float r = (trace*trace) / determinant;
+        float r = Math.abs( (trace*trace) / determinant );
 
         return r <= edgeResponseRatio;
     }

@@ -375,7 +375,7 @@ public class ImageDataUtil {
      * @return awt Kernel
      */
     private static float[] generateGaussianKernelData(double sigma) {
-        int size = Math.round( (float)(6 * sigma + 1) );
+        int size = Math.round( (float)(6 * sigma) );
         if (size % 2 == 0) size++;
         if (size < 3) size = 3;
 

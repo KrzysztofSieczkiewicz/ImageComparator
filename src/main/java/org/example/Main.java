@@ -24,12 +24,12 @@ public class Main {
 //        BufferedImage testImage = ImageIO.read(new File("src/Chicken.png"));
 //        BufferedImage testImage2 = ImageUtil.resize(testImage, 1024, 512);
 
-        //testImage2 = ImageUtil.greyscale(testImage2);
-        //testImage = ImageUtil.resize(testImage, testImage.getWidth()/2, testImage.getHeight()/2);
-
 //        BufferedImage testImage = ImageIO.read(new File("src/Eiffel1.jpg"));
 //        BufferedImage testImage2 = ImageIO.read(new File("src/Eiffel2.jpg"));
 //        testImage2 = ImageUtil.resize(testImage2, 512, 1024);
+
+        testImage = ImageUtil.greyscale(testImage);
+        //testImage = ImageUtil.resize(testImage, testImage.getWidth()/2, testImage.getHeight()/2);
 
         File file = new File("src/baseImage.png");
         File file2 = new File("src/baseImage2.png");
