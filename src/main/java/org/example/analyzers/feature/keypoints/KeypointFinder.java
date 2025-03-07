@@ -8,7 +8,6 @@ import org.example.utils.MatrixUtil;
 import org.example.utils.VectorUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class KeypointFinder {
@@ -144,7 +143,7 @@ public class KeypointFinder {
                 slice,
                 pixelX,
                 pixelY );
-        if ( !isCandidateValid(hessianMatrix) ) return null;
+        if ( !ifContrastAndEdgeResponseValid(hessianMatrix) ) return null;
 
         return candidate;
     }
@@ -159,18 +158,18 @@ public class KeypointFinder {
                 octaveSlice,
                 pixelX,
                 pixelY );
-        if ( !isCandidateValid(hessianMatrix) ) return null;
+        if ( !ifContrastAndEdgeResponseValid(hessianMatrix) ) return null;
 
         float[] gradientVector;
-
         gradientVector = DerivativeUtil.approximateGradientVector(
                 octaveSlice.getImages(),
                 pixelX, pixelY);
 
         float[] offsets = calculatePixelPositionsOffsets(hessianMatrix, gradientVector);
+        if ( !ifSubpixelOffsetWithinBounds(offsets) ) return null;
+
         float subPixelX = (float) (pixelX*keypointPositionRatio) + offsets[0];
         float subPixelY = (float) (pixelY*keypointPositionRatio) + offsets[1];
-        if (verifySubpixelMagnitudeAndContrast(offsets) ) return null;
 
         float[][][] localGradients = computeKeypointLocalGradients(octaveSlice.getMainImage(), pixelX, pixelY );
         float[] keypointDescriptor = descriptorGenerator.constructDescriptor(localGradients);
@@ -262,23 +261,15 @@ public class KeypointFinder {
      * Validates keypoint candidate by checking for edge responses and low contrasts
      * @return true if candidate's contrast is valid
      */
-    private boolean isCandidateValid(float[][] hessianMatrix) {
+    private boolean ifContrastAndEdgeResponseValid(float[][] hessianMatrix) {
         float trace = MatrixUtil.getMatrixTrace(hessianMatrix, 2);
         float determinant = MatrixUtil.get2x2MatrixDeterminant(hessianMatrix);
         float discriminant = MatrixUtil.get2x2MatrixDiscriminant(trace, determinant);
         double[] eigenvalues = MatrixUtil.get2x2MatrixEigenvalues(trace, discriminant);
 
-//        System.out.println(Arrays.deepToString(hessianMatrix));
-        System.out.println(
-//                "Trace: " + trace + ", Determinant: " + determinant + ", Discriminant: " +
-//                        discriminant + ", Eigenvalues: " + Arrays.toString(eigenvalues) +
-                        ", Contrast: " + (eigenvalues[0] * eigenvalues[1])
-                        + ", Edge response: " + ( (trace*trace) / determinant )
-        );
-
         if (Math.abs(eigenvalues[0] * eigenvalues[1]) < contrastThreshold) return false;
 
-        float r = Math.abs( (trace*trace) / determinant );
+        float r = Math.abs( trace * trace / determinant );
 
         return r <= edgeResponseRatio;
     }
@@ -303,15 +294,21 @@ public class KeypointFinder {
      * @param offsets array[2] of subpixel position offsets {x, y}
      * @return true if the subpixel offset passes both checks
      */
-    private boolean verifySubpixelMagnitudeAndContrast(float[] offsets) {
+    private boolean ifSubpixelOffsetWithinBounds(float[] offsets) {
         float offsetMagnitude = VectorUtil.getVectorNorm(offsets);
+
         if (offsetMagnitude > offsetMagnitudeThreshold) {
             return false;
         }
 
-        float contrast = VectorUtil.getVectorDotProduct(offsets);
+        if (offsetMagnitude > 1f) {
+            //
+        }
+        return true;
 
-        return !(Math.abs(contrast) >= contrastThreshold);
+//        float contrast = VectorUtil.getVectorDotProduct(offsets);
+//
+//        return !(Math.abs(contrast) >= contrastThreshold);
     }
 
     /**

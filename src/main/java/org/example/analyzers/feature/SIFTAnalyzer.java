@@ -70,12 +70,14 @@ public class SIFTAnalyzer {
         ImageAccessor accessor = ImageAccessor.create(image);
         float[][] imageData = ImageDataUtil.greyscaleToFloat( accessor.getPixels() );
 
+        float[][] imageDisplay = ImageDataUtil.convertToFloatMatrix( accessor.getPixels() );
+
         // 2. Normalize the image to the [0-1] range
-        for (int x=0; x<imageData.length; x++) {
-            for (int y=0; y<imageData[0].length; y++) {
-                imageData[x][y] /= 255;
-            }
-        }
+//        for (int x=0; x<imageData.length; x++) {
+//            for (int y=0; y<imageData[0].length; y++) {
+//                imageData[x][y] /= 255;
+//            }
+//        }
 
         // 3. Check how many octaves and dog images will be created
         int octavesNum = pyramidProcessor.calculateNumberOfOctaves(imageData);
@@ -84,7 +86,7 @@ public class SIFTAnalyzer {
             float[][][] blurred = new float[2][imageData.length][imageData[0].length];
             float[][][] dogs = new float[3][imageData.length][imageData[0].length];
 
-            List<PixelPoint> candidates = new ArrayList<>();
+            List<Keypoint> candidates = new ArrayList<>();
 
             blurred[0] = pyramidProcessor.generateGaussian(imageData, 0);
             blurred[1] = pyramidProcessor.generateGaussian(imageData, 1);
@@ -109,7 +111,7 @@ public class SIFTAnalyzer {
             for (int scale=0; scale<scalesNum; scale++) {
 
                 blurred[0] = blurred[1];
-                blurred[1] = pyramidProcessor.generateGaussian(blurred[0], scale+3);
+                blurred[1] = pyramidProcessor.generateGaussian(imageData, scale+3);
                 dogs[2] =  ImageDataUtil.subtractImages(blurred[1], blurred[0]);
 
                 OctaveSlice octaveSlice = new OctaveSlice(
@@ -123,27 +125,29 @@ public class SIFTAnalyzer {
 
                 List<PixelPoint> localCandidates = keypointFinder.findKeypointCandidates(octaveSlice);
 
-                List<PixelPoint> localRefinedCandidates = new ArrayList<>();
+                List<Keypoint> localRefinedCandidates = new ArrayList<>();
                 for (PixelPoint candidate : localCandidates) {
-                    PixelPoint keypoint = keypointFinder.refineCandidate(octaveSlice, candidate);
+                    Keypoint keypoint = keypointFinder.refineKeypointCandidate(octaveSlice, candidate);
                     if (keypoint != null) localRefinedCandidates.add(keypoint);
                 }
-                System.out.println(localRefinedCandidates.size());
-                candidates.addAll( localRefinedCandidates );
+                //System.out.println("Candidates after refinement in octave" + octave + ": " + localRefinedCandidates.size());
+                candidates = localRefinedCandidates;
 
-                saveImageWithNormalizationAndPoints(
-                        dogs[1],
-                        "src/Candidates_o" + octave + "_s" + scale + ".png",
-                        localRefinedCandidates
-                );
+//                saveImageWithNormalizationAndKeypoints(
+//                        imageDisplay,
+//                        "src/Candidates_o" + octave + "_s" + scale + ".png",
+//                        localRefinedCandidates
+//                );
 
                 for (int k=0; k<2; k++) {
                     dogs[k] = dogs[k+1];
                 }
             }
 
-            saveImageWithNormalizationAndPoints(
-                    dogs[1],
+            System.out.println("Candidates after refinement in octave" + octave + ": " + candidates.size());
+
+            saveImageWithNormalizationAndKeypoints(
+                    imageDisplay,
                     "src/Candidates_o" + octave + ".png",
                     candidates
             );
@@ -350,6 +354,48 @@ public class SIFTAnalyzer {
             int rgb = (255 << 16) | (0 << 8) | 0;
 
             image.setRGB(x, y, rgb);
+        }
+
+        File outputFile = new File(outputPath);
+        try {
+            ImageIO.write(image, "png", outputFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void saveImageWithNormalizationAndKeypoints(float[][] pixels, String outputPath, List<Keypoint> candidates) {
+        int width = pixels.length;
+        int height = pixels[0].length;
+
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+
+        float largest = 0f;
+        float smallest = 0f;
+        for (float[] pixel : pixels) {
+            for (int y = 0; y < height; y++) {
+                if (pixel[y] > largest) largest = pixel[y];
+                if (pixel[y] < smallest) smallest = pixel[y];
+            }
+        }
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                float normalizedGray =  (pixels[x][y] - smallest) / (largest - smallest);
+                float grayFloat = normalizedGray * (255f);
+                int gray = Math.round(grayFloat);
+                int rgb = (gray << 16) | (gray << 8) | gray; // Convert to grayscale RGB
+                image.setRGB(x, y, rgb);
+            }
+        }
+
+        for (Keypoint point : candidates) {
+            int x = Math.round( point.getSubPixelX() );
+            int y = Math.round( point.getSubPixelY() );
+            int rgb = (255 << 16) | (0 << 8) | 0;
+
+            image.setRGB(x, y, rgb);
+
         }
 
         File outputFile = new File(outputPath);

@@ -58,7 +58,7 @@ public class SIFTComparatorConfig {
      * Contrast threshold below which keypoint will be discarded as noise.
      * Usually between 0.01 and 0.04
      */
-    private float contrastThreshold = 0.075f;
+    private float contrastThreshold = 0.055f;
 
     /**
      * Hessian eigenvalues ratio below which keypoint will be discarded as edge keypoint.
@@ -70,7 +70,7 @@ public class SIFTComparatorConfig {
      * Offset magnitude threshold above which keypoint will be discarded.
      * Usually around 0.55
      */
-    private float offsetMagnitudeThreshold = 0.55f;
+    private float offsetMagnitudeThreshold = 1f;
 
     /**
      * How large should the window of neighbours around keypoint be. Will be scaled by each octave
@@ -80,7 +80,7 @@ public class SIFTComparatorConfig {
     /**
      * How large should the window for local extreme search be around each point.
      */
-    private int localExtremeSearchRadius = 3;
+    private int localExtremeSearchRadius = 2;
 
 
 

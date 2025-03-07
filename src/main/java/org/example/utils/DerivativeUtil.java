@@ -231,13 +231,9 @@ public class DerivativeUtil {
 
     public static float[] approxSpaceDerivatives(float[][] imageData, int x, int y, float sigma) {
         int radius = 1;
-        float dxx = ( imageData[x+radius][y] - 2*imageData[x][y] + imageData[x-radius][y] ) * sigma * sigma * 255;
-        float dyy = ( imageData[x][y+radius] - 2*imageData[x][y] + imageData[x][y-radius] ) * sigma * sigma * 255;
-        float dxy = ( (imageData[x+radius][y+radius] - imageData[x+radius][y-radius] - imageData[x-radius][y+radius] + imageData[x-radius][y-radius]) / 4.0f ) * sigma * sigma * 255;
-
-        System.out.println("Dxx: " + dxx);
-        System.out.println("Dyy: " + dyy);
-        System.out.println("Dxy: " + dxy);
+        float dxx = ( imageData[x+radius][y] - 2*imageData[x][y] + imageData[x-radius][y] ) * sigma * sigma;
+        float dyy = ( imageData[x][y+radius] - 2*imageData[x][y] + imageData[x][y-radius] ) * sigma * sigma;
+        float dxy = ( (imageData[x+radius][y+radius] - imageData[x+radius][y-radius] - imageData[x-radius][y+radius] + imageData[x-radius][y-radius]) / 4.0f ) * sigma * sigma;
 
         return new float[] {dxx, dyy, dxy};
     }
