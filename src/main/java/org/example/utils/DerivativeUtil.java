@@ -229,11 +229,11 @@ public class DerivativeUtil {
         return new float[] {dxx, dxy, dyy};
     }
 
-    public static float[] approxSpaceDerivatives(float[][] imageData, int x, int y, float sigma) {
+    public static float[] approxSpaceDerivatives(float[][] imageData, int x, int y) {
         int radius = 1;
-        float dxx = ( imageData[x+radius][y] - 2*imageData[x][y] + imageData[x-radius][y] ) * sigma * sigma;
-        float dyy = ( imageData[x][y+radius] - 2*imageData[x][y] + imageData[x][y-radius] ) * sigma * sigma;
-        float dxy = ( (imageData[x+radius][y+radius] - imageData[x+radius][y-radius] - imageData[x-radius][y+radius] + imageData[x-radius][y-radius]) / 4.0f ) * sigma * sigma;
+        float dxx = imageData[x+radius][y] - 2*imageData[x][y] + imageData[x-radius][y];
+        float dyy = imageData[x][y+radius] - 2*imageData[x][y] + imageData[x][y-radius];
+        float dxy = (imageData[x+radius][y+radius] - imageData[x+radius][y-radius] - imageData[x-radius][y+radius] + imageData[x-radius][y-radius]) / 4.0f;
 
         return new float[] {dxx, dyy, dxy};
     }

@@ -38,7 +38,7 @@ public class PyramidProcessor {
                 10,
                 16,
                 1
-        ); //contrastThreshold, offsetMagnitudeThreshold, edgeResponseRatio, neighbourWindowSize, localExtremeSearchRadius
+        );
 
         this.baseSigma = sigma;
         this.numberOfScales = numberOfScales;
@@ -54,12 +54,6 @@ public class PyramidProcessor {
         return ImageDataUtil.gaussianBlurGreyscaled(image, sigma);
     }
 
-
-    public float[][] processSingleDoG(float[][] firstImage, float[][] secondImage) {
-        return ImageDataUtil.subtractImages(firstImage, secondImage);
-    }
-
-
     /**
      * Calculates sigma multiplier which determines blurring progression within single octave
      * @return sigma multiplier
@@ -74,15 +68,15 @@ public class PyramidProcessor {
      * @return number of octaves that can be created
      */
     public int calculateNumberOfOctaves(float[][] imageData) {
-        int currWidth = imageData.length;
-        int currHeight = imageData[0].length;
+        int width = imageData.length;
+        int height = imageData[0].length;
+
+        int smallerDimension = Math.min(width, height);
 
         int octaves = 0;
-        while( (currWidth/downscalingFactor >= minImageSizeThreshold) &&
-                (currHeight/downscalingFactor >= minImageSizeThreshold) ) {
+        while( smallerDimension*downscalingFactor > minImageSizeThreshold) {
             octaves++;
-            currWidth = (int)(currWidth / downscalingFactor);
-            currHeight = (int)(currHeight / downscalingFactor);
+            smallerDimension = (int)(smallerDimension / downscalingFactor);
         }
 
         return octaves;

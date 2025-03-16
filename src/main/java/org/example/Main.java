@@ -16,20 +16,23 @@ import java.util.List;
 
 public class Main {
     // TODO: finish refactoring analyzer
+    // TODO [NOW]: cleanup the code for Keypoint detection - descriptor and orientations might require rework
     // then - check gaussians and dogs generation
     // too many keypoints are found on flat areas and not on the edges - something is off
 
     public static void main(String[] args) throws IOException {
 //        BufferedImage testImage = ImageIO.read(new File("src/TestImage.jpg"));
-//        BufferedImage testImage2 = ImageUtil.resize(testImage, 1024, 512);
+//        BufferedImage testImage2 = ImageUtil.resize(testImage, (int)(testImage.getWidth()*0.8), (int)(testImage.getHeight()*0.8));
+
+//        BufferedImage testImage = ImageIO.read(new File("src/Woman.png"));
+//        BufferedImage testImage2 = ImageUtil.resize(testImage, (int)(testImage.getWidth()*0.8), (int)(testImage.getHeight()*0.8));
 
         BufferedImage testImage = ImageIO.read(new File("src/Chicken.png"));
-        BufferedImage testImage2 = ImageUtil.resize(testImage, 1024, 512);
-        testImage2 = rotateImage(testImage, 45);
+        BufferedImage testImage2 = ImageUtil.resize(testImage, 512, 512);
+//        testImage2 = rotateImage(testImage, 45);
 
-//        BufferedImage testImage = ImageIO.read(new File("src/Eiffel1.jpg"));
-//        BufferedImage testImage2 = ImageIO.read(new File("src/Eiffel2.jpg"));
-//        testImage2 = ImageUtil.resize(testImage2, testImage.getWidth(), (int)(testImage.getHeight()*2.5));
+//        BufferedImage testImage = ImageIO.read(new File("src/Checkerboard.png"));
+//        BufferedImage testImage2 = ImageUtil.resize(testImage, (int)(testImage.getWidth()*1.3), (int)(testImage.getHeight()*1.3));
 //        testImage2 = ImageUtil.resize(testImage2, 512, 1024);
 
 //        testImage = ImageUtil.greyscale(testImage);
@@ -52,22 +55,18 @@ public class Main {
         BufferedImage result1 = new SIFTVisualizer().drawKeypoints(testImage, keypoints1);
         File keypointsOutputFile1 = new File("keypoints_output_1.png");
         ImageIO.write(result1, "png", keypointsOutputFile1);
-        System.out.println("I managed with keypoints 1: " + keypoints1.size());
+        System.out.println("Keypoints 1: " + keypoints1.size());
 
 
         List<Keypoint> keypoints2 = new SIFTAnalyzer().findKeypoints(testImage2);
         BufferedImage result2 = new SIFTVisualizer().drawKeypoints(testImage2, keypoints2);
         File keypointsOutputFile2 = new File("keypoints_output_2.png");
         ImageIO.write(result2, "png", keypointsOutputFile2);
-        System.out.println("I managed with keypoints 2: " + keypoints2.size());
+        System.out.println("Keypoints 2: " + keypoints2.size());
 
         ArrayList<FeatureMatch> matches = new SIFTAnalyzer().matchKeypoints(keypoints1, keypoints2);
 
-        System.out.println("I managed with matching");
-
         //Homography homography = new HomographyEvaluator().estimateHomography(matches);
-
-        System.out.println("I managed with homography");
 
         long end = System.nanoTime();
         System.out.println("Time taken: " + (end-start) + "ns");
@@ -75,9 +74,6 @@ public class Main {
         BufferedImage matchingResult = new SIFTVisualizer().drawMatches(testImage, testImage2, matches);
         File outputFile = new File("matches_output.png");
         ImageIO.write(matchingResult, "png", outputFile);
-
-        System.out.println("Keypoints1: " + keypoints1.size());
-        System.out.println("Keypoints2: " + keypoints2.size());
         System.out.println("Matches: " + matches.size());
 
         //System.out.println("Homography: \n" + Arrays.deepToString( homography.getMatrix() ));

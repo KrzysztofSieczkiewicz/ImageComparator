@@ -111,6 +111,42 @@ public class ImageDataUtil {
         return normalizedDoG;
     }
 
+    public static float[][] normalizeImage(float[][] image) {
+        if (image == null || image.length == 0 || image[0].length == 0) {
+            return image; // Handle empty or null images
+        }
+
+        float minVal = image[0][0];
+        float maxVal = image[0][0];
+
+        // Find min and max values
+        for (float[] row : image) {
+            for (float val : row) {
+                minVal = Math.min(minVal, val);
+                maxVal = Math.max(maxVal, val);
+            }
+        }
+
+        // Handle the case where minVal and maxVal are the same (e.g., a constant image)
+        if (minVal == maxVal) {
+            //If all values are the same, either return the same image, or an image of all 0's.
+            //Returning the same image is the safest option.
+            return image;
+        }
+
+        float range = maxVal - minVal;
+        float[][] normalizedImage = new float[image.length][image[0].length];
+
+        // Normalize to [-1, 1] range
+        for (int i = 0; i < image.length; i++) {
+            for (int j = 0; j < image[0].length; j++) {
+                normalizedImage[i][j] = 2 * (image[i][j] - minVal) / range - 1;
+            }
+        }
+
+        return normalizedImage;
+    }
+
     /**
      * Resizes an image data matrix (int[][]) to the requested dimensions using averaging for downscaling.
      *
@@ -149,6 +185,62 @@ public class ImageDataUtil {
         }
 
         return resizedImage;
+    }
+
+    public static float[][] bicubicInterpolation(float[][] imageData, int width, int height) {
+        int originalWidth = imageData.length;
+        int originalHeight = imageData[0].length;
+        float[][] resizedImage = new float[width][height];
+
+        float xRatio = (float) originalWidth / width;
+        float yRatio = (float) originalHeight / height;
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                float originalX = x * xRatio;
+                float originalY = y * yRatio;
+
+                int xFloor = (int) Math.floor(originalX);
+                int yFloor = (int) Math.floor(originalY);
+
+                float sum = 0;
+                float weightSum = 0;
+
+                for (int i = -1; i < 3; i++) {
+                    for (int j = -1; j < 3; j++) {
+                        int currentX = xFloor + i;
+                        int currentY = yFloor + j;
+
+                        if (currentX >= 0 && currentX < originalWidth && currentY >= 0 && currentY < originalHeight) {
+                            float xWeight = cubic(originalX - currentX);
+                            float yWeight = cubic(originalY - currentY);
+                            float weight = xWeight * yWeight;
+
+                            sum += imageData[currentX][currentY] * weight;
+                            weightSum += weight;
+                        }
+                    }
+                }
+                resizedImage[x][y] = sum / weightSum;
+            }
+        }
+        return resizedImage;
+    }
+
+    /**
+     * Cubic convolution kernel. Calculates weight based on distance from the targeted pixel;
+     * @param distance between targeted pixel and requested weight point
+     * @return weight of the pixel
+     */
+    private static float cubic(float distance) {
+        float absX = Math.abs(distance);
+        if (absX <= 1) {
+            return (float) (1.5 * absX * absX * absX - 2.5 * absX * absX + 1);
+        } else if (absX < 2) {
+            return (float) (-0.5 * absX * absX * absX + 2.5 * absX * absX - 4 * absX + 2);
+        } else {
+            return 0;
+        }
     }
 
     /**

@@ -8,6 +8,7 @@ import org.example.utils.MatrixUtil;
 import org.example.utils.VectorUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class KeypointFinder {
@@ -135,19 +136,6 @@ public class KeypointFinder {
         return keypointCandidates;
     }
 
-    public PixelPoint refineCandidate(OctaveSlice slice, PixelPoint candidate) {
-        int pixelX = candidate.getX();
-        int pixelY = candidate.getY();
-
-        float[][] hessianMatrix = approxKeypointHessian(
-                slice,
-                pixelX,
-                pixelY );
-        if ( !ifContrastAndEdgeResponseValid(hessianMatrix) ) return null;
-
-        return candidate;
-    }
-
     public Keypoint refineKeypointCandidate(OctaveSlice octaveSlice, PixelPoint candidate) {
         int pixelX = candidate.getX();
         int pixelY = candidate.getY();
@@ -225,24 +213,7 @@ public class KeypointFinder {
         float[] spaceDerivatives = DerivativeUtil.approxSpaceDerivatives(
                 octaveSlice.getMainImage(),
                 pixelX,
-                pixelY,
-                (float)(1.6*Math.pow(1.41f, octaveSlice.getScaleIndex())) );
-//        if (sobelKernelSize.equals(SobelKernelSize.SOBEL3x3)) {
-//            spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives3x3(
-//                    octaveSlice.getMainImage(),
-//                    pixelX,
-//                    pixelY );
-//        } else if (sobelKernelSize.equals(SobelKernelSize.SOBEL5x5)){
-//            spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives5x5(
-//                    octaveSlice.getMainImage(),
-//                    pixelX,
-//                    pixelY );
-//        } else {
-//            spaceDerivatives = DerivativeUtil.approximateSpaceDerivatives7x7(
-//                    octaveSlice.getMainImage(),
-//                    pixelX,
-//                    pixelY );
-//        }
+                pixelY );
 
         float[] scaleDerivatives = DerivativeUtil.approximateScaleDerivatives(
                 octaveSlice.getImages()[0],
@@ -267,9 +238,19 @@ public class KeypointFinder {
         float discriminant = MatrixUtil.get2x2MatrixDiscriminant(trace, determinant);
         double[] eigenvalues = MatrixUtil.get2x2MatrixEigenvalues(trace, discriminant);
 
-        if (Math.abs(eigenvalues[0] * eigenvalues[1]) < contrastThreshold) return false;
+        System.out.println("Hessian matrix: " + Arrays.deepToString(hessianMatrix));
 
-        float r = Math.abs( trace * trace / determinant );
+        if (eigenvalues[0] * eigenvalues[1] < contrastThreshold) {
+            System.out.println("Discarded by contrast: " + (eigenvalues[0] * eigenvalues[1]) );
+            return false;
+        }
+
+        float r = trace * trace / determinant;
+
+        if (r > edgeResponseRatio) {
+            System.out.println("Discarded by edge response: " + r );
+            return false;
+        }
 
         return r <= edgeResponseRatio;
     }

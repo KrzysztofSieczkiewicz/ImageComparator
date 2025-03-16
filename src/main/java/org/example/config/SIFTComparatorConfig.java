@@ -43,7 +43,7 @@ public class SIFTComparatorConfig {
     /**
      * Smallest image dimension (in pixels) below which next octave won't be created
      */
-    int minImageSize = 32;
+    int minImageSize = 64;
 
     /**
      * Used in keypoint matching. Ratio between the best found distance and the second-best distance.
@@ -58,13 +58,13 @@ public class SIFTComparatorConfig {
      * Contrast threshold below which keypoint will be discarded as noise.
      * Usually between 0.01 and 0.04
      */
-    private float contrastThreshold = 0.055f;
+    private float contrastThreshold = 0.005f;
 
     /**
      * Hessian eigenvalues ratio below which keypoint will be discarded as edge keypoint.
      * Usually between 5 and 20
      */
-    private float edgeResponseRatio = 5;
+    private float edgeResponseRatio = 8;
 
     /**
      * Offset magnitude threshold above which keypoint will be discarded.
@@ -73,14 +73,14 @@ public class SIFTComparatorConfig {
     private float offsetMagnitudeThreshold = 1f;
 
     /**
-     * How large should the window of neighbours around keypoint be. Will be scaled by each octave
+     * How large should the window of neighbours around keypoint be. Will be scaled by each octave TODO: NEEDS BETTER DESCRIPTION
      */
     private int neighbourWindowSize = 16;
 
     /**
      * How large should the window for local extreme search be around each point.
      */
-    private int localExtremeSearchRadius = 2;
+    private int localExtremeSearchRadius = 1;
 
 
 

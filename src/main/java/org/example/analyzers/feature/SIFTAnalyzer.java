@@ -10,6 +10,7 @@ import org.example.utils.accessor.ImageAccessor;
 import org.example.utils.ImageDataUtil;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +30,9 @@ public class SIFTAnalyzer {
     private final int scalesNum;
     private final double downscalingFactor;
 
+    private final int minImageSize;
+    private final double baseSigma;
+    private final double sigmaInterval;
 
     public SIFTAnalyzer() {
         this(new SIFTComparatorConfig());
@@ -40,14 +44,15 @@ public class SIFTAnalyzer {
         this.homographyMinDeterminantThreshold = config.getHomographyMinDeterminantThreshold();
         this.homographyMaxDeterminantThreshold = config.getHomographyMaxDeterminantThreshold();
         this.scalesNum = config.getNumberOfScales();
+        this.minImageSize = config.getMinImageSize();
 
         this.downscalingFactor = config.getDownscalingFactor();
+        this.baseSigma = config.getGaussianSigma();
+        this.sigmaInterval = calculateSigmaIntervals();
 
-        double gaussianSigma = config.getGaussianSigma();
-        int minImageSize = config.getMinImageSize();
         double loweRatio = config.getLoweRatio();
 
-        this.pyramidProcessor = new PyramidProcessor(gaussianSigma, scalesNum, downscalingFactor, minImageSize);
+        this.pyramidProcessor = new PyramidProcessor(baseSigma, scalesNum, downscalingFactor, minImageSize);
 
         this.keypointFinder = new KeypointFinder(
                 config.getContrastThreshold(),
@@ -61,99 +66,107 @@ public class SIFTAnalyzer {
         this.homographyEvaluator = new HomographyEvaluator();
     }
 
-    // 1. Process the octave from basic image (always)
-    // 2. Each consecutive octave level is base image with stronger blurs
     public List<Keypoint> findKeypoints(BufferedImage image) {
         List<Keypoint> keypoints = new ArrayList<>();
+        List<PixelPoint> candidates = new ArrayList<>();
 
-        // 1. Convert image to float matrix;
+        List<Keypoint> emptyList = new ArrayList<>();
+
         ImageAccessor accessor = ImageAccessor.create(image);
         float[][] imageData = ImageDataUtil.greyscaleToFloat( accessor.getPixels() );
 
-        float[][] imageDisplay = ImageDataUtil.convertToFloatMatrix( accessor.getPixels() );
-
-        // 2. Normalize the image to the [0-1] range
-//        for (int x=0; x<imageData.length; x++) {
-//            for (int y=0; y<imageData[0].length; y++) {
-//                imageData[x][y] /= 255;
-//            }
-//        }
-
-        // 3. Check how many octaves and dog images will be created
         int octavesNum = pyramidProcessor.calculateNumberOfOctaves(imageData);
-
         for (int octave = 0; octave<octavesNum; octave++) {
             float[][][] blurred = new float[2][imageData.length][imageData[0].length];
             float[][][] dogs = new float[3][imageData.length][imageData[0].length];
 
-            List<Keypoint> candidates = new ArrayList<>();
-
-            blurred[0] = pyramidProcessor.generateGaussian(imageData, 0);
-            blurred[1] = pyramidProcessor.generateGaussian(imageData, 1);
+            blurred[0] = ImageDataUtil.gaussianBlurGreyscaled(imageData, calculateSigma(octave,0));
+            blurred[1] = ImageDataUtil.gaussianBlurGreyscaled(imageData, calculateSigma(octave,1));
             dogs[0] = ImageDataUtil.subtractImages(blurred[1], blurred[0]);
 
+            if (octave == 0) {
+                drawKeypoints(
+                        dogs[0],
+                        "FirstDog",
+                        keypoints
+                );
+            }
+
+            drawKeypoints(
+                    blurred[0],
+                    "Gaussian_o" +octave+ "_s0",
+                    emptyList
+            );
+            drawKeypoints(
+                    blurred[1],
+                    "Gaussian_o" +octave+ "_s1",
+                    emptyList
+            );
+
             blurred[0] = blurred[1];
-            blurred[1] = pyramidProcessor.generateGaussian(imageData, 2);
+            blurred[1] = ImageDataUtil.gaussianBlurGreyscaled(imageData, calculateSigma(octave,2));
             dogs[1] = ImageDataUtil.subtractImages(blurred[1], blurred[0]);
 
-//            float smallest = 0;
-//            float largest = 0;
-//            for (int x=0; x<dogs[1].length; x++) {
-//                for (int y=0; y<dogs[1][0].length; y++) {
-//                    if (dogs[1][x][y] > largest) largest = dogs[1][x][y];
-//                    if (dogs[1][x][y] < smallest) smallest = dogs[1][x][y];
-//                    //System.out.println(dogs[1][x][y]);
-//                }
-//            }
-//            System.out.println("Smallest: " + smallest);
-//            System.out.println("Largest: " + largest);
+            drawKeypoints(
+                    blurred[1],
+                    "Gaussian_o" +octave+ "_s2",
+                    emptyList
+            );
+
+            List<PixelPoint> localPoints = new ArrayList<>();
+            List<Keypoint> localKeypoints = new ArrayList<>();
 
             for (int scale=0; scale<scalesNum; scale++) {
 
                 blurred[0] = blurred[1];
-                blurred[1] = pyramidProcessor.generateGaussian(imageData, scale+3);
+                blurred[1] = ImageDataUtil.gaussianBlurGreyscaled(imageData, calculateSigma(octave,scale+3));
                 dogs[2] =  ImageDataUtil.subtractImages(blurred[1], blurred[0]);
 
-                OctaveSlice octaveSlice = new OctaveSlice(
-                        dogs,
-                        octave,
-                        scale,
-                        downscalingFactor
+                drawKeypoints(
+                        blurred[1],
+                        "Gaussian_o" +octave+ "_s" +(scale+3),
+                        emptyList
                 );
 
-                keypoints.addAll( keypointFinder.findKeypoints(octaveSlice) );
+                OctaveSlice octaveSlice = new OctaveSlice(dogs,octave, scale,downscalingFactor);
 
-                List<PixelPoint> localCandidates = keypointFinder.findKeypointCandidates(octaveSlice);
+                localPoints.addAll( keypointFinder.findKeypointCandidates(octaveSlice) );
 
-                List<Keypoint> localRefinedCandidates = new ArrayList<>();
-                for (PixelPoint candidate : localCandidates) {
-                    Keypoint keypoint = keypointFinder.refineKeypointCandidate(octaveSlice, candidate);
-                    if (keypoint != null) localRefinedCandidates.add(keypoint);
-                }
-                //System.out.println("Candidates after refinement in octave" + octave + ": " + localRefinedCandidates.size());
-                candidates = localRefinedCandidates;
+                localKeypoints.addAll( keypointFinder.findKeypoints(octaveSlice) );
 
-//                saveImageWithNormalizationAndKeypoints(
-//                        imageDisplay,
-//                        "src/Candidates_o" + octave + "_s" + scale + ".png",
-//                        localRefinedCandidates
-//                );
+                keypoints.addAll( localKeypoints );
+                candidates.addAll( localPoints );
 
                 for (int k=0; k<2; k++) {
                     dogs[k] = dogs[k+1];
                 }
             }
+            System.out.println("Points in octave: " + octave + ": " + localPoints.size());
+            System.out.println("Keypoints in octave: " + octave + ": " + localKeypoints.size());
 
-            System.out.println("Candidates after refinement in octave" + octave + ": " + candidates.size());
+            if (octave == 1) {
+                int index = 0;
+                for (PixelPoint point : localPoints) {
+                    System.out.println(index + "- X:" + point.getX() + ", Y:" + point.getY());
+                    index++;
+                }
+            }
 
-            saveImageWithNormalizationAndKeypoints(
-                    imageDisplay,
-                    "src/Candidates_o" + octave + ".png",
+            drawCandidates(
+                    dogs[1],
+                    "Candidates_o" + octave,
+                    octave,
                     candidates
             );
 
-            imageData = ImageDataUtil.resizeWithAveraging(
-                    blurred[1],
+            drawKeypoints(
+                    dogs[1],
+                    "Keypoints_o" + octave,
+                    keypoints
+            );
+
+            imageData = ImageDataUtil.bicubicInterpolation(
+                    imageData,
                     (int)(imageData.length / downscalingFactor),
                     (int)(imageData[0].length / downscalingFactor));
         }
@@ -218,8 +231,6 @@ public class SIFTAnalyzer {
 //    }
 
 
-
-
     /**
      * Iterates through base keypoint list and searches for matches in checked list.
      * @return ArrayList of matches
@@ -236,7 +247,7 @@ public class SIFTAnalyzer {
     public Homography evaluateAndValidateHomography(ArrayList<FeatureMatch> matches) {
         Homography homography = homographyEvaluator.estimateHomography(matches);
 
-        if ( homography.getMatrix()==null || !validateHomography(homography) ) {
+        if ( homography.getMatrix()==null || !ifHomographyValid(homography) ) {
             return null;
         }
 
@@ -248,7 +259,7 @@ public class SIFTAnalyzer {
      * checks if number of inliers is within acceptable ratio to the total matches number
      * @return true if homography is valid
      */
-    private boolean validateHomography(Homography homography) {
+    private boolean ifHomographyValid(Homography homography) {
         int inliersNumber = homography.getInlierMatches().size();
         int totalMatchesNumber = homography.getTotalMatchesNumber();
         double determinant = MatrixUtil.get3x3MatrixDeterminant( homography.getMatrix() );
@@ -266,144 +277,124 @@ public class SIFTAnalyzer {
         return true;
     }
 
+    /**
+     * Calculates sigma multiplier which determines blurring progression within single octave
+     * @return sigma multiplier
+     */
+    private double calculateSigmaIntervals() {
+        double p = 1d / scalesNum;
+        return Math.pow(2, p);
+    }
 
-    public static void saveImage(float[][] pixels, String outputPath) {
-        int width = pixels.length;
-        int height = pixels[0].length;
+    /**
+     * Checks how many times image can be downsized with provided downscalingFactor and minimal image size
+     * @return number of octaves that can be created
+     */
+    private int calculateNumberOfOctaves(float[][] imageData) {
+        int currWidth = imageData.length;
+        int currHeight = imageData[0].length;
 
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        int octaves = 0;
+        while( (currWidth/downscalingFactor >= minImageSize) &&
+                (currHeight/downscalingFactor >= minImageSize) ) {
+            octaves++;
+            currWidth = (int)(currWidth / downscalingFactor);
+            currHeight = (int)(currHeight / downscalingFactor);
+        }
 
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                int gray = (int) pixels[x][y];
-                gray = Math.max(0, Math.min(255, gray)); // Clamp between 0 and 255
-                int rgb = (gray << 16) | (gray << 8) | gray; // Convert to grayscale RGB
-                image.setRGB(x, y, rgb);
+        return octaves;
+    }
+
+    private double calculateSigma(int octave, int scale) {
+        double octaveFactor = Math.pow(Math.sqrt(downscalingFactor), octave);
+        double scaleFactor = Math.pow(sigmaInterval, scale);
+        return baseSigma * octaveFactor * scaleFactor;
+    }
+
+
+
+    public void drawCandidates(float[][] img, String outputName, int octaveIndex, List<PixelPoint> points) {
+        BufferedImage output = new BufferedImage(img.length, img[0].length, BufferedImage.TYPE_INT_RGB);
+        ImageAccessor accessor = ImageAccessor.create(output);
+        Graphics2D g = output.createGraphics();
+
+        float min = 0;
+        float max = 0;
+        for (int x=0; x<img.length; x++) {
+            for (int y=0; y<img[0].length; y++) {
+                if (img[x][y] > max) max = img[x][y];
+                if (img[x][y] < min) min = img[x][y];
             }
         }
 
-        File outputFile = new File(outputPath);
+        for(int x=0; x<output.getWidth(); x++) {
+            for(int y=0; y<output.getHeight(); y++) {
+                float grayValue = (img[x][y] - min) * (255f / (max - min));
+                int gray = Math.round( grayValue );
+                accessor.setPixel(x, y, 255, gray, gray, gray);
+            }
+        }
+
+        for (PixelPoint pp : points) {
+            int x = pp.getX() ;//* (int) Math.pow(2, octaveIndex );
+            int y = pp.getY() ;//* (int) Math.pow(2, octaveIndex );
+            int radius = (int) (2 * octaveIndex); // Increase radius based on octave
+
+            g.setColor(Color.RED);
+            //g.drawOval(x - radius, y - radius, 2 * radius, 2 * radius);
+            g.fillOval(x - 1, y - 1, 2, 2); // Draw center dot
+        }
+
+        g.dispose();
+
+        File file = new File("src/"+ outputName +".png");
         try {
-            ImageIO.write(image, "png", outputFile);
+            ImageIO.write(output, "PNG", file);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static void saveImageWithNormalization(float[][] pixels, String outputPath) {
-        int width = pixels.length;
-        int height = pixels[0].length;
+    public void drawKeypoints(float[][] img, String outputName,  List<Keypoint> keypoints) {
+        BufferedImage output = new BufferedImage(img.length, img[0].length, BufferedImage.TYPE_INT_RGB);
+        ImageAccessor accessor = ImageAccessor.create(output);
+        Graphics2D g = output.createGraphics();
 
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-
-        float largest = 0f;
-        float smallest = 0f;
-        for (float[] pixel : pixels) {
-            for (int y = 0; y < height; y++) {
-                if (pixel[y] > largest) largest = pixel[y];
-                if (pixel[y] < smallest) smallest = pixel[y];
+        float min = 0;
+        float max = 0;
+        for (int x=0; x<img.length; x++) {
+            for (int y=0; y<img[0].length; y++) {
+                if (img[x][y] > max) max = img[x][y];
+                if (img[x][y] < min) min = img[x][y];
             }
         }
 
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                float normalizedGray =  (pixels[x][y] - smallest) / (largest - smallest);
-                float grayFloat = normalizedGray * (255f);
-                int gray = Math.round(grayFloat);
-                int rgb = (gray << 16) | (gray << 8) | gray; // Convert to grayscale RGB
-                image.setRGB(x, y, rgb);
+        for(int x=0; x<output.getWidth(); x++) {
+            for(int y=0; y<output.getHeight(); y++) {
+                float grayValue = (img[x][y] - min) * (255f / (max - min));
+                int gray = Math.round( grayValue );
+                accessor.setPixel(x, y, 255, gray, gray, gray);
             }
         }
 
-        File outputFile = new File(outputPath);
+        for (Keypoint kp : keypoints) {
+            int x = (int) kp.getSubPixelX() / (int) Math.pow(2, kp.getOctaveIndex());
+            int y = (int) kp.getSubPixelY() / (int) Math.pow(2, kp.getOctaveIndex());
+            int octave = kp.getOctaveIndex();
+            int radius = (int) (8 * Math.pow(2, octave)); // Increase radius based on octave
+
+            g.setColor(Color.RED);
+            g.drawOval(x - radius, y - radius, 2 * radius, 2 * radius);
+            g.fillOval(x - 2, y - 2, 4, 4); // Draw center dot
+        }
+
+        g.dispose();
+
+        File file = new File("src/"+ outputName +".png");
         try {
-            ImageIO.write(image, "png", outputFile);
+            ImageIO.write(output, "PNG", file);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-
-    public static void saveImageWithNormalizationAndPoints(float[][] pixels, String outputPath, List<PixelPoint> candidates) {
-        int width = pixels.length;
-        int height = pixels[0].length;
-
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-
-        float largest = 0f;
-        float smallest = 0f;
-        for (float[] pixel : pixels) {
-            for (int y = 0; y < height; y++) {
-                if (pixel[y] > largest) largest = pixel[y];
-                if (pixel[y] < smallest) smallest = pixel[y];
-            }
-        }
-
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                float normalizedGray =  (pixels[x][y] - smallest) / (largest - smallest);
-                float grayFloat = normalizedGray * (255f);
-                int gray = Math.round(grayFloat);
-                int rgb = (gray << 16) | (gray << 8) | gray; // Convert to grayscale RGB
-                image.setRGB(x, y, rgb);
-            }
-        }
-
-        for (PixelPoint point : candidates) {
-            int x = point.getX();
-            int y = point.getY();
-            int rgb = (255 << 16) | (0 << 8) | 0;
-
-            image.setRGB(x, y, rgb);
-        }
-
-        File outputFile = new File(outputPath);
-        try {
-            ImageIO.write(image, "png", outputFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static void saveImageWithNormalizationAndKeypoints(float[][] pixels, String outputPath, List<Keypoint> candidates) {
-        int width = pixels.length;
-        int height = pixels[0].length;
-
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-
-        float largest = 0f;
-        float smallest = 0f;
-        for (float[] pixel : pixels) {
-            for (int y = 0; y < height; y++) {
-                if (pixel[y] > largest) largest = pixel[y];
-                if (pixel[y] < smallest) smallest = pixel[y];
-            }
-        }
-
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                float normalizedGray =  (pixels[x][y] - smallest) / (largest - smallest);
-                float grayFloat = normalizedGray * (255f);
-                int gray = Math.round(grayFloat);
-                int rgb = (gray << 16) | (gray << 8) | gray; // Convert to grayscale RGB
-                image.setRGB(x, y, rgb);
-            }
-        }
-
-        for (Keypoint point : candidates) {
-            int x = Math.round( point.getSubPixelX() );
-            int y = Math.round( point.getSubPixelY() );
-            int rgb = (255 << 16) | (0 << 8) | 0;
-
-            image.setRGB(x, y, rgb);
-
-        }
-
-        File outputFile = new File(outputPath);
-        try {
-            ImageIO.write(image, "png", outputFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 }

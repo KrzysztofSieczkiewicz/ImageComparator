@@ -18,8 +18,8 @@ public class SIFTVisualizer {
         g.setColor(Color.BLUE);
 
         for (Keypoint kp : keypoints) {
-            int x = (int) kp.getSubPixelX() * (int) Math.pow(2, kp.getOctaveIndex());
-            int y = (int) kp.getSubPixelY() * (int) Math.pow(2, kp.getOctaveIndex());
+            int x = (int) kp.getSubPixelX();// * (int) Math.pow(2, kp.getOctaveIndex());
+            int y = (int) kp.getSubPixelY();// * (int) Math.pow(2, kp.getOctaveIndex());
             int octave = kp.getOctaveIndex();
             int radius = (int) (8 * Math.pow(2, octave)); // Increase radius based on octave
 
