@@ -1,12 +1,13 @@
 package org.example.analyzers.direct;
 
 import org.example.analyzers.ExcludedAreas;
+import org.example.analyzers.common.PixelPoint;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-// TODO: MAYBE RENAME TO THE basicAnalysisResult or sth?
+// TODO: MAYBE RENAME TO THE directComparisonResult or sth?
 public class Mismatches {
 
     private final int[][] neighboursMatrix;

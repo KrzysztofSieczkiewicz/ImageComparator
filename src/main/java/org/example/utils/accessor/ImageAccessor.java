@@ -94,7 +94,6 @@ public interface ImageAccessor {
      */
     void setPixel(int x, int y, int a, int r, int g, int b);
 
-
     /*
         ALPHA CHANNEL
      */

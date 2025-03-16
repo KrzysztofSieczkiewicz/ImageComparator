@@ -15,7 +15,7 @@ import java.util.function.Function;
 
 public class HashComparator {
     private final HashComparatorConfig config;
-    int imageTargetSize;
+    private final int imageTargetSize;
 
     public HashComparator(HashComparatorConfig config) {
         this.config = config;
@@ -23,7 +23,7 @@ public class HashComparator {
     }
 
     public HashComparator() {
-        this.config = new HashComparatorConfig();
+        this(new HashComparatorConfig());
     }
 
     private double compare(
