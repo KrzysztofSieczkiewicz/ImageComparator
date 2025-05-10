@@ -4,7 +4,30 @@ import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
 
+/**
+ * TODO: REPLACE sigma variable with better name - it is reused and necessary
+ * TODO: ADD dynamicRange variable as configurable or as being read
+ */
 public class SSIMAnalyzer {
+    private final int windowDimension = 3;
+    private final double sigma = 0.001;
+
+    public void compareImages(BufferedImage firstImage, BufferedImage secondImage) {
+        ImageAccessor firstImageAccessor = ImageAccessor.create(firstImage);
+        ImageAccessor secondImageAccessor = ImageAccessor.create(secondImage);
+
+        int maxWidth = firstImageAccessor.getWidth();
+        int maxHeight = firstImageAccessor.getHeight();
+
+        for (int x=0; x<maxWidth-windowDimension; x++) {
+            for (int y=0; y<maxHeight-windowDimension; y++) {
+
+            }
+        }
+
+
+    }
+
 
     public void slideWindow(BufferedImage firstImage, BufferedImage secondImage, int windowDimension) {
         ImageAccessor firstAccessor = ImageAccessor.create(firstImage);
