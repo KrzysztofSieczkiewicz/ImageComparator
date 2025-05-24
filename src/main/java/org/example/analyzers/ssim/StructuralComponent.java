@@ -25,7 +25,7 @@ public class StructuralComponent {
     }
 
     private double calculateStructuralComponent(int[] firstWindowData, int[] secondWindowData, double firstStdDev, double secondStdDev, double c3) {
-        double numerator = calculateCovariance(firstWindowData, secondWindowData);
+        double numerator = calculateCovariance(firstWindowData, secondWindowData) + c3;
         double denominator = firstStdDev * secondStdDev + c3;
 
         if (denominator == 0.0) {
