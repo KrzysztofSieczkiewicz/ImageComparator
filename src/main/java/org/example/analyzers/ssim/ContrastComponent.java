@@ -23,7 +23,7 @@ public class ContrastComponent {
         return Math.sqrt(sumOfSquares / (imageWindowData.length - 1));
     }
 
-    public double calculateContrastComponent(int[] firstWindow, int[] secondWindow, int dynamicRange, double sigma) {
+    public double calculateContrastComponent(int[] firstWindow, int[] secondWindow, double dynamicRange, double sigma) {
         double firstStdDev = calculateStandardDeviation(firstWindow);
         double secondStdDev = calculateStandardDeviation(secondWindow);
 

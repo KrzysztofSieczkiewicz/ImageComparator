@@ -11,7 +11,7 @@ public class LuminanceComponent {
         return (double) sum / windowData.length;
     }
 
-    public double calculateLuminanceComponent(int[] firstWindowData, int[] secondWindowData, int dynamicRange, int k1) {
+    public double calculateLuminanceComponent(int[] firstWindowData, int[] secondWindowData, double dynamicRange, double k1) {
         double firstWindowMean = calculateWindowMean(firstWindowData);
         double secondWindowMean = calculateWindowMean(secondWindowData);
         double c1 = Math.pow(k1 * dynamicRange, 2);

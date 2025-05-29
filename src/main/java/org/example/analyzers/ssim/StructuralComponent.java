@@ -35,7 +35,7 @@ public class StructuralComponent {
         return numerator / denominator;
     }
 
-    public double calculateStructuralComponent(int[] firstWindowData, int[] secondWindowData, double firstStdDev, double secondStdDev, int dynamicRange, double k2) {
+    public double calculateStructuralComponent(int[] firstWindowData, int[] secondWindowData, double firstStdDev, double secondStdDev, double dynamicRange, double k2) {
         double c2 = Math.pow(k2 * dynamicRange, 2);
         double c3 = c2 / 2.0;
         return calculateStructuralComponent(firstWindowData, secondWindowData, firstStdDev, secondStdDev, c3);
