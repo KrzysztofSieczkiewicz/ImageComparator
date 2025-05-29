@@ -16,41 +16,33 @@ public class SSIMAnalyzer {
         ImageAccessor firstImageAccessor = ImageAccessor.create(firstImage);
         ImageAccessor secondImageAccessor = ImageAccessor.create(secondImage);
 
+        int[] firstImageData = firstImageAccessor.getPixelsArray();
+        int[] secondImageData = secondImageAccessor.getPixelsArray();
+
         int maxWidth = firstImageAccessor.getWidth();
         int maxHeight = firstImageAccessor.getHeight();
 
-        for (int x=0; x<maxWidth-windowDimension; x++) {
-            for (int y=0; y<maxHeight-windowDimension; y++) {
+        LuminanceComponent lc = new LuminanceComponent();
+        ContrastComponent cc = new ContrastComponent();
+        StructuralComponent sc = new StructuralComponent();
 
-            }
+        for (int x=0; x<maxWidth*maxHeight; x++) {
+            int[] firstImageWindow = getWindowData(firstImageData, x, windowDimension);
+            int[] secondImageWindow = getWindowData(secondImageData, x, windowDimension);
+
+            double luminanceComponent = lc.calculateLuminanceComponent(firstImageWindow, secondImageWindow, 1, 1);
+            double contrastComponent = cc.calculateContrastComponent(firstImageWindow, secondImageWindow, 1, 1);
+            double structuralComponent = sc.calculateStructuralComponent(firstImageData, secondImageData, 0, 0, 1, 1);
         }
-
-
     }
 
-
-    public void slideWindow(BufferedImage firstImage, BufferedImage secondImage, int windowDimension) {
-        ImageAccessor firstAccessor = ImageAccessor.create(firstImage);
-        ImageAccessor secondAccessor = ImageAccessor.create(secondImage);
-        int[][] firstImageData = firstAccessor.getPixels();
-        int[][] secondImageData = secondAccessor.getPixels();
-        int imageWidth = firstAccessor.getWidth();
-        int imageHeight = firstAccessor.getHeight();
-        int windowSize = windowDimension * windowDimension;
-
-        double sigma = 0.001;
-
-        for (int x=0; x<imageWidth-windowSize; x++) {
-            for (int y=0; y<imageHeight-windowSize; y++) {
-                int sumLuminosity1 = sumWindowValues(firstImageData, x, y, windowDimension);
-                double meanLuminosity1 = (double) sumLuminosity1 /windowSize;
-
-                int sumLuminosity2 = sumWindowValues(secondImageData, x, y, windowDimension);
-                double meanLuminosity2 = (double) sumLuminosity2 /windowSize;
-
-                double luminosityComponent = (2 * meanLuminosity1 * meanLuminosity2 + sigma) / (meanLuminosity1*meanLuminosity1 + meanLuminosity2*meanLuminosity2 + sigma);
-            }
+    private int[] getWindowData(int[] imageData, int index, int windowDimension) {
+        int[] windowData = new int[windowDimension*windowDimension];
+        for (int dx=0; dx<= windowDimension*windowDimension; dx++) {
+            windowData[dx] = imageData[index+dx];
         }
+
+        return windowData;
     }
 
     public int sumWindowValues(int[][] imageData, int startX, int startY, int windowDimension) {
