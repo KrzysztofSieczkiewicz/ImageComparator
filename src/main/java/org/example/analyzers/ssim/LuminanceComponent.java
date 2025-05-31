@@ -2,18 +2,7 @@ package org.example.analyzers.ssim;
 
 public class LuminanceComponent {
 
-    private double calculateWindowMean(int[] windowData) {
-        int sum = 0;
-        for (int pixel: windowData) {
-            sum += pixel;
-        }
-
-        return (double) sum / windowData.length;
-    }
-
-    public double calculateLuminanceComponent(int[] firstWindowData, int[] secondWindowData, double dynamicRange, double k1) {
-        double firstWindowMean = calculateWindowMean(firstWindowData);
-        double secondWindowMean = calculateWindowMean(secondWindowData);
+    public double calculateLuminanceComponent(double firstWindowMean, double secondWindowMean, double dynamicRange, double k1) {
         double c1 = Math.pow(k1 * dynamicRange, 2);
 
         double numerator = 2 * firstWindowMean * secondWindowMean + c1;

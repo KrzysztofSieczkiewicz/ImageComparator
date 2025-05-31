@@ -39,15 +39,18 @@ public class SSIMAnalyzer {
         ContrastComponent cc = new ContrastComponent();
         StructuralComponent sc = new StructuralComponent();
 
-        for (int x=0; x<maxWidth*maxHeight; x++) {
+        for (int x=0; x<maxWidth*maxHeight - windowDimension*windowDimension; x++) {
             int[] firstImageWindow = getWindowData(firstImageData, x, windowDimension);
             int[] secondImageWindow = getWindowData(secondImageData, x, windowDimension);
 
-            // ADD WINDOW STD DEV CALC HERE
+            double firstWindowMean = calculateWindowMean(firstImageWindow);
+            double secondWindowMean = calculateWindowMean(secondImageWindow);
+            double firstWindowStDev = calculateWindowStDev(firstImageWindow, firstWindowMean);
+            double secondWindowStDev = calculateWindowStDev(secondImageWindow, secondWindowMean);
 
-            double luminanceComponent = lc.calculateLuminanceComponent(firstImageWindow, secondImageWindow, dynamicRange, k1);
-            double contrastComponent = cc.calculateContrastComponent(firstImageWindow, secondImageWindow, dynamicRange, sigma);
-            double structuralComponent = sc.calculateStructuralComponent(firstImageData, secondImageData, 0, 0, dynamicRange, k2);
+            double luminanceComponent = lc.calculateLuminanceComponent(firstWindowMean, secondWindowMean, dynamicRange, k1);
+            double contrastComponent = cc.calculateContrastComponent(firstWindowStDev, secondWindowStDev, dynamicRange, sigma);
+            double structuralComponent = sc.calculateStructuralComponent(firstImageData, secondImageData, firstWindowStDev, secondWindowStDev, dynamicRange, k2);
 
             System.out.println("Luminance component = " + luminanceComponent);
             System.out.println("Contrast component = " + contrastComponent);
@@ -57,22 +60,35 @@ public class SSIMAnalyzer {
 
     private int[] getWindowData(int[] imageData, int index, int windowDimension) {
         int[] windowData = new int[windowDimension*windowDimension];
-        for (int dx=0; dx<windowDimension*windowDimension; dx++) {
-            windowData[dx] = imageData[index+dx];
-        }
+        if (windowDimension * windowDimension >= 0)
+            System.arraycopy(imageData, index + 0, windowData, 0, windowDimension * windowDimension);
 
         return windowData;
     }
 
-    public int sumWindowValues(int[][] imageData, int startX, int startY, int windowDimension) {
+    private double calculateWindowMean(int[] windowData) {
         int sum = 0;
-
-        for (int x=0; x<windowDimension; x++) {
-            for (int y=0; y<windowDimension; y++) {
-                sum += imageData[startX+x][startY+y];
-            }
+        for (int value: windowData) {
+            sum += value;
         }
-
-        return sum;
+        return (double) sum/windowData.length;
     }
+
+    private double calculateWindowStDev(int[] windowData, double windowMean) {
+        double sumOfSquares = 0;
+
+        for (double value: windowData) {
+            sumOfSquares += Math.pow(value-windowMean, 2);
+        }
+        return Math.sqrt(sumOfSquares / (windowData.length - 1));
+    }
+
+    private double calculateCovariance(int[] firstWindowData, double firstWindowMean, int[] secondWindowData, double secondWindowMean) {
+        double sum = 0;
+        for (int i=0; i< firstWindowData.length; i++) {
+            sum += (firstWindowData[i] - firstWindowMean) * (secondWindowData[i] - secondWindowMean);
+        }
+        return sum / (firstWindowData.length - 1);
+    }
+
 }
