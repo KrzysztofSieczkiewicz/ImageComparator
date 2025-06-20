@@ -50,7 +50,7 @@ public class SSIMAnalyzer {
 
             double luminanceComponent = lc.calculateLuminanceComponent(firstWindowMean, secondWindowMean, dynamicRange, k1);
             double contrastComponent = cc.calculateContrastComponent(firstWindowStDev, secondWindowStDev, dynamicRange, sigma);
-            double structuralComponent = sc.calculateStructuralComponent(firstImageData, secondImageData, firstWindowStDev, secondWindowStDev, dynamicRange, k2);
+            double structuralComponent = sc.calculateStructuralComponent(firstImageWindow, secondImageWindow, firstWindowStDev, secondWindowStDev, dynamicRange, k2);
 
             System.out.println("Luminance component = " + luminanceComponent);
             System.out.println("Contrast component = " + contrastComponent);
