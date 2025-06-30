@@ -35,10 +35,6 @@ public class SSIMAnalyzer {
         int maxWidth = firstImageAccessor.getWidth();
         int maxHeight = firstImageAccessor.getHeight();
 
-        LuminanceComponent lc = new LuminanceComponent();
-        ContrastComponent cc = new ContrastComponent();
-        StructuralComponent sc = new StructuralComponent();
-
         for (int x=0; x<maxWidth*maxHeight - windowDimension*windowDimension; x++) {
             int[] firstImageWindow = getWindowData(firstImageData, x, windowDimension);
             int[] secondImageWindow = getWindowData(secondImageData, x, windowDimension);
@@ -48,9 +44,9 @@ public class SSIMAnalyzer {
             double firstWindowStDev = calculateWindowStDev(firstImageWindow, firstWindowMean);
             double secondWindowStDev = calculateWindowStDev(secondImageWindow, secondWindowMean);
 
-            double luminanceComponent = lc.calculateLuminanceComponent(firstWindowMean, secondWindowMean, dynamicRange, k1);
-            double contrastComponent = cc.calculateContrastComponent(firstWindowStDev, secondWindowStDev, dynamicRange, sigma);
-            double structuralComponent = sc.calculateStructuralComponent(firstImageWindow, secondImageWindow, firstWindowStDev, secondWindowStDev, dynamicRange, k2);
+            double luminanceComponent = calculateLuminanceComponent(firstWindowMean, secondWindowMean);
+            double contrastComponent = calculateContrastComponent(firstWindowStDev, secondWindowStDev);
+            double structuralComponent = calculateStructuralComponent(firstImageWindow, secondImageWindow, firstWindowStDev, secondWindowStDev);
 
             System.out.println("Luminance component = " + luminanceComponent);
             System.out.println("Contrast component = " + contrastComponent);
@@ -83,7 +79,10 @@ public class SSIMAnalyzer {
         return Math.sqrt(sumOfSquares / (windowData.length - 1));
     }
 
-    private double calculateCovariance(int[] firstWindowData, double firstWindowMean, int[] secondWindowData, double secondWindowMean) {
+    private double calculateCovariance(int[] firstWindowData, int[] secondWindowData) {
+        double firstWindowMean = calculateWindowMean(firstWindowData);
+        double secondWindowMean = calculateWindowMean(secondWindowData);
+
         double sum = 0;
         for (int i=0; i< firstWindowData.length; i++) {
             sum += (firstWindowData[i] - firstWindowMean) * (secondWindowData[i] - secondWindowMean);
@@ -91,4 +90,32 @@ public class SSIMAnalyzer {
         return sum / (firstWindowData.length - 1);
     }
 
+    public double calculateLuminanceComponent(double firstWindowMean, double secondWindowMean) {
+        double numerator = 2 * firstWindowMean * secondWindowMean + c1;
+        double denominator = Math.pow(firstWindowMean, 2) + Math.pow(secondWindowMean, 2) + c1;
+
+        if (denominator == 0.0) {
+            return 0.0;
+        }
+
+        return numerator / denominator;
+    }
+
+    public double calculateContrastComponent(double firstWindowStDev, double secondWindowStDev) {
+        double numerator = 2 * firstWindowStDev * secondWindowStDev + c2;
+        double denominator = Math.pow(firstWindowStDev, 2) + Math.pow(secondWindowStDev, 2) + c2;
+
+        return numerator / denominator;
+    }
+
+    private double calculateStructuralComponent(int[] firstWindowData, int[] secondWindowData, double firstStdDev, double secondStdDev) {
+        double numerator = calculateCovariance(firstWindowData, secondWindowData) + c3;
+        double denominator = firstStdDev * secondStdDev + c3;
+
+        if (denominator == 0.0) {
+            return 0.0;
+        }
+
+        return numerator / denominator;
+    }
 }
