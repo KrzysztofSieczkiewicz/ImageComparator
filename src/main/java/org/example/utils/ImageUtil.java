@@ -9,6 +9,23 @@ import java.awt.image.Kernel;
 
 public class ImageUtil {
 
+    public static int[] getWindowData(int[] imageData, int imageWidth, int windowDimension, int startX, int startY) {
+        int[] windowData = new int[windowDimension * windowDimension];
+
+        for (int currRow=0; currRow<windowDimension; currRow++) {
+            for (int currCol=0; currCol<windowDimension; currCol++) {
+                int pixelX = startX + currRow;
+                int pixelY = startY + currCol;
+
+                int indexImage = pixelY * imageWidth + pixelX;
+                int indexWindow = currRow * windowDimension + currCol;
+
+                windowData[indexWindow] = imageData[indexImage];
+            }
+        }
+        return  windowData;
+    }
+
     /**
      * Resizes image to requested dimensions. If image is being downsized it might require gaussian blurring to fix over-sharpening
      *
@@ -107,7 +124,7 @@ public class ImageUtil {
      * @return awt Kernel
      */
     // TODO: parametrize kernel size multiplier
-    private static Kernel generateGaussianKernel(double sigma) {
+    public static Kernel generateGaussianKernel(double sigma) {
         int size = (int) (5 * sigma);
         if (size % 2 == 0) size++;
 
@@ -128,5 +145,34 @@ public class ImageUtil {
         }
 
         return new Kernel(size, size, kernelData);
+    }
+
+    /**
+     * Internal util method. Generates Gaussian blur kernel. Size is set to be ~6 times sigma and odd.
+     *
+     * @param sigma std deviation of the Gaussian distribution used for the blur
+     * @return awt Kernel
+     */
+    public static double[] generateGaussianKernel(int dimension, double sigma) {
+        double[] kernel = new double[dimension * dimension];
+        double sum = 0;
+        int halfSize = dimension / 2;
+
+        for (int i = 0; i < dimension; i++) {
+            for (int j = 0; j < dimension; j++) {
+                double x = j - halfSize;
+                double y = i - halfSize;
+
+                double value = Math.exp(-(x * x + y * y) / (2 * sigma * sigma));
+
+                kernel[i * dimension + j] = value;
+                sum += value;
+            }
+        }
+
+        for (int i = 0; i < kernel.length; i++) {
+            kernel[i] = kernel[i] / sum;
+        }
+        return kernel;
     }
 }
