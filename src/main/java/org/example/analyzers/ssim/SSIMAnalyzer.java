@@ -30,7 +30,7 @@ public class SSIMAnalyzer {
     private final double c1 = Math.pow(k1 * dynamicRange, 2);
     private final double c2 = Math.pow(k2 * dynamicRange, 2);
     private final double c3 = k2 / 2;
-    
+
     private TriFunction<Double, Double, Double, Double> ssimCalculationMethod;
 
 
@@ -38,7 +38,9 @@ public class SSIMAnalyzer {
         gaussianKernel = ImageUtil.generateGaussianKernel(windowDimension, sigma);
 
         if (alpha == 1 && beta == 1 && gamma == 1) {
-            ssimCalculationMethod = () -> {};
+            ssimCalculationMethod = this::computeWindowSimplifiedSSIM;
+        } else {
+            ssimCalculationMethod = this::computeWindowSSIM;
         }
     }
 
@@ -82,7 +84,7 @@ public class SSIMAnalyzer {
      * @param structural component of the window
      * @return combined SSIM score for the window
      */
-    private double computeWindowSimplifiedSSIM(double luminance, double contrast, double structural) {
+    private Double computeWindowSimplifiedSSIM(double luminance, double contrast, double structural) {
         return luminance * contrast * structural;
     }
 
