@@ -1,6 +1,5 @@
 package org.example.analyzers.hash;
 
-import org.example.config.HashComparatorConfig;
 import org.example.utils.ImageUtil;
 import org.example.utils.accessor.ImageAccessor;
 

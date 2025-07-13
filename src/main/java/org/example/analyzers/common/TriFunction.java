@@ -1,4 +1,4 @@
-package org.example.utils;
+package org.example.analyzers.common;
 
 import java.util.Objects;
 import java.util.function.Function;

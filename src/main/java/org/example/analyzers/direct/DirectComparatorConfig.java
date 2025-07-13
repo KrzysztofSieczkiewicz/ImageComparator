@@ -1,4 +1,4 @@
-package org.example.config;
+package org.example.analyzers.direct;
 
 import java.awt.*;
 

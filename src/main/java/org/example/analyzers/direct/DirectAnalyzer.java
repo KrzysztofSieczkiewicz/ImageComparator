@@ -2,8 +2,6 @@ package org.example.analyzers.direct;
 
 import org.example.analyzers.common.PixelPoint;
 import org.example.utils.accessor.ImageAccessor;
-import org.example.config.ColorSpace;
-import org.example.config.DirectComparatorConfig;
 import org.example.utils.PixelColorUtil;
 
 import java.awt.image.BufferedImage;

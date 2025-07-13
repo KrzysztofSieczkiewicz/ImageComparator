@@ -1,18 +1,18 @@
 package org.example.analyzers.ssim;
 
 import org.example.utils.ImageUtil;
-import org.example.utils.TriFunction;
+import org.example.analyzers.common.TriFunction;
 import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
-import java.util.function.BiFunction;
 
 public class SSIMAnalyzer {
     private final int windowDimension = 3;
 
     // Gaussian Kernel
     private final double sigma = 1.5;
-    private double[] gaussianKernel;
+    private final double[] gaussianKernel;
+    private final double sumOfSquaredWeights;
 
     // Dynamic range - maximal value that can be set to a pixel in the image - by default set for 8bit images
     private final double dynamicRange = 255;
@@ -21,7 +21,7 @@ public class SSIMAnalyzer {
     private final double k1 = 0.01;
     private final double k2 = 0.03;
 
-    //
+    // Components exponents
     private final double alpha = 1.0;
     private final double beta = 1.0;
     private final double gamma = 1.0;
@@ -29,13 +29,19 @@ public class SSIMAnalyzer {
     // Stability constants
     private final double c1 = Math.pow(k1 * dynamicRange, 2);
     private final double c2 = Math.pow(k2 * dynamicRange, 2);
-    private final double c3 = k2 / 2;
+    private final double c3 = c2 / 2;
 
-    private TriFunction<Double, Double, Double, Double> ssimCalculationMethod;
+    private final TriFunction<Double, Double, Double, Double> ssimCalculationMethod;
 
 
     public SSIMAnalyzer() {
         gaussianKernel = ImageUtil.generateGaussianKernel(windowDimension, sigma);
+
+        double tmpSquaredWeights = 0;
+        for (double weight : gaussianKernel) {
+            tmpSquaredWeights += weight * weight;
+        }
+        sumOfSquaredWeights = tmpSquaredWeights;
 
         if (alpha == 1 && beta == 1 && gamma == 1) {
             ssimCalculationMethod = this::computeWindowSimplifiedSSIM;
@@ -55,8 +61,8 @@ public class SSIMAnalyzer {
         int maxWidth = firstImageAccessor.getWidth();
         int maxHeight = firstImageAccessor.getHeight();
 
-        for (int x=0; x<maxWidth-windowDimension; x++) {
-            for (int y=0; y<maxHeight-windowDimension; y++) {
+        for (int x=0; x<=maxWidth-windowDimension; x++) {
+            for (int y=0; y<=maxHeight-windowDimension; y++) {
                 int[] firstImageWindow = ImageUtil.getWindowData(firstImageData, maxWidth, windowDimension, x, y);
                 int[] secondImageWindow = ImageUtil.getWindowData(secondImageData, maxWidth, windowDimension, x, y);
 
@@ -64,7 +70,7 @@ public class SSIMAnalyzer {
                 double secondWindowMean = calculateWeightedWindowMean(secondImageWindow);
                 double firstWindowStDev = calculateWeightedWindowStDev(firstImageWindow, firstWindowMean);
                 double secondWindowStDev = calculateWeightedWindowStDev(secondImageWindow, secondWindowMean);
-                double windowCovariance = calculateWeightedCovariance(firstImageData, secondImageData);
+                double windowCovariance = calculateWeightedCovariance(firstImageWindow, secondImageWindow);
 
                 double luminanceComponent = calculateLuminanceComponent(firstWindowMean, secondWindowMean);
                 double contrastComponent = calculateContrastComponent(firstWindowStDev, secondWindowStDev);
@@ -78,7 +84,7 @@ public class SSIMAnalyzer {
     }
 
     /**
-     * Computes SSIM score for the window using simplified approach by multiplying components
+     * Computes SSIM score for the window using simplified approach - multiplying components
      * @param luminance component of the window
      * @param contrast component of the window
      * @param structural component of the window
@@ -96,9 +102,9 @@ public class SSIMAnalyzer {
      * @return combined SSIM score for the window
      */
     private double computeWindowSSIM(double luminance, double contrast, double structural) {
-        double l_term = (alpha == 0) ? 1.0 : Math.pow(luminance, alpha);
-        double c_term = (beta == 0) ? 1.0 : Math.pow(contrast, beta);
-        double s_term = (gamma == 0) ? 1.0 : Math.pow(structural, gamma);
+        double l_term = Math.pow(luminance, alpha);
+        double c_term = Math.pow(contrast, beta);
+        double s_term = Math.pow(structural, gamma);
 
         return l_term * c_term * s_term;
     }
@@ -126,7 +132,7 @@ public class SSIMAnalyzer {
         for (int i = 0; i < windowData.length; i++) {
             sumOfWeightedSquares += gaussianKernel[i] * Math.pow(windowData[i] - windowMean, 2);
         }
-        return Math.sqrt(sumOfWeightedSquares / (windowData.length - 1));
+        return Math.sqrt(sumOfWeightedSquares / (1 - sumOfSquaredWeights));
     }
 
     /**
@@ -142,7 +148,7 @@ public class SSIMAnalyzer {
         for (int i = 0; i < firstWindowData.length; i++) {
             sum += gaussianKernel[i] * (firstWindowData[i] - firstWindowMean) * (secondWindowData[i] - secondWindowMean);
         }
-        return sum / (firstWindowData.length - 1);
+        return sum / (1- sumOfSquaredWeights);
     }
 
     /**

@@ -1,4 +1,4 @@
-package org.example.comparators;
+package org.example.analyzers.direct;
 
 import java.awt.image.BufferedImage;
 

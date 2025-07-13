@@ -121,9 +121,8 @@ public class ImageUtil {
      * Internal util method. Generates Gaussian blur kernel. Size is set to be ~6 times sigma and odd.
      *
      * @param sigma std deviation of the Gaussian distribution used for the blur
-     * @return awt Kernel
+     * @return normalized awt Kernel
      */
-    // TODO: parametrize kernel size multiplier
     public static Kernel generateGaussianKernel(double sigma) {
         int size = (int) (5 * sigma);
         if (size % 2 == 0) size++;
@@ -148,10 +147,10 @@ public class ImageUtil {
     }
 
     /**
-     * Internal util method. Generates Gaussian blur kernel. Size is set to be ~6 times sigma and odd.
+     * Generates Gaussian blur kernel
      *
      * @param sigma std deviation of the Gaussian distribution used for the blur
-     * @return awt Kernel
+     * @return normalized awt Kernel
      */
     public static double[] generateGaussianKernel(int dimension, double sigma) {
         double[] kernel = new double[dimension * dimension];
@@ -174,5 +173,84 @@ public class ImageUtil {
             kernel[i] = kernel[i] / sum;
         }
         return kernel;
+    }
+
+    /**
+     * Generates an integral in which each pixel contains sum of all previous row and column values reduced by diagonal values
+     * S(x,y)=∑i∑j I(i,j), where S(x,y)=I(x,y)+S(x−1,y)+S(x,y−1)−S(x−1,y−1)
+     * @param imageData - 1D array of image pixels
+     * @param imageWidth image X dimension
+     * @param imageHeight image Y dimension
+     * @return long array containing integral image data
+     */
+    public long[] getSumIntegralImage(int[] imageData, int imageWidth, int imageHeight) {
+        long[] integralImage = new long[imageData.length];
+
+        for (int y=0; y<imageHeight; y++) {
+            for (int x=0; x<imageWidth; x++) {
+                int currentIndex = x + (y * imageWidth);
+                int currentValue = imageData[currentIndex];
+
+                long valAbove = (y > 0) ? integralImage[(y - 1) * imageWidth + x] : 0;
+                long valLeft = (x > 0) ? integralImage[y * imageWidth + (x - 1)] : 0;
+                long valDiagonal = (y > 0 && x > 0) ? integralImage[(y - 1) * imageWidth + (x - 1)] : 0;
+
+                integralImage[currentIndex] = currentValue + valAbove + valLeft - valDiagonal;
+            }
+        }
+        return integralImage;
+    }
+
+    /**
+     * Generates an integral in which each pixel contains squared sum of all previous row and column values reduced by diagonal values
+     * S(x,y)=∑i∑j I(i,j), where S(x,y)=I(x,y)+S(x−1,y)+S(x,y−1)−S(x−1,y−1)
+     * @param imageData - 1D array of image pixels
+     * @param imageWidth image X dimension
+     * @param imageHeight image Y dimension
+     * @return long array containing integral image data
+     */
+    public long[] getSquaredSumIntegralImage(int[] imageData, int imageWidth, int imageHeight) {
+        long[] integralImage = new long[imageData.length];
+
+        for (int y=0; y<imageHeight; y++) {
+            for (int x=0; x<imageWidth; x++) {
+                int currentIndex = x + (y * imageWidth);
+                long currentValue = (long) imageData[currentIndex] * imageData[currentIndex];
+
+                long valAbove = (y > 0) ? integralImage[(y - 1) * imageWidth + x] : 0;
+                long valLeft = (x > 0) ? integralImage[y * imageWidth + (x - 1)] : 0;
+                long valDiagonal = (y > 0 && x > 0) ? integralImage[(y - 1) * imageWidth + (x - 1)] : 0;
+
+                integralImage[currentIndex] = currentValue + valAbove + valLeft - valDiagonal;
+            }
+        }
+        return integralImage;
+    }
+
+    /**
+     * Generates an integral in which each pixel contains products of two images of all previous row and column values reduced by diagonal values
+     * S(x,y)=∑i∑j I(i,j), where S(x,y)=I(x,y)+S(x−1,y)+S(x,y−1)−S(x−1,y−1)
+     * @param firstImageData - 1D array of image pixels for the first image
+     * @param secondImageData - 1D array of image pixels for the second image
+     * @param imageWidth image X dimension
+     * @param imageHeight image Y dimension
+     * @return long array containing integral image data
+     */
+    public long[] getProductIntegralImage(int[] firstImageData, int[] secondImageData, int imageWidth, int imageHeight) {
+        long[] integralImage = new long[firstImageData.length];
+
+        for (int y=0; y<imageHeight; y++) {
+            for (int x=0; x<imageWidth; x++) {
+                int currentIndex = x + (y * imageWidth);
+                long currentValue = (long) firstImageData[currentIndex] * secondImageData[currentIndex];
+
+                long valAbove = (y > 0) ? integralImage[(y - 1) * imageWidth + x] : 0;
+                long valLeft = (x > 0) ? integralImage[y * imageWidth + (x - 1)] : 0;
+                long valDiagonal = (y > 0 && x > 0) ? integralImage[(y - 1) * imageWidth + (x - 1)] : 0;
+
+                integralImage[currentIndex] = currentValue + valAbove + valLeft - valDiagonal;
+            }
+        }
+        return integralImage;
     }
 }
