@@ -76,6 +76,38 @@ public class ImageUtil {
         return greyscaleImg;
     }
 
+    public long[] convolve(int[] imageData, int imageWidth, int imageHeight, Kernel kernel) {
+        long[] outputMap = new long[imageData.length];
+        int kernelHalf = kernel.getWidth() / 2;
+
+        float[] kernelData = kernel.getKernelData(null);
+
+        for (int y = 0; y < imageHeight; y++) {
+            for (int x = 0; x < imageWidth; x++) {
+                double sumWeightedValue = 0.0;
+
+                for (int ky = 0; ky < kernel.getHeight(); ky++) {
+                    for (int kx = 0; kx < kernel.getWidth(); kx++) {
+                        int imgX = x + kx - kernelHalf;
+                        int imgY = y + ky - kernelHalf;
+
+                        if (imgX < 0) imgX = 0;
+                        if (imgY < 0) imgY = 0;
+                        if (imgX >= imageWidth) imgX = imageWidth - 1;
+                        if (imgY >= imageHeight) imgY = imageHeight - 1;
+
+                        double weight = kernelData[ky * kernel.getWidth() + kx];
+                        int pixelIndex = imgY * imageWidth + imgX;
+                        sumWeightedValue += (double) imageData[pixelIndex] * weight;
+                    }
+                }
+                outputMap[y * imageWidth + x] = Math.round(sumWeightedValue);
+            }
+        }
+
+        return outputMap;
+    }
+
     /**
      * Blurs image using convolve op with preset kernel.
      * Used kernel size is 6 times sigma rounded up to the next odd integer.
@@ -173,84 +205,5 @@ public class ImageUtil {
             kernel[i] = kernel[i] / sum;
         }
         return kernel;
-    }
-
-    /**
-     * Generates an integral in which each pixel contains sum of all previous row and column values reduced by diagonal values
-     * S(x,y)=∑i∑j I(i,j), where S(x,y)=I(x,y)+S(x−1,y)+S(x,y−1)−S(x−1,y−1)
-     * @param imageData - 1D array of image pixels
-     * @param imageWidth image X dimension
-     * @param imageHeight image Y dimension
-     * @return long array containing integral image data
-     */
-    public long[] getSumIntegralImage(int[] imageData, int imageWidth, int imageHeight) {
-        long[] integralImage = new long[imageData.length];
-
-        for (int y=0; y<imageHeight; y++) {
-            for (int x=0; x<imageWidth; x++) {
-                int currentIndex = x + (y * imageWidth);
-                int currentValue = imageData[currentIndex];
-
-                long valAbove = (y > 0) ? integralImage[(y - 1) * imageWidth + x] : 0;
-                long valLeft = (x > 0) ? integralImage[y * imageWidth + (x - 1)] : 0;
-                long valDiagonal = (y > 0 && x > 0) ? integralImage[(y - 1) * imageWidth + (x - 1)] : 0;
-
-                integralImage[currentIndex] = currentValue + valAbove + valLeft - valDiagonal;
-            }
-        }
-        return integralImage;
-    }
-
-    /**
-     * Generates an integral in which each pixel contains squared sum of all previous row and column values reduced by diagonal values
-     * S(x,y)=∑i∑j I(i,j), where S(x,y)=I(x,y)+S(x−1,y)+S(x,y−1)−S(x−1,y−1)
-     * @param imageData - 1D array of image pixels
-     * @param imageWidth image X dimension
-     * @param imageHeight image Y dimension
-     * @return long array containing integral image data
-     */
-    public long[] getSquaredSumIntegralImage(int[] imageData, int imageWidth, int imageHeight) {
-        long[] integralImage = new long[imageData.length];
-
-        for (int y=0; y<imageHeight; y++) {
-            for (int x=0; x<imageWidth; x++) {
-                int currentIndex = x + (y * imageWidth);
-                long currentValue = (long) imageData[currentIndex] * imageData[currentIndex];
-
-                long valAbove = (y > 0) ? integralImage[(y - 1) * imageWidth + x] : 0;
-                long valLeft = (x > 0) ? integralImage[y * imageWidth + (x - 1)] : 0;
-                long valDiagonal = (y > 0 && x > 0) ? integralImage[(y - 1) * imageWidth + (x - 1)] : 0;
-
-                integralImage[currentIndex] = currentValue + valAbove + valLeft - valDiagonal;
-            }
-        }
-        return integralImage;
-    }
-
-    /**
-     * Generates an integral in which each pixel contains products of two images of all previous row and column values reduced by diagonal values
-     * S(x,y)=∑i∑j I(i,j), where S(x,y)=I(x,y)+S(x−1,y)+S(x,y−1)−S(x−1,y−1)
-     * @param firstImageData - 1D array of image pixels for the first image
-     * @param secondImageData - 1D array of image pixels for the second image
-     * @param imageWidth image X dimension
-     * @param imageHeight image Y dimension
-     * @return long array containing integral image data
-     */
-    public long[] getProductIntegralImage(int[] firstImageData, int[] secondImageData, int imageWidth, int imageHeight) {
-        long[] integralImage = new long[firstImageData.length];
-
-        for (int y=0; y<imageHeight; y++) {
-            for (int x=0; x<imageWidth; x++) {
-                int currentIndex = x + (y * imageWidth);
-                long currentValue = (long) firstImageData[currentIndex] * secondImageData[currentIndex];
-
-                long valAbove = (y > 0) ? integralImage[(y - 1) * imageWidth + x] : 0;
-                long valLeft = (x > 0) ? integralImage[y * imageWidth + (x - 1)] : 0;
-                long valDiagonal = (y > 0 && x > 0) ? integralImage[(y - 1) * imageWidth + (x - 1)] : 0;
-
-                integralImage[currentIndex] = currentValue + valAbove + valLeft - valDiagonal;
-            }
-        }
-        return integralImage;
     }
 }

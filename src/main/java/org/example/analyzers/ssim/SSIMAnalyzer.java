@@ -109,6 +109,8 @@ public class SSIMAnalyzer {
         return l_term * c_term * s_term;
     }
 
+    private double computeWindowPrecomputedSSIM()
+
     /**
      * @param windowData 1D array of image window
      * @return mean value of pixels in the window
