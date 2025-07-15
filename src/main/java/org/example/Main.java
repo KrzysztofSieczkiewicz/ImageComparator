@@ -15,8 +15,10 @@ public class Main {
 
         image2 = ImageUtil.resize(image2, image1.getWidth(), image1.getHeight());
 
+        long startTime = System.nanoTime();
         new SSIMAnalyzer().compareImages(image1, image2);
-
+        long endTime = System.nanoTime();
+        System.out.println("Time taken: " + (endTime - startTime));
     }
 
 }

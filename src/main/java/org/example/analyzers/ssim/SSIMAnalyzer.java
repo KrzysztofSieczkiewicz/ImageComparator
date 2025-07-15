@@ -5,14 +5,14 @@ import org.example.analyzers.common.TriFunction;
 import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.Kernel;
 
 public class SSIMAnalyzer {
     private final int windowDimension = 3;
 
     // Gaussian Kernel
     private final double sigma = 1.5;
-    private final double[] gaussianKernel;
-    private final double sumOfSquaredWeights;
+    private final Kernel gaussianKernel;
 
     // Dynamic range - maximal value that can be set to a pixel in the image - by default set for 8bit images
     private final double dynamicRange = 255;
@@ -37,12 +37,6 @@ public class SSIMAnalyzer {
     public SSIMAnalyzer() {
         gaussianKernel = ImageUtil.generateGaussianKernel(windowDimension, sigma);
 
-        double tmpSquaredWeights = 0;
-        for (double weight : gaussianKernel) {
-            tmpSquaredWeights += weight * weight;
-        }
-        sumOfSquaredWeights = tmpSquaredWeights;
-
         if (alpha == 1 && beta == 1 && gamma == 1) {
             ssimCalculationMethod = this::computeWindowSimplifiedSSIM;
         } else {
@@ -57,31 +51,60 @@ public class SSIMAnalyzer {
 
         int[] firstImageData = firstImageAccessor.getPixelsArray();
         int[] secondImageData = secondImageAccessor.getPixelsArray();
+        int imgWidth = firstImageAccessor.getWidth();
+        int imgHeight = firstImageAccessor.getHeight();
+        int numPixels = firstImageData.length;
 
-        int maxWidth = firstImageAccessor.getWidth();
-        int maxHeight = firstImageAccessor.getHeight();
+        int[] firstImageSquaredData = new int[numPixels];
+        int[] secondImageSquaredData = new int[numPixels];
+        int[] imagesProductData = new int[numPixels];
 
-        for (int x=0; x<=maxWidth-windowDimension; x++) {
-            for (int y=0; y<=maxHeight-windowDimension; y++) {
-                int[] firstImageWindow = ImageUtil.getWindowData(firstImageData, maxWidth, windowDimension, x, y);
-                int[] secondImageWindow = ImageUtil.getWindowData(secondImageData, maxWidth, windowDimension, x, y);
+        for(int i=0; i<numPixels; i++) {
+            firstImageSquaredData[i] = firstImageData[i] * firstImageData[i];
+            secondImageSquaredData[i] = secondImageData[i] * secondImageData[i];
+            imagesProductData[i] = firstImageData[i] * secondImageData[i];
+        }
 
-                double firstWindowMean = calculateWeightedWindowMean(firstImageWindow);
-                double secondWindowMean = calculateWeightedWindowMean(secondImageWindow);
-                double firstWindowStDev = calculateWeightedWindowStDev(firstImageWindow, firstWindowMean);
-                double secondWindowStDev = calculateWeightedWindowStDev(secondImageWindow, secondWindowMean);
-                double windowCovariance = calculateWeightedCovariance(firstImageWindow, secondImageWindow);
+        double[] firstImageWeightedMeanData = ImageUtil.convolve(firstImageData, imgWidth, imgHeight, gaussianKernel);
+        double[] secondImageWeightedMeanData = ImageUtil.convolve(secondImageData, imgWidth, imgHeight, gaussianKernel);
+        double[] firstImageWeightedSquaredData = ImageUtil.convolve(firstImageSquaredData, imgWidth, imgHeight, gaussianKernel);
+        double[] secondImageWeightedSquaredData = ImageUtil.convolve(secondImageSquaredData, imgWidth, imgHeight, gaussianKernel);
+        double[] imagesWeightedProductData = ImageUtil.convolve(imagesProductData, imgWidth, imgHeight, gaussianKernel);
 
-                double luminanceComponent = calculateLuminanceComponent(firstWindowMean, secondWindowMean);
-                double contrastComponent = calculateContrastComponent(firstWindowStDev, secondWindowStDev);
-                double structuralComponent = calculateStructuralComponent(firstWindowStDev, secondWindowStDev, windowCovariance);
+        double totalSSIM = 0.0;
+        int validWindows = 0;
 
-                System.out.println("Luminance component = " + luminanceComponent);
-                System.out.println("Contrast component = " + contrastComponent);
-                System.out.println("Structural component = " + structuralComponent);
+        for (int i = 0; i < numPixels; i++) {
+            double firstMean = firstImageWeightedMeanData[i];
+            double secondMean = secondImageWeightedMeanData[i];
+            double firstVariance = firstImageWeightedSquaredData[i];
+            double secondVariance = secondImageWeightedSquaredData[i];
+            double product = imagesWeightedProductData[i];
+
+            // sigma^2 = E[X^2] - (E[X])^2
+            double firstStdDevSquared = Math.max(0, firstVariance - (firstMean * firstMean));
+            double secondStdDevSquared = Math.max(0, secondVariance - (secondMean * secondMean));
+
+            // sigma_xy = E[XY] - E[X] * E[Y]
+            double covariance = product - (firstMean * secondMean);
+
+            double firstStdDev = Math.sqrt(firstStdDevSquared);
+            double secondStdDev = Math.sqrt(secondStdDevSquared);
+
+            double luminanceComponent = calculateLuminanceComponent(firstMean, secondMean);
+            double contrastComponent = calculateContrastComponent(firstStdDev, secondStdDev);
+            double structuralComponent = calculateStructuralComponent(firstStdDev, secondStdDev, covariance);
+
+            double currentPixelSSIM = luminanceComponent * contrastComponent * structuralComponent;
+
+            if (!Double.isNaN(currentPixelSSIM) && !Double.isInfinite(currentPixelSSIM)) {
+                totalSSIM += currentPixelSSIM;
+                validWindows++;
             }
         }
+        System.out.println("Average matching pixels: " + (validWindows > 0 ? totalSSIM / validWindows : 0.0) );
     }
+
 
     /**
      * Computes SSIM score for the window using simplified approach - multiplying components
@@ -107,50 +130,6 @@ public class SSIMAnalyzer {
         double s_term = Math.pow(structural, gamma);
 
         return l_term * c_term * s_term;
-    }
-
-    private double computeWindowPrecomputedSSIM()
-
-    /**
-     * @param windowData 1D array of image window
-     * @return mean value of pixels in the window
-     */
-    private double calculateWeightedWindowMean(int[] windowData) {
-        double sum = 0;
-        for (int i = 0; i < windowData.length; i++) {
-            sum += windowData[i] * gaussianKernel[i];
-        }
-        return sum/windowData.length;
-    }
-
-    /**
-     * @param windowData 1D array of image window
-     * @param windowMean mean value of window pixels
-     * @return std deviation
-     */
-    private double calculateWeightedWindowStDev(int[] windowData, double windowMean) {
-        double sumOfWeightedSquares = 0;
-
-        for (int i = 0; i < windowData.length; i++) {
-            sumOfWeightedSquares += gaussianKernel[i] * Math.pow(windowData[i] - windowMean, 2);
-        }
-        return Math.sqrt(sumOfWeightedSquares / (1 - sumOfSquaredWeights));
-    }
-
-    /**
-     * @param firstWindowData 1D array of the first image window
-     * @param secondWindowData 1D array of the second image window
-     * @return covariance
-     */
-    private double calculateWeightedCovariance(int[] firstWindowData, int[] secondWindowData) {
-        double firstWindowMean = calculateWeightedWindowMean(firstWindowData);
-        double secondWindowMean = calculateWeightedWindowMean(secondWindowData);
-
-        double sum = 0;
-        for (int i = 0; i < firstWindowData.length; i++) {
-            sum += gaussianKernel[i] * (firstWindowData[i] - firstWindowMean) * (secondWindowData[i] - secondWindowMean);
-        }
-        return sum / (1- sumOfSquaredWeights);
     }
 
     /**
@@ -197,4 +176,5 @@ public class SSIMAnalyzer {
 
         return numerator / denominator;
     }
+
 }

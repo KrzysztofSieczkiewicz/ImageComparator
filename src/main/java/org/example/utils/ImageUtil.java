@@ -76,8 +76,16 @@ public class ImageUtil {
         return greyscaleImg;
     }
 
-    public long[] convolve(int[] imageData, int imageWidth, int imageHeight, Kernel kernel) {
-        long[] outputMap = new long[imageData.length];
+    /**
+     * Convolves image with provided kernel
+     * @param imageData 1D int array containing image data
+     * @param imageWidth processed image width (when in 2D format)
+     * @param imageHeight processed image height (when in 2D format)
+     * @param kernel AWT Kernel
+     * @return new instance of convolved imageData
+     */
+    public static double[] convolve(int[] imageData, int imageWidth, int imageHeight, Kernel kernel) {
+        double[] outputMap = new double[imageData.length];
         int kernelHalf = kernel.getWidth() / 2;
 
         float[] kernelData = kernel.getKernelData(null);
@@ -184,8 +192,8 @@ public class ImageUtil {
      * @param sigma std deviation of the Gaussian distribution used for the blur
      * @return normalized awt Kernel
      */
-    public static double[] generateGaussianKernel(int dimension, double sigma) {
-        double[] kernel = new double[dimension * dimension];
+    public static Kernel generateGaussianKernel(int dimension, double sigma) {
+        float[] kernelData = new float[dimension * dimension];
         double sum = 0;
         int halfSize = dimension / 2;
 
@@ -194,16 +202,17 @@ public class ImageUtil {
                 double x = j - halfSize;
                 double y = i - halfSize;
 
-                double value = Math.exp(-(x * x + y * y) / (2 * sigma * sigma));
+                float value = (float) Math.exp(-(x * x + y * y) / (2 * sigma * sigma));
 
-                kernel[i * dimension + j] = value;
+                kernelData[i * dimension + j] = value;
                 sum += value;
             }
         }
 
-        for (int i = 0; i < kernel.length; i++) {
-            kernel[i] = kernel[i] / sum;
+        for (int i = 0; i < kernelData.length; i++) {
+            kernelData[i] = (float) (kernelData[i] / sum);
         }
-        return kernel;
+
+        return new Kernel(dimension, dimension, kernelData);
     }
 }
