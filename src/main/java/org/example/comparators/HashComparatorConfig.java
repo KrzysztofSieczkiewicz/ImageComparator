@@ -1,4 +1,4 @@
-package org.example.analyzers.hash;
+package org.example.comparators;
 
 public class HashComparatorConfig {
 

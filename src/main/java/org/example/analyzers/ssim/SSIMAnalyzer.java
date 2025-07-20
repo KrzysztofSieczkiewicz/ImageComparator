@@ -1,41 +1,44 @@
 package org.example.analyzers.ssim;
 
+import org.example.comparators.SSIMComparatorConfig;
 import org.example.utils.ImageUtil;
 import org.example.analyzers.common.TriFunction;
 import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.Kernel;
+import java.util.Arrays;
 
 public class SSIMAnalyzer {
-    private final int windowDimension = 3;
-
-    // Gaussian Kernel
-    private final double sigma = 1.5;
     private final Kernel gaussianKernel;
 
-    // Dynamic range - maximal value that can be set to a pixel in the image - by default set for 8bit images
-    private final double dynamicRange = 255;
-
-    // Empirical constants
-    private final double k1 = 0.01;
-    private final double k2 = 0.03;
-
     // Components exponents
-    private final double alpha = 1.0;
-    private final double beta = 1.0;
-    private final double gamma = 1.0;
+    private final double alpha;
+    private final double beta;
+    private final double gamma;
 
     // Stability constants
-    private final double c1 = Math.pow(k1 * dynamicRange, 2);
-    private final double c2 = Math.pow(k2 * dynamicRange, 2);
-    private final double c3 = c2 / 2;
+    private final double c1;
+    private final double c2;
+    private final double c3;
 
     private final TriFunction<Double, Double, Double, Double> ssimCalculationMethod;
 
 
-    public SSIMAnalyzer() {
-        gaussianKernel = ImageUtil.generateGaussianKernel(windowDimension, sigma);
+    public SSIMAnalyzer(SSIMComparatorConfig config) {
+        double sigma = config.getSigma();
+        int windowDimension = config.getWindowSize();
+        int dynamicRange = config.getDynamicRange();
+        double k1 = config.getK1();
+        double k2 = config.getK2();
+
+        this.gaussianKernel = ImageUtil.generateGaussianKernel(windowDimension, sigma);
+        this.alpha = config.getAlpha();
+        this.beta = config.getBeta();
+        this.gamma = config.getGamma();
+        this.c1 = Math.pow(k1 * dynamicRange, 2);
+        this.c2 = Math.pow(k2 * dynamicRange, 2);
+        this.c3 = c2 / 2;
 
         if (alpha == 1 && beta == 1 && gamma == 1) {
             ssimCalculationMethod = this::computeWindowSimplifiedSSIM;
@@ -49,8 +52,8 @@ public class SSIMAnalyzer {
         ImageAccessor firstImageAccessor = ImageAccessor.create(firstImage);
         ImageAccessor secondImageAccessor = ImageAccessor.create(secondImage);
 
-        int[] firstImageData = firstImageAccessor.getPixelsArray();
-        int[] secondImageData = secondImageAccessor.getPixelsArray();
+        int[] firstImageData = firstImageAccessor.getBlueArray();
+        int[] secondImageData = secondImageAccessor.getBlueArray();
         int imgWidth = firstImageAccessor.getWidth();
         int imgHeight = firstImageAccessor.getHeight();
         int numPixels = firstImageData.length;
@@ -95,13 +98,27 @@ public class SSIMAnalyzer {
             double contrastComponent = calculateContrastComponent(firstStdDev, secondStdDev);
             double structuralComponent = calculateStructuralComponent(firstStdDev, secondStdDev, covariance);
 
-            double currentPixelSSIM = luminanceComponent * contrastComponent * structuralComponent;
+            System.out.println("First image: " + firstImageData[i]);
+            System.out.println("First mean: " + firstMean);
+            System.out.println("Second image: " + secondImageData[i]);
+            System.out.println("Second mean: " + secondMean);
+            System.out.println("product: " + product);
+            System.out.println("covariance: " + covariance);
+
+            System.out.println("Luminance: " + luminanceComponent);
+            System.out.println("Contrast: " + contrastComponent);
+            System.out.println("Structural: " + structuralComponent);
+
+            double currentPixelSSIM = ssimCalculationMethod.apply(luminanceComponent, contrastComponent, structuralComponent);
 
             if (!Double.isNaN(currentPixelSSIM) && !Double.isInfinite(currentPixelSSIM)) {
                 totalSSIM += currentPixelSSIM;
                 validWindows++;
             }
         }
+
+        System.out.println("Total SSIM: " + totalSSIM);
+        System.out.println("Valid windows: " + validWindows);
         System.out.println("Average matching pixels: " + (validWindows > 0 ? totalSSIM / validWindows : 0.0) );
     }
 

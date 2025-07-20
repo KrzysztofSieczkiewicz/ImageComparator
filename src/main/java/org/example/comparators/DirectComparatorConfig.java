@@ -1,4 +1,7 @@
-package org.example.analyzers.direct;
+package org.example.comparators;
+
+import org.example.analyzers.direct.ColorSpace;
+import org.example.analyzers.direct.MarkingType;
 
 import java.awt.*;
 

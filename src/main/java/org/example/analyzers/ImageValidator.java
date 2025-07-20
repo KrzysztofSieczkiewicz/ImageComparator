@@ -1,6 +1,6 @@
 package org.example.analyzers;
 
-import org.example.analyzers.direct.DirectComparatorConfig;
+import org.example.comparators.DirectComparatorConfig;
 import org.example.analyzers.direct.Mismatches;
 
 import java.awt.image.BufferedImage;
