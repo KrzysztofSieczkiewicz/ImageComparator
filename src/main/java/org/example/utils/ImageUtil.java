@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
+import java.awt.image.WritableRaster;
 
 public class ImageUtil {
 
@@ -53,11 +54,13 @@ public class ImageUtil {
     }
 
     /**
+     * TODO: REPLACE THIS WITH extractGreyscale
      * Converts image to greyscale color space using TYPE_BYTE_GRAY
      *
      * @param image BufferedImage to be converted
      * @return new BuffedImage containing image in greyscale color space
      */
+    @Deprecated
     public static BufferedImage greyscale(BufferedImage image) {
         BufferedImage greyscaleImg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
         ImageAccessor imageAccessor = ImageAccessor.create(image);
@@ -74,6 +77,63 @@ public class ImageUtil {
         }
 
         return greyscaleImg;
+    }
+
+    /**
+     * Calculates greyscale space from provided RGB image
+     *
+     * @param image rgb BufferedImage
+     * @return 1D array of greyscale int values
+     */
+    public static int[] extractGreyscale(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        int[] gImage = new int[width * height];
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixel = image.getRGB(x, y);
+
+                gImage[y * width + x] =
+                    ((pixel >> 16) & 0xFF) +
+                    ((pixel >> 8) & 0xFF) +
+                    (pixel & 0xFF);
+            }
+        }
+
+        return gImage;
+    }
+
+    /**
+     * Calculates Y channel (YCbCr) from provided RGB image
+     *
+     * @param image rgb BufferedImage
+     * @return 1D array of Y channel int values
+     */
+    public static int[] extractLuminosity(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        int[] yImage = new int[width*height];
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixel = image.getRGB(x, y);
+
+                double yValue =
+                        ((pixel >> 16) & 0xFF) * 0.299 +
+                        ((pixel >> 8) & 0xFF) * 0.587 +
+                        (pixel & 0xFF) * 0.114;
+
+                int yInt = (int) Math.round(yValue);
+                yInt = Math.max(0, Math.min(255, yInt));
+
+                yImage[y * width + x] = yInt;
+            }
+        }
+
+        return yImage;
     }
 
     /**
