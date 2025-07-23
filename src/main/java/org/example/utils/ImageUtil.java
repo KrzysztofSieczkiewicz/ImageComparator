@@ -101,7 +101,6 @@ public class ImageUtil {
                     (pixel & 0xFF);
             }
         }
-
         return gImage;
     }
 
@@ -132,7 +131,6 @@ public class ImageUtil {
                 yImage[y * width + x] = yInt;
             }
         }
-
         return yImage;
     }
 

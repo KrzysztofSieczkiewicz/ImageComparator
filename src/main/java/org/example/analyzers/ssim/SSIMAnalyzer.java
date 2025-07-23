@@ -7,7 +7,6 @@ import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.Kernel;
-import java.util.Arrays;
 
 public class SSIMAnalyzer {
     private final Kernel gaussianKernel;
@@ -48,7 +47,7 @@ public class SSIMAnalyzer {
     }
 
 
-    public void compareImages(BufferedImage firstImage, BufferedImage secondImage) {
+    public double compareImages(BufferedImage firstImage, BufferedImage secondImage) {
         ImageAccessor firstImageAccessor = ImageAccessor.create(firstImage);
         ImageAccessor secondImageAccessor = ImageAccessor.create(secondImage);
 
@@ -98,17 +97,6 @@ public class SSIMAnalyzer {
             double contrastComponent = calculateContrastComponent(firstStdDev, secondStdDev);
             double structuralComponent = calculateStructuralComponent(firstStdDev, secondStdDev, covariance);
 
-            System.out.println("First image: " + firstImageData[i]);
-            System.out.println("First mean: " + firstMean);
-            System.out.println("Second image: " + secondImageData[i]);
-            System.out.println("Second mean: " + secondMean);
-            System.out.println("product: " + product);
-            System.out.println("covariance: " + covariance);
-
-            System.out.println("Luminance: " + luminanceComponent);
-            System.out.println("Contrast: " + contrastComponent);
-            System.out.println("Structural: " + structuralComponent);
-
             double currentPixelSSIM = ssimCalculationMethod.apply(luminanceComponent, contrastComponent, structuralComponent);
 
             if (!Double.isNaN(currentPixelSSIM) && !Double.isInfinite(currentPixelSSIM)) {
@@ -117,9 +105,7 @@ public class SSIMAnalyzer {
             }
         }
 
-        System.out.println("Total SSIM: " + totalSSIM);
-        System.out.println("Valid windows: " + validWindows);
-        System.out.println("Average matching pixels: " + (validWindows > 0 ? totalSSIM / validWindows : 0.0) );
+        return validWindows > 0 ? totalSSIM / validWindows : 0.0;
     }
 
 
