@@ -4,7 +4,6 @@ import org.example.analyzers.hash.AHashAnalyzer;
 import org.example.analyzers.hash.DHashAnalyzer;
 import org.example.analyzers.hash.PHashAnalyzer;
 import org.example.analyzers.hash.WHashAnalyzer;
-import org.example.config.HashComparatorConfig;
 import org.example.utils.HashUtil;
 import org.example.utils.ImageUtil;
 
