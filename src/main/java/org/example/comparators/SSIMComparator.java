@@ -6,8 +6,10 @@ import java.awt.image.BufferedImage;
 
 public class SSIMComparator {
     private SSIMAnalyzer analyzer;
+    private final SSIMComparatorConfig config;
 
     public SSIMComparator(SSIMComparatorConfig config) {
+        this.config = config;
         this.analyzer = new SSIMAnalyzer(config);
     }
 
@@ -16,6 +18,8 @@ public class SSIMComparator {
     }
 
     public double compare(BufferedImage actual, BufferedImage checked) {
-        return analyzer.compareImages(actual, checked);
+
+
+        return analyzer.calculateImagesSSIM(actual, checked);
     }
 }

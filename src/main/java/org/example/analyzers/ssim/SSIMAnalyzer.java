@@ -42,12 +42,11 @@ public class SSIMAnalyzer {
         if (alpha == 1 && beta == 1 && gamma == 1) {
             ssimCalculationMethod = this::computeWindowSimplifiedSSIM;
         } else {
-            ssimCalculationMethod = this::computeWindowSSIM;
+            ssimCalculationMethod = this::computeWindowWeightedSSIM;
         }
     }
 
-
-    public double compareImages(BufferedImage firstImage, BufferedImage secondImage) {
+    public double calculateImagesSSIM(BufferedImage firstImage, BufferedImage secondImage) {
         ImageAccessor firstImageAccessor = ImageAccessor.create(firstImage);
         ImageAccessor secondImageAccessor = ImageAccessor.create(secondImage);
 
@@ -87,7 +86,7 @@ public class SSIMAnalyzer {
             double firstStdDevSquared = Math.max(0, firstVariance - (firstMean * firstMean));
             double secondStdDevSquared = Math.max(0, secondVariance - (secondMean * secondMean));
 
-            // sigma_xy = E[XY] - E[X] * E[Y]
+            // sigma_xy = E[XY] - (E[X] * E[Y])
             double covariance = product - (firstMean * secondMean);
 
             double firstStdDev = Math.sqrt(firstStdDevSquared);
@@ -127,7 +126,7 @@ public class SSIMAnalyzer {
      * @param structural component of the window
      * @return combined SSIM score for the window
      */
-    private double computeWindowSSIM(double luminance, double contrast, double structural) {
+    private double computeWindowWeightedSSIM(double luminance, double contrast, double structural) {
         double l_term = Math.pow(luminance, alpha);
         double c_term = Math.pow(contrast, beta);
         double s_term = Math.pow(structural, gamma);
