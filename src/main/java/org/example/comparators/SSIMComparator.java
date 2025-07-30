@@ -23,19 +23,18 @@ public class SSIMComparator extends BaseComparator {
     }
 
     public double compare(BufferedImage baseImage, BufferedImage comparedImage) {
-        BufferedImage imageToCompare = comparedImage;
+        BufferedImage tempComparedImage = comparedImage;
 
         boolean areImagesSameSize = checkImageSizes(baseImage,comparedImage);
 
         if(!areImagesSameSize) {
             if(enforceImageSize)
                 throw new IllegalArgumentException("Compared image should have the same size");
-
             if(assureImageSize)
-                imageToCompare = ImageUtil.resizeBilinear(comparedImage, baseImage.getWidth(), baseImage.getHeight());
+                tempComparedImage = ImageUtil.resizeBilinear(comparedImage, baseImage.getWidth(), baseImage.getHeight());
         }
 
-        return analyzer.calculateImagesSSIM(baseImage, imageToCompare);
+        return analyzer.calculateImagesSSIM(baseImage, tempComparedImage);
     }
 
 }

@@ -19,7 +19,7 @@ public class DirectAnalyzer {
 
     public DirectAnalyzer(DirectComparatorConfig config) {
         this.distanceThreshold = config.getColorDistanceThreshold();
-        this.pixelGap = config.getPixelsSkip();
+        this.pixelGap = config.getPixelsSkipped();
         this.groupingRadius = config.getMismatchesGroupingRadius();
 
         ColorSpace comparisonSpace = config.getColorSpace();
@@ -37,9 +37,6 @@ public class DirectAnalyzer {
                     float[] checkedHSV = PixelColorUtil.convertRGBtoHSV(checkedRGB);
                     return PixelColorUtil.normalizedDistanceHSV(actualHSV, checkedHSV);
                 };
-            }
-            case CIELAB -> {
-                throw new RuntimeException("CIE-Lab isn't yet supported");
             }
         }
     }

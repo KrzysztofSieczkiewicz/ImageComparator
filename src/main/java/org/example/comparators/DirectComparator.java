@@ -8,16 +8,22 @@ import org.example.utils.ImageUtil;
 import java.awt.image.BufferedImage;
 
 
-public class DirectComparator {
+public class DirectComparator extends BaseComparator {
     private final DirectComparatorConfig config;
+
+    private final boolean enforceImageSize;
+    private final boolean assureImageSize;
 
 
     public DirectComparator(DirectComparatorConfig config) {
         this.config = config;
+
+        this.enforceImageSize = config.isEnforceImageSize();
+        this.assureImageSize = config.isAssureImageSize();
     }
 
     public DirectComparator() {
-        this.config = DirectComparatorConfig.defaultConfig();
+        this(new DirectComparatorConfig());
     }
 
 
@@ -29,25 +35,33 @@ public class DirectComparator {
         );
     }
 
-    public DirectComparisonResult compare(BufferedImage actualImage, BufferedImage checkedImage, ExcludedAreas excludedAreas) {
+    public DirectComparisonResult compare(BufferedImage baseImage, BufferedImage comparedImage, ExcludedAreas excludedAreas) {
         DirectAnalyzer analyzer = new DirectAnalyzer(config);
         ImageValidator imageValidator = new ImageValidator(config);
-        ImageMarker imageMarker = new ImageMarker(config);
 
-        imageValidator.enforceImagesSize(actualImage, checkedImage);
+        BufferedImage tempComparedImage = comparedImage;
+        boolean areImagesSameSize = checkImageSizes(baseImage,comparedImage);
 
-        Mismatches mismatches = analyzer.compare(actualImage, checkedImage);
+        if(!areImagesSameSize) {
+            if(enforceImageSize)
+                throw new IllegalArgumentException("Compared image should have the same size");
+            if(assureImageSize)
+                tempComparedImage = ImageUtil.resizeBilinear(comparedImage, baseImage.getWidth(), baseImage.getHeight());
+        }
+
+        Mismatches mismatches = analyzer.compare(baseImage, tempComparedImage);
         mismatches.excludeResults(excludedAreas);
 
         BufferedImage resultsImage = null;
 
         if(config.isProduceOutputImage() ) {
-            resultsImage = ImageUtil.deepCopy(checkedImage);
+            ImageMarker imageMarker = new ImageMarker(config);
+            resultsImage = ImageUtil.deepCopy(comparedImage);
             resultsImage = imageMarker.mark(resultsImage, mismatches);
             resultsImage = imageMarker.mark(resultsImage, excludedAreas);
         }
 
-        boolean isMatching = imageValidator.isBelowMismatchThreshold(actualImage, mismatches);
+        boolean isMatching = imageValidator.isBelowMismatchThreshold(baseImage, mismatches);
 
         return new DirectComparisonResult(
                 resultsImage,
@@ -63,29 +77,38 @@ public class DirectComparator {
         );
     }
 
-    public DirectComparisonResult fastCompare(BufferedImage actualImage, BufferedImage checkedImage, ExcludedAreas excludedAreas) {
+    public DirectComparisonResult fastCompare(BufferedImage baseImage, BufferedImage comparedImage, ExcludedAreas excludedAreas) {
         DirectAnalyzer analyzer = new DirectAnalyzer(config);
         ImageValidator imageValidator = new ImageValidator(config);
-        ImageMarker imageMarker = new ImageMarker(config);
 
-        imageValidator.enforceImagesSize(actualImage, checkedImage);
+        BufferedImage tempComparedImage = comparedImage;
+        boolean areImagesSameSize = checkImageSizes(baseImage,comparedImage);
 
-        Mismatches mismatches = analyzer.compareEveryNth(actualImage, checkedImage);
+        if(!areImagesSameSize) {
+            if(enforceImageSize)
+                throw new IllegalArgumentException("Compared image should have the same size");
+            if(assureImageSize)
+                tempComparedImage = ImageUtil.resizeBilinear(comparedImage, baseImage.getWidth(), baseImage.getHeight());
+        }
+
+        Mismatches mismatches = analyzer.compareEveryNth(baseImage, tempComparedImage);
         mismatches.excludeResults(excludedAreas);
 
         BufferedImage resultsImage = null;
 
         if(config.isProduceOutputImage() ) {
-            resultsImage = ImageUtil.deepCopy(checkedImage);
+            ImageMarker imageMarker = new ImageMarker(config);
+            resultsImage = ImageUtil.deepCopy(comparedImage);
             resultsImage = imageMarker.mark(resultsImage, mismatches);
             resultsImage = imageMarker.mark(resultsImage, excludedAreas);
         }
 
-        boolean isMatching = imageValidator.isBelowMismatchThreshold(actualImage, mismatches);
+        boolean isMatching = imageValidator.isBelowMismatchThreshold(baseImage, mismatches);
 
         return new DirectComparisonResult(
                 resultsImage,
                 isMatching
         );
     }
+
 }

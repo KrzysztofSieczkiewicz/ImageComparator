@@ -25,7 +25,7 @@ public class ImageMarker {
     Color excludedMarkingColor;
 
     public ImageMarker(DirectComparatorConfig config) {
-        this.rectangleOffset = config.getRectangleMarkingOffset();
+        this.rectangleOffset = config.getMarkingOffset();
         this.lineThickness = config.getMarkingLineThickness();
 
         this.mismatchedMarkingType = config.getMismatchedAreasMarking();

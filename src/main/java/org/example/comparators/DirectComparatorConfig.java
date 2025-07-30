@@ -3,217 +3,195 @@ package org.example.comparators;
 import org.example.analyzers.direct.ColorSpace;
 import org.example.analyzers.direct.MarkingType;
 
-import java.awt.*;
+import java.awt.Color;
 
-// TODO: drop builder pattern - seems to be a bit too complex for the required solution
-//  make simple object with chained setters, default values and no-args constructor
-public class DirectComparatorConfig {
-    private final ColorSpace colorSpace;
-    private final int colorDistanceThreshold;
+public class DirectComparatorConfig extends BaseComparatorConfig {
 
-    private final int mismatchedPercentageThreshold;
+    /**
+     * Which color space should be used when calculating pixel color distance
+     */
+    private ColorSpace colorSpace = ColorSpace.RGB;
 
-    private final boolean produceOutputImage;
-    private final MarkingType excludedAreasMarking;
-    private final Color excludedMarkingColor;
-    private final MarkingType mismatchedAreasMarking;
-    private final Color mismatchMarkingColor;
-    private final int rectangleMarkingOffset;
-    private final int markingLineThickness;
+    /**
+     * Above what color distance will the pixels be considered different
+     * If set to 1, any difference will result in pixels being marked as different
+     */
+    private int colorDistanceThreshold = 1;
 
-    private final int pixelsSkip;
-    private final int mismatchesGroupingRadius;
+    /**
+     * Above what percent of mismatched pixels in the image, will the image be marked as mismatched
+     */
+    private int mismatchedPercentageThreshold = 0;
+
+    /**
+     * Should the comparison return output image with marked mismatches and excluded areas
+     */
+    private boolean produceOutputImage = true;
+
+    /**
+     * How excluded areas are supposed to be marked in the output image
+     */
+    private MarkingType excludedAreasMarking = MarkingType.OUTLINE;
+
+    /**
+     * What color are excluded areas supposed to be marked with
+     */
+    private Color excludedMarkingColor = Color.GREEN;
+
+    /**
+     * How mismatched areas are supposed to be marked in the output image
+     */
+    private MarkingType mismatchedAreasMarking = MarkingType.OUTLINE;
+
+    /**
+     * What color are mismatched areas supposed to be marked with
+     */
+    private Color mismatchedMarkingColor = Color.RED;
+
+    /**
+     * How far are excluded/mismatched markings to be offset from actual pixels.
+     * If set to 0 the marking will overlap
+     */
+    private int markingOffset = 3;
+
+    /**
+     * Line thickness for excluded/mismatched marking
+     */
+    private int markingLineThickness = 3;
+
+    /**
+     * Works only with fastCompare method. Switches to every n-th pixel comparison (e.g. setting to 3 results in every third pixel being compared in each dimension).
+     * Results in faster, but less sensitive comparison.
+     */
+    private int pixelsSkipped = 0;
+
+    /**
+     * In what radius will the mismatches be grouped. Reduces number of separate areas found
+     */
+    private int mismatchesGroupingRadius = 3;
 
 
     public ColorSpace getColorSpace() {
         return colorSpace;
     }
 
+    public DirectComparatorConfig colorSpace(ColorSpace colorSpace) {
+        this.colorSpace = colorSpace;
+        return this;
+    }
+
     public int getColorDistanceThreshold() {
         return colorDistanceThreshold;
+    }
+
+    public DirectComparatorConfig colorDistanceThreshold(int distance) {
+        if (distance < 0 || distance > 100)
+            throw new IllegalArgumentException("Distance must be between 0 and 100");
+
+        this.colorDistanceThreshold = distance;
+        return this;
     }
 
     public int getMismatchedPercentageThreshold() {
         return mismatchedPercentageThreshold;
     }
 
+    public DirectComparatorConfig mismatchedPercentageThreshold(int threshold) {
+        if (threshold < 0 || threshold > 100)
+            throw new IllegalArgumentException("Threshold must be between 0 and 100");
+
+        this.mismatchedPercentageThreshold = threshold;
+        return this;
+    }
+
     public boolean isProduceOutputImage() {
         return produceOutputImage;
+    }
+
+    public DirectComparatorConfig returnOutputImage(boolean shouldProduce) {
+        this.produceOutputImage = shouldProduce;
+        return this;
     }
 
     public MarkingType getExcludedAreasMarking() {
         return excludedAreasMarking;
     }
 
+    public DirectComparatorConfig excludedAreasMarking(MarkingType type) {
+        this.excludedAreasMarking = type;
+        return this;
+    }
+
     public Color getExcludedMarkingColor() {
         return excludedMarkingColor;
+    }
+
+    public DirectComparatorConfig excludedMarkingColor(Color color) {
+        this.excludedMarkingColor = color;
+        return this;
     }
 
     public MarkingType getMismatchedAreasMarking() {
         return mismatchedAreasMarking;
     }
 
-    public Color getMismatchMarkingColor() {
-        return mismatchMarkingColor;
+    public DirectComparatorConfig mismatchedAreasMarking(MarkingType type) {
+        this.mismatchedAreasMarking = type;
+        return this;
     }
 
-    public int getRectangleMarkingOffset() {
-        return rectangleMarkingOffset;
+    public Color getMismatchedMarkingColor() {
+        return mismatchedMarkingColor;
     }
 
-    public int getMarkingLineThickness() { return markingLineThickness; }
-
-    public int getPixelsSkip() {
-        return pixelsSkip;
+    public DirectComparatorConfig mismatchedMarkingColor(Color color) {
+        this.mismatchedMarkingColor = color;
+        return this;
     }
+
+    public int getMarkingOffset() {
+        return markingOffset;
+    }
+
+    public DirectComparatorConfig markingOffset(int offset) {
+        this.markingOffset = offset;
+        return this;
+    }
+
+    public int getMarkingLineThickness() {
+        return markingLineThickness;
+    }
+
+    public DirectComparatorConfig markingLineThickness(int thickness) {
+        if (thickness < 1)
+            throw new IllegalArgumentException("Line thickness must be at least 1");
+
+        this.markingLineThickness = thickness;
+        return this;
+    }
+
+    public int getPixelsSkipped() {
+        return pixelsSkipped;
+    }
+
+    public DirectComparatorConfig pixelsSkipped(int number) {
+        if (number < 0)
+            throw new IllegalArgumentException("Cannot set pixel gap to lower than 0");
+
+        this.pixelsSkipped = number;
+        return this;
+    }
+
     public int getMismatchesGroupingRadius() {
         return mismatchesGroupingRadius;
     }
 
-    public DirectComparatorConfig(
-            ColorSpace colorSpace,
-            int colorDistanceThreshold,
-            int mismatchedPercentageThreshold,
-            boolean produceOutputImage,
-            MarkingType excludedAreasMarking,
-            Color excludedMarkingColor,
-            MarkingType mismatchedAreasMarking,
-            Color mismatchMarkingColor,
-            int rectangleMarkingOffset,
-            int markingLineThickness,
-            int pixelsSkip,
-            int mismatchesGroupingRadius) {
+    public DirectComparatorConfig mismatchesGroupingRadius(int radius) {
+        if (radius < 1)
+            throw new IllegalArgumentException("Cannot set grouping radius to lower than 1");
 
-        this.colorSpace = colorSpace;
-        this.colorDistanceThreshold = colorDistanceThreshold;
-        this.mismatchedPercentageThreshold = mismatchedPercentageThreshold;
-        this.produceOutputImage = produceOutputImage;
-        this.excludedAreasMarking = excludedAreasMarking;
-        this.excludedMarkingColor = excludedMarkingColor;
-        this.mismatchedAreasMarking = mismatchedAreasMarking;
-        this.mismatchMarkingColor = mismatchMarkingColor;
-        this.rectangleMarkingOffset = rectangleMarkingOffset;
-        this.markingLineThickness = markingLineThickness;
-        this.pixelsSkip = pixelsSkip;
-        this.mismatchesGroupingRadius = mismatchesGroupingRadius;
+        this.mismatchesGroupingRadius = radius;
+        return this;
     }
 
-    public static DirectComparatorConfig defaultConfig() {
-        return new DirectCompareConfigBuilder().build();
-    }
-
-
-    public static class DirectCompareConfigBuilder {
-        private ColorSpace colorSpace = ColorSpace.RGB;
-        private int colorDistanceThreshold = 1;
-
-        private int mismatchedPercentageThreshold = 0;
-
-        private boolean produceOutputImage = true;
-        private MarkingType excludedAreasMarking = MarkingType.OUTLINE;
-        private Color excludedMarkingColor = Color.GREEN;
-        private MarkingType mismatchedAreasMarking = MarkingType.OUTLINE;
-        private Color mismatchedMarkingColor = Color.RED;
-        private int rectangleMarkingOffset = 3;
-        private int markingLineThickness = 3;
-
-        private int pixelsSkip = 1;
-        private int mismatchesGroupingRadius = 3;
-
-
-        public DirectCompareConfigBuilder colorSpace(ColorSpace colorSpace) {
-            this.colorSpace = colorSpace;
-            return this;
-        }
-
-        public DirectCompareConfigBuilder colorDistanceThreshold(int distance) {
-            if (distance < 0 || distance > 100) {
-                throw new IllegalArgumentException("Distance must be between 0 and 100");
-            }
-            this.colorDistanceThreshold = distance;
-            return this;
-        }
-
-        public DirectCompareConfigBuilder mismatchedPercentageThreshold(int threshold) {
-            if (threshold < 0 || threshold > 100) {
-                throw new IllegalArgumentException("Threshold must be between 0 and 100");
-            }
-            this.mismatchedPercentageThreshold = threshold;
-            return this;
-        }
-
-        public DirectCompareConfigBuilder produceOutputImage(boolean shouldProduce) {
-            this.produceOutputImage = shouldProduce;
-            return this;
-        }
-
-        public DirectCompareConfigBuilder excludedAreasMarking(MarkingType type) {
-            this.excludedAreasMarking = type;
-            return this;
-        }
-
-        public DirectCompareConfigBuilder excludedMarkingColor(Color color) {
-            this.excludedMarkingColor = color;
-            return this;
-        }
-
-        public DirectCompareConfigBuilder mismatchedAreasMarking(MarkingType type) {
-            this.mismatchedAreasMarking = type;
-            return this;
-        }
-
-        public DirectCompareConfigBuilder mismatchedMarkingColor(Color color) {
-            this.mismatchedMarkingColor = color;
-            return this;
-        }
-
-        public DirectCompareConfigBuilder rectangleMarkingOffset(int offset) {
-            this.rectangleMarkingOffset = offset;
-            return this;
-        }
-
-        public DirectCompareConfigBuilder markingLineThickness(int thickness) {
-            if (thickness < 1) {
-                throw new IllegalArgumentException("Line thickness must be at least 1");
-            }
-
-            this.markingLineThickness = thickness;
-            return this;
-        }
-
-        public DirectCompareConfigBuilder pixelsSkip(int number) {
-            if (number<0) {
-                throw new IllegalArgumentException("Cannot set pixel gap to lower than 0");
-            }
-
-            this.pixelsSkip = number;
-            return this;
-        }
-
-        public DirectCompareConfigBuilder mismatchesGroupingRadius(int radius) {
-            if (radius<1) {
-                throw new IllegalArgumentException("Cannot set grouping radius to lower than 1");
-            }
-
-            this.mismatchesGroupingRadius = radius;
-            return this;
-        }
-
-        public DirectComparatorConfig build() {
-            return new DirectComparatorConfig(
-                    colorSpace,
-                    colorDistanceThreshold,
-                    mismatchedPercentageThreshold,
-                    produceOutputImage,
-                    excludedAreasMarking,
-                    excludedMarkingColor,
-                    mismatchedAreasMarking,
-                    mismatchedMarkingColor,
-                    rectangleMarkingOffset,
-                    markingLineThickness,
-                    pixelsSkip,
-                    mismatchesGroupingRadius
-            );
-        }
-    }
 }
