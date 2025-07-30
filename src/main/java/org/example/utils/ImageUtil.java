@@ -2,11 +2,10 @@ package org.example.utils;
 
 import org.example.utils.accessor.ImageAccessor;
 
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
-import java.awt.image.WritableRaster;
 
 public class ImageUtil {
 
@@ -28,14 +27,15 @@ public class ImageUtil {
     }
 
     /**
-     * Resizes image to requested dimensions. If image is being downsized it might require gaussian blurring to fix over-sharpening
+     * Resizes image to requested dimensions using nearest neighbour interpolation
      *
      * @param image BufferedImage to be resized
      * @param width requested width to scale to
      * @param height requested height to scale to
      * @return new BuffedImage containing resized image
      */
-    public static BufferedImage resize(BufferedImage image, int width, int height) {
+    @Deprecated
+    public static BufferedImage resizeNearestNeighbour(BufferedImage image, int width, int height) {
         BufferedImage rescaledImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         ImageAccessor imgAccessor = ImageAccessor.create(image);
 
@@ -51,6 +51,28 @@ public class ImageUtil {
         }
 
         return rescaledImg;
+    }
+
+    /**
+     * Resizes an image to the requested dimensions using Graphics2D with high-quality rendering hints.
+     *
+     * @param image BufferedImage to be resized
+     * @param width requested width to scale to
+     * @param height requested height to scale to
+     * @return new BufferedImage containing the resized image
+     */
+    public static BufferedImage resizeBilinear(BufferedImage image, int width, int height) {
+        BufferedImage resizedImage = new BufferedImage(width, height, image.getType());
+        Graphics2D g2d = resizedImage.createGraphics();
+
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g2d.drawImage(image, 0, 0, width, height, null);
+        g2d.dispose();
+
+        return resizedImage;
     }
 
     /**

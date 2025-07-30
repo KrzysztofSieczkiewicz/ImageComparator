@@ -34,8 +34,8 @@ public class HashComparator {
         BufferedImage checkedImage;
 
         if (imageTargetSize != 0) {
-            actualImage = ImageUtil.resize(actual, imageTargetSize, imageTargetSize);
-            checkedImage = ImageUtil.resize(checked, imageTargetSize, imageTargetSize);
+            actualImage = ImageUtil.resizeNearestNeighbour(actual, imageTargetSize, imageTargetSize);
+            checkedImage = ImageUtil.resizeNearestNeighbour(checked, imageTargetSize, imageTargetSize);
         } else {
             actualImage = actual;
             checkedImage = checked;

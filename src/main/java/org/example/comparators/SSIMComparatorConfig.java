@@ -1,6 +1,6 @@
 package org.example.comparators;
 
-public class SSIMComparatorConfig {
+public class SSIMComparatorConfig extends BaseComparatorConfig {
 
     // Empirical constants used for c1, c2 and c3 calculation
     private double k1 = 0.01;
