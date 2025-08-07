@@ -39,17 +39,14 @@ public class DirectComparator extends BaseComparator {
         DirectAnalyzer analyzer = new DirectAnalyzer(config);
         ImageValidator imageValidator = new ImageValidator(config);
 
-        BufferedImage tempComparedImage = comparedImage;
-        boolean areImagesSameSize = checkImageSizes(baseImage,comparedImage);
+        BufferedImage checkedComparedImage = handleInputComparedImage(
+                baseImage,
+                comparedImage,
+                enforceImageSize,
+                assureImageSize
+        );
 
-        if(!areImagesSameSize) {
-            if(enforceImageSize)
-                throw new IllegalArgumentException("Compared image should have the same size");
-            if(assureImageSize)
-                tempComparedImage = ImageUtil.resizeBilinear(comparedImage, baseImage.getWidth(), baseImage.getHeight());
-        }
-
-        Mismatches mismatches = analyzer.compare(baseImage, tempComparedImage);
+        Mismatches mismatches = analyzer.compare(baseImage, checkedComparedImage);
         mismatches.excludeResults(excludedAreas);
 
         BufferedImage resultsImage = null;
@@ -81,17 +78,14 @@ public class DirectComparator extends BaseComparator {
         DirectAnalyzer analyzer = new DirectAnalyzer(config);
         ImageValidator imageValidator = new ImageValidator(config);
 
-        BufferedImage tempComparedImage = comparedImage;
-        boolean areImagesSameSize = checkImageSizes(baseImage,comparedImage);
+        BufferedImage checkedComparedImage = handleInputComparedImage(
+                baseImage,
+                comparedImage,
+                enforceImageSize,
+                assureImageSize
+        );
 
-        if(!areImagesSameSize) {
-            if(enforceImageSize)
-                throw new IllegalArgumentException("Compared image should have the same size");
-            if(assureImageSize)
-                tempComparedImage = ImageUtil.resizeBilinear(comparedImage, baseImage.getWidth(), baseImage.getHeight());
-        }
-
-        Mismatches mismatches = analyzer.compareEveryNth(baseImage, tempComparedImage);
+        Mismatches mismatches = analyzer.compareEveryNth(baseImage, checkedComparedImage);
         mismatches.excludeResults(excludedAreas);
 
         BufferedImage resultsImage = null;

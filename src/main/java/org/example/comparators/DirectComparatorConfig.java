@@ -154,6 +154,9 @@ public class DirectComparatorConfig extends BaseComparatorConfig {
     }
 
     public DirectComparatorConfig markingOffset(int offset) {
+        if (offset < 0)
+            throw new IllegalArgumentException("Marking offset cannot be lower than 0");
+
         this.markingOffset = offset;
         return this;
     }
@@ -164,7 +167,7 @@ public class DirectComparatorConfig extends BaseComparatorConfig {
 
     public DirectComparatorConfig markingLineThickness(int thickness) {
         if (thickness < 1)
-            throw new IllegalArgumentException("Line thickness must be at least 1");
+            throw new IllegalArgumentException("Marking line thickness must be at least 1");
 
         this.markingLineThickness = thickness;
         return this;
@@ -176,7 +179,7 @@ public class DirectComparatorConfig extends BaseComparatorConfig {
 
     public DirectComparatorConfig pixelsSkipped(int number) {
         if (number < 0)
-            throw new IllegalArgumentException("Cannot set pixel gap to lower than 0");
+            throw new IllegalArgumentException("Pixel gap cannot be lower than 0");
 
         this.pixelsSkipped = number;
         return this;
@@ -188,7 +191,7 @@ public class DirectComparatorConfig extends BaseComparatorConfig {
 
     public DirectComparatorConfig mismatchesGroupingRadius(int radius) {
         if (radius < 1)
-            throw new IllegalArgumentException("Cannot set grouping radius to lower than 1");
+            throw new IllegalArgumentException("Grouping cannot be lower than 1");
 
         this.mismatchesGroupingRadius = radius;
         return this;

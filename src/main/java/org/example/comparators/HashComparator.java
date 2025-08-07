@@ -5,44 +5,40 @@ import org.example.analyzers.hash.DHashAnalyzer;
 import org.example.analyzers.hash.PHashAnalyzer;
 import org.example.analyzers.hash.WHashAnalyzer;
 import org.example.utils.HashUtil;
-import org.example.utils.ImageUtil;
 
 import java.awt.image.BufferedImage;
 import java.util.BitSet;
 import java.util.function.Function;
 
 
-public class HashComparator {
+public class HashComparator extends BaseComparator{
     private final HashComparatorConfig config;
-    private final int imageTargetSize;
+
+    private final boolean enforceImageSize;
+    private final boolean assureImageSize;
 
     public HashComparator(HashComparatorConfig config) {
+        this.enforceImageSize = config.isEnforceImageSize();
+        this.assureImageSize = config.isAssureImageSize();
+
         this.config = config;
-        this.imageTargetSize = config.getImageTargetSize();
+
     }
 
     public HashComparator() {
         this(new HashComparatorConfig());
     }
 
-    private double compare(
-            BufferedImage actual,
-            BufferedImage checked,
-            Function<BufferedImage, BitSet> hash
-    ) {
-        BufferedImage actualImage;
-        BufferedImage checkedImage;
+    private double compare(BufferedImage baseImage, BufferedImage comparedImage, Function<BufferedImage, BitSet> hash) {
+        BufferedImage checkedComparedImage = handleInputComparedImage(
+                baseImage,
+                comparedImage,
+                enforceImageSize,
+                assureImageSize
+        );
 
-        if (imageTargetSize != 0) {
-            actualImage = ImageUtil.resizeNearestNeighbour(actual, imageTargetSize, imageTargetSize);
-            checkedImage = ImageUtil.resizeNearestNeighbour(checked, imageTargetSize, imageTargetSize);
-        } else {
-            actualImage = actual;
-            checkedImage = checked;
-        }
-
-        BitSet actualHash = hash.apply(actualImage);
-        BitSet checkedHash = hash.apply(checkedImage);
+        BitSet actualHash = hash.apply(baseImage);
+        BitSet checkedHash = hash.apply(checkedComparedImage);
         int hammingDistance = HashUtil.calculateHammingDistance(actualHash, checkedHash);
 
         return HashUtil.calculateSimilarity(hammingDistance, actualHash.size());

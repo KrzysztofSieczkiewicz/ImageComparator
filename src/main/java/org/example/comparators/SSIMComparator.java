@@ -1,7 +1,6 @@
 package org.example.comparators;
 
 import org.example.analyzers.ssim.SSIMAnalyzer;
-import org.example.utils.ImageUtil;
 
 import java.awt.image.BufferedImage;
 
@@ -23,18 +22,14 @@ public class SSIMComparator extends BaseComparator {
     }
 
     public double compare(BufferedImage baseImage, BufferedImage comparedImage) {
-        BufferedImage tempComparedImage = comparedImage;
+        BufferedImage checkedComparedImage = handleInputComparedImage(
+                baseImage,
+                comparedImage,
+                enforceImageSize,
+                assureImageSize
+        );
 
-        boolean areImagesSameSize = checkImageSizes(baseImage,comparedImage);
-
-        if(!areImagesSameSize) {
-            if(enforceImageSize)
-                throw new IllegalArgumentException("Compared image should have the same size");
-            if(assureImageSize)
-                tempComparedImage = ImageUtil.resizeBilinear(comparedImage, baseImage.getWidth(), baseImage.getHeight());
-        }
-
-        return analyzer.calculateImagesSSIM(baseImage, tempComparedImage);
+        return analyzer.calculateImagesSSIM(baseImage, checkedComparedImage);
     }
 
 }
