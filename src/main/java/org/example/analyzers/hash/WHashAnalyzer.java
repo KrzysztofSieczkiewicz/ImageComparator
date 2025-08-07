@@ -26,10 +26,7 @@ public class WHashAnalyzer {
      * @return BitSet containing image hash
      */
     public BitSet wHash(BufferedImage image) {
-        BufferedImage greyscaled = ImageUtil.greyscale(image);
-        ImageAccessor accessor = ImageAccessor.create(greyscaled);
-
-        int[][] imageMatrix = accessor.getBlueMatrix();
+        int[][] imageMatrix = ImageUtil.extractGreyscaleArray(image);
         performHaarWaveletTransform(imageMatrix);
 
         int mean = calculateCoefficientsMean(imageMatrix);

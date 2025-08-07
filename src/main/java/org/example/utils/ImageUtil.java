@@ -49,32 +49,6 @@ public class ImageUtil {
     }
 
     /**
-     * TODO: REPLACE THIS WITH extractGreyscale
-     * Converts image to greyscale color space using TYPE_BYTE_GRAY
-     *
-     * @param image BufferedImage to be converted
-     * @return new BuffedImage containing image in greyscale color space
-     */
-    @Deprecated
-    public static BufferedImage greyscale(BufferedImage image) {
-        BufferedImage greyscaleImg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-        ImageAccessor imageAccessor = ImageAccessor.create(image);
-
-        for (int y = 0; y < image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
-                int grey = (int) (imageAccessor.getRed(x,y) * 0.21 +
-                        imageAccessor.getGreen(x,y) * 0.72 +
-                        imageAccessor.getBlue(x,y) * 0.07);
-
-                int rgb = (grey << 16) | (grey << 8) | grey;
-                greyscaleImg.setRGB(x, y, rgb);
-            }
-        }
-
-        return greyscaleImg;
-    }
-
-    /**
      * Calculates greyscale space from provided RGB image
      *
      * @param image rgb BufferedImage
@@ -94,6 +68,34 @@ public class ImageUtil {
                     ((pixel >> 16) & 0xFF) +
                     ((pixel >> 8) & 0xFF) +
                     (pixel & 0xFF);
+            }
+        }
+        return gImage;
+    }
+
+    /**
+     * Calculates greyscale space from provided RGB image
+     *
+     * @param image rgb BufferedImage
+     * @return 2D array of greyscale int values
+     */
+    public static int[][] extractGreyscaleArray(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        int[][] gImage = new int[height][width];
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixel = image.getRGB(x, y);
+
+                // Extract the Red, Green, and Blue components of the pixel
+                int red = (pixel >> 16) & 0xFF;
+                int green = (pixel >> 8) & 0xFF;
+                int blue = pixel & 0xFF;
+
+                // Calculate the average of the RGB values to get a greyscale value
+                gImage[y][x] = (red + green + blue) / 3;
             }
         }
         return gImage;

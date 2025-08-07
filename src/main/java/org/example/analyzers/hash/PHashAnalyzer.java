@@ -23,12 +23,9 @@ public class PHashAnalyzer {
      */
     public BitSet pHash(BufferedImage image) {
         BufferedImage resized = enforceImageSquareDimensions(image);
-        BufferedImage greyscaled = ImageUtil.greyscale(resized);
+        int[][] values = ImageUtil.extractGreyscaleArray(resized);
 
-        ImageAccessor imageAccessor = ImageAccessor.create(greyscaled);
-        int[][] blueValues = imageAccessor.getBlueMatrix();
-
-        double[][] freqDomainValues = generateFrequencyDomain(blueValues);
+        double[][] freqDomainValues = generateFrequencyDomain(values);
         double total = -freqDomainValues[0][0];
         int hashSize = image.getHeight();
 

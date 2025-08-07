@@ -22,10 +22,7 @@ public class DHashAnalyzer {
         int width = image.getWidth();
         int height = image.getHeight();
 
-        BufferedImage greyscaled = ImageUtil.greyscale(image);
-        ImageAccessor accessor = ImageAccessor.create(greyscaled);
-
-        int[] values = accessor.getBlueArray();
+        int[] values = ImageUtil.extractGreyscale(image);
         BitSet hash = new BitSet(width * height);
 
         int index = 0;
