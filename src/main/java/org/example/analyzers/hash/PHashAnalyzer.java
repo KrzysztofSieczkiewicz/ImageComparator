@@ -100,7 +100,7 @@ public class PHashAnalyzer {
         if(image.getWidth() == image.getHeight()) return image;
 
         if (image.getWidth() > image.getHeight())
-            return ImageUtil.resizeNearestNeighbour(image, image.getWidth(), image.getWidth());
-        return ImageUtil.resizeNearestNeighbour(image, image.getHeight(), image.getHeight());
+            return ImageUtil.resizeBilinear(image, image.getWidth(), image.getWidth());
+        return ImageUtil.resizeBilinear(image, image.getHeight(), image.getHeight());
     }
 }

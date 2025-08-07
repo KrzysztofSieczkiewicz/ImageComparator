@@ -27,33 +27,6 @@ public class ImageUtil {
     }
 
     /**
-     * Resizes image to requested dimensions using nearest neighbour interpolation
-     *
-     * @param image BufferedImage to be resized
-     * @param width requested width to scale to
-     * @param height requested height to scale to
-     * @return new BuffedImage containing resized image
-     */
-    @Deprecated
-    public static BufferedImage resizeNearestNeighbour(BufferedImage image, int width, int height) {
-        BufferedImage rescaledImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        ImageAccessor imgAccessor = ImageAccessor.create(image);
-
-        int x, y;
-        int ww = image.getWidth();
-        int hh = image.getHeight();
-
-        for (x = 0; x < width; x++) {
-            for (y = 0; y < height; y++) {
-                int col = imgAccessor.getPixel(x * ww / width, y * hh / height);
-                rescaledImg.setRGB(x, y, col);
-            }
-        }
-
-        return rescaledImg;
-    }
-
-    /**
      * Resizes an image to the requested dimensions using Graphics2D with high-quality rendering hints.
      *
      * @param image BufferedImage to be resized
