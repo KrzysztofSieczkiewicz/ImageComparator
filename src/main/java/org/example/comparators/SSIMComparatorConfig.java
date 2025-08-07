@@ -2,22 +2,42 @@ package org.example.comparators;
 
 public class SSIMComparatorConfig extends BaseComparatorConfig {
 
-    // Empirical constants used for c1, c2 and c3 calculation
+    /**
+     * Empirical constant k1 used for c1,c2,c3 calculation
+     */
     private double k1 = 0.01;
+    /**
+     * Empirical constant k2 used for c1,c2,c3 calculation
+     */
     private double k2 = 0.03;
 
-    // Gaussian kernel sigma (higher values increase weight with which window values are taken into account)
+    /**
+     * Gaussian kernel sigma value. Bigger values increase neighbouring pixels importance
+     */
     private double sigma = 1.6;
 
-    // Highest value that can be held by the pixel (by default 255 for 8bit images)
+    /**
+     * Difference between max-min pixel value. 255 for 8bit images
+     */
     private int dynamicRange = 255;
 
-    // Exponents for each component (luminosity, contrast, structural respectively)
+    /**
+     * Luminosity exponent - affects how important component value is in the SSIM value
+     */
     private double alpha = 1.0;
+    /**
+     * Contrast exponent - affects how important component value is in the SSIM value
+     */
     private double beta = 1.0;
+    /**
+     * Structural exponent - affects how important component value is in the SSIM value
+     */
     private double gamma = 1.0;
 
-    // Width and height of the sliding window (how large group of pixels is to be compared at a single time)
+    /**
+     * Size of window rectangle. How many pixels are taken into account during comparison.
+     * For most use cases avoid larger than 11
+     */
     private int windowSize = 5;
 
 
@@ -25,63 +45,71 @@ public class SSIMComparatorConfig extends BaseComparatorConfig {
         return k1;
     }
 
-    public void setK1(double k1) {
+    public SSIMComparatorConfig k1(double k1) {
         this.k1 = k1;
+        return this;
     }
 
     public double getK2() {
         return k2;
     }
 
-    public void setK2(double k2) {
+    public SSIMComparatorConfig k2(double k2) {
         this.k2 = k2;
+        return this;
     }
 
     public double getSigma() {
         return sigma;
     }
 
-    public void setSigma(double sigma) {
+    public SSIMComparatorConfig sigma(double sigma) {
         this.sigma = sigma;
+        return this;
     }
 
     public int getDynamicRange() {
         return dynamicRange;
     }
 
-    public void setDynamicRange(int dynamicRange) {
+    public SSIMComparatorConfig dynamicRange(int dynamicRange) {
         this.dynamicRange = dynamicRange;
+        return this;
     }
 
     public double getAlpha() {
         return alpha;
     }
 
-    public void setAlpha(double alpha) {
+    public SSIMComparatorConfig alpha(double alpha) {
         this.alpha = alpha;
+        return this;
     }
 
     public double getBeta() {
         return beta;
     }
 
-    public void setBeta(double beta) {
+    public SSIMComparatorConfig beta(double beta) {
         this.beta = beta;
+        return this;
     }
 
     public double getGamma() {
         return gamma;
     }
 
-    public void setGamma(double gamma) {
+    public SSIMComparatorConfig gamma(double gamma) {
         this.gamma = gamma;
+        return this;
     }
 
     public int getWindowSize() {
         return windowSize;
     }
 
-    public void setWindowSize(int windowSize) {
+    public SSIMComparatorConfig windowSize(int windowSize) {
         this.windowSize = windowSize;
+        return this;
     }
 }

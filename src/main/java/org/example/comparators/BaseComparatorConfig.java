@@ -17,15 +17,17 @@ public abstract class BaseComparatorConfig {
         return enforceImageSize;
     }
 
-    public void setEnforceImageSize(boolean enforceImageSize) {
+    public BaseComparatorConfig enforceImageSize(boolean enforceImageSize) {
         this.enforceImageSize = enforceImageSize;
+        return this;
     }
 
     public boolean isAssureImageSize() {
         return assureImageSize;
     }
 
-    public void setAssureImageSize(boolean assureImageSize) {
+    public BaseComparatorConfig assureImageSize(boolean assureImageSize) {
         this.assureImageSize = assureImageSize;
+        return this;
     }
 }

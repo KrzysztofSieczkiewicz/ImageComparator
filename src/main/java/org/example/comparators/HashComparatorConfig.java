@@ -13,10 +13,11 @@ public class HashComparatorConfig extends BaseComparatorConfig {
         return hashSizeCoefficient;
     }
 
-    public void hashSizeCoefficient(double hashSizeCoefficient) {
+    public HashComparatorConfig hashSizeCoefficient(double hashSizeCoefficient) {
         if (hashSizeCoefficient <= 0 || hashSizeCoefficient > 1)
             throw new IllegalArgumentException("Hash size coefficient must be larger than 0 and less or equal to 1");
 
         this.hashSizeCoefficient = hashSizeCoefficient;
+        return this;
     }
 }
