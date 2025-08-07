@@ -29,7 +29,7 @@ public class ImageMarker {
         this.lineThickness = config.getMarkingLineThickness();
 
         this.mismatchedMarkingType = config.getMismatchedAreasMarking();
-        this.mismatchMarkingColor = config.getMismatchMarkingColor();
+        this.mismatchMarkingColor = config.getMismatchedMarkingColor();
 
         this.excludedMarkingType = config.getExcludedAreasMarking();
         this.excludedMarkingColor = config.getExcludedMarkingColor();
