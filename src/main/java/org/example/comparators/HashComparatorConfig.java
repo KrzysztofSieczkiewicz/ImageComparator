@@ -1,38 +1,23 @@
 package org.example.comparators;
 
-public class HashComparatorConfig {
+public class HashComparatorConfig extends BaseComparatorConfig {
 
     /**
-     * To what largest dimension will the image be resized to before performing hashing.
-     * Heavily impacts the performance
-     */
-    private int imageTargetSize = 64;
-
-    /**
-     * How much of the final hash will be used for comparison. Affects only wHash (value of 0.5 leaves ony most significant values).
-     * The closer to 1, the more details are being taken into account.
+     * How much of the final wHash will be used for comparison.
+     * The closer to 1, the finer details are being taken into account.
+     * Value of 0.5 leaves only most significant values.
      */
     private double hashSizeCoefficient = 0.5;
-
-    public int getImageTargetSize() {
-        return imageTargetSize;
-    }
 
     public double getHashSizeCoefficient() {
         return hashSizeCoefficient;
     }
 
-    public void setImageTargetSize(int imageTargetSize) {
-        if (imageTargetSize <= 0) {
-            throw new IllegalArgumentException("Image target size should be larger than 0. Cannot scale image to less than one pixel");
-        }
-        this.imageTargetSize = imageTargetSize;
-    }
-
-    public void setHashSizeCoefficient(double hashSizeCoefficient) {
-        if (hashSizeCoefficient <= 0 || hashSizeCoefficient > 1) {
+    public HashComparatorConfig hashSizeCoefficient(double hashSizeCoefficient) {
+        if (hashSizeCoefficient <= 0 || hashSizeCoefficient > 1)
             throw new IllegalArgumentException("Hash size coefficient must be larger than 0 and less or equal to 1");
-        }
+
         this.hashSizeCoefficient = hashSizeCoefficient;
+        return this;
     }
 }
