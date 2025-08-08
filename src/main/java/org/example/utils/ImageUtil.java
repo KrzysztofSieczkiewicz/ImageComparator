@@ -9,23 +9,6 @@ import java.awt.image.Kernel;
 
 public class ImageUtil {
 
-    public static int[] getWindowData(int[] imageData, int imageWidth, int windowDimension, int startX, int startY) {
-        int[] windowData = new int[windowDimension * windowDimension];
-
-        for (int currRow=0; currRow<windowDimension; currRow++) {
-            for (int currCol=0; currCol<windowDimension; currCol++) {
-                int pixelX = startX + currRow;
-                int pixelY = startY + currCol;
-
-                int indexImage = pixelY * imageWidth + pixelX;
-                int indexWindow = currRow * windowDimension + currCol;
-
-                windowData[indexWindow] = imageData[indexImage];
-            }
-        }
-        return  windowData;
-    }
-
     /**
      * Resizes an image to the requested dimensions using Graphics2D with high-quality rendering hints.
      *
