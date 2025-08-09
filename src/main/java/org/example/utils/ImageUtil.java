@@ -72,12 +72,10 @@ public class ImageUtil {
             for (int x = 0; x < width; x++) {
                 int pixel = image.getRGB(x, y);
 
-                // Extract the Red, Green, and Blue components of the pixel
                 int red = (pixel >> 16) & 0xFF;
                 int green = (pixel >> 8) & 0xFF;
                 int blue = pixel & 0xFF;
 
-                // Calculate the average of the RGB values to get a greyscale value
                 gImage[y][x] = (red + green + blue) / 3;
             }
         }
@@ -147,33 +145,11 @@ public class ImageUtil {
                         sumWeightedValue += (double) imageData[pixelIndex] * weight;
                     }
                 }
-                outputMap[y * imageWidth + x] = Math.round(sumWeightedValue);
+                outputMap[y * imageWidth + x] = sumWeightedValue;
             }
         }
 
         return outputMap;
-    }
-
-    /**
-     * Blurs image using convolve op with preset kernel.
-     * Used kernel size is 6 times sigma rounded up to the next odd integer.
-     *
-     * @param image BufferedImage to be affected
-     * @param sigma std deviation of th Gaussian distribution used for blurring
-     * @return new, blurred BuffedImage
-     */
-    public static BufferedImage gaussianBlur(BufferedImage image, double sigma) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-
-        BufferedImage blurredImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-
-        Kernel kernel = generateGaussianKernel(sigma);
-
-        ConvolveOp conv = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
-        conv.filter(image, blurredImg);
-
-        return blurredImg;
     }
 
     /**
@@ -193,35 +169,6 @@ public class ImageUtil {
         g2d.dispose();
 
         return copy;
-    }
-
-    /**
-     * Internal util method. Generates Gaussian blur kernel. Size is set to be ~6 times sigma and odd.
-     *
-     * @param sigma std deviation of the Gaussian distribution used for the blur
-     * @return normalized awt Kernel
-     */
-    public static Kernel generateGaussianKernel(double sigma) {
-        int size = (int) (5 * sigma);
-        if (size % 2 == 0) size++;
-
-        float[] kernelData = new float[size * size];
-        int halfSize = size / 2;
-        float sum = 0;
-
-        for (int x=-halfSize; x<=halfSize; x++) {
-            for (int y =-halfSize; y<=halfSize; y++) {
-                float value = (float) ((1 / (2 * Math.PI * sigma*sigma)) * Math.exp(-(x*x + y*y) / (2 * sigma*sigma)));
-                kernelData[(x+halfSize)*size + (y+halfSize)] = value;
-                sum += value;
-            }
-        }
-
-        for (int i=0; i<kernelData.length; i++) {
-            kernelData[i] /= sum;
-        }
-
-        return new Kernel(size, size, kernelData);
     }
 
     /**
