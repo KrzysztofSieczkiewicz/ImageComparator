@@ -21,7 +21,7 @@ public class Mismatches {
         this.neighboursMatrix = generateNeighboursMatrix(groupingRadius);
     }
 
-    public ArrayList<PixelPoint> getPixels() {
+    public ArrayList<PixelPoint> getMismatchedPixels() {
         return mismatchedPixels;
     }
 

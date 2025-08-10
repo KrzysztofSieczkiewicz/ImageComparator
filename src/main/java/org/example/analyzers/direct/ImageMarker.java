@@ -48,7 +48,7 @@ public class ImageMarker {
                 drawRectangles(boundingRectangles, bufferedImage, mismatchMarkingColor, rectangleOffset, lineThickness);
             }
             case PAINT_OVER -> {
-                paintPixels(mismatches.getPixels(), bufferedImage, mismatchMarkingColor);
+                paintPixels(mismatches.getMismatchedPixels(), bufferedImage, mismatchMarkingColor);
             }
         }
 
