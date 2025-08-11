@@ -21,7 +21,7 @@ public class DHashAnalyzer {
         int width = image.getWidth();
         int height = image.getHeight();
 
-        int[] values = ImageUtil.extractGreyscale(image);
+        int[] values = ImageUtil.extractLuminosityArray(image);
         BitSet hash = new BitSet(width * height);
 
         int index = 0;

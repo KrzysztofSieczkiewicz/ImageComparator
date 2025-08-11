@@ -18,7 +18,7 @@ public class AHashAnalyzer {
      * @return BitSet containing image hash
      */
     public BitSet aHash(BufferedImage image) {
-        int[] values = ImageUtil.extractGreyscale(image);
+        int[] values = ImageUtil.extractLuminosityArray(image);
         int averageValue = calculateAverage(values);
         int length = values.length;
 

@@ -25,7 +25,7 @@ public class WHashAnalyzer {
      * @return BitSet containing image hash
      */
     public BitSet wHash(BufferedImage image) {
-        int[][] imageMatrix = ImageUtil.extractGreyscaleArray(image);
+        int[][] imageMatrix = ImageUtil.extractLuminosityMatrix(image);
         performHaarWaveletTransform(imageMatrix);
 
         int mean = calculateCoefficientsMean(imageMatrix);

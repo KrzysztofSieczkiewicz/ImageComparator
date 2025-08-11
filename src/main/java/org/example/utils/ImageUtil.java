@@ -1,10 +1,7 @@
 package org.example.utils;
 
-import org.example.utils.accessor.ImageAccessor;
-
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 
 public class ImageUtil {
@@ -32,63 +29,12 @@ public class ImageUtil {
     }
 
     /**
-     * Calculates greyscale space from provided RGB image
-     *
-     * @param image rgb BufferedImage
-     * @return 1D array of greyscale int values
-     */
-    public static int[] extractGreyscale(BufferedImage image) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-
-        int[] gImage = new int[width * height];
-
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int pixel = image.getRGB(x, y);
-
-                gImage[y * width + x] =
-                    ((pixel >> 16) & 0xFF) +
-                    ((pixel >> 8) & 0xFF) +
-                    (pixel & 0xFF);
-            }
-        }
-        return gImage;
-    }
-
-    /**
-     * Calculates greyscale space from provided RGB image
-     *
-     * @param image rgb BufferedImage
-     * @return 2D array of greyscale int values
-     */
-    public static int[][] extractGreyscaleArray(BufferedImage image) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-
-        int[][] gImage = new int[height][width];
-
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int pixel = image.getRGB(x, y);
-
-                int red = (pixel >> 16) & 0xFF;
-                int green = (pixel >> 8) & 0xFF;
-                int blue = pixel & 0xFF;
-
-                gImage[y][x] = (red + green + blue) / 3;
-            }
-        }
-        return gImage;
-    }
-
-    /**
      * Calculates Y channel (YCbCr) from provided RGB image
      *
      * @param image rgb BufferedImage
      * @return 1D array of Y channel int values
      */
-    public static int[] extractLuminosity(BufferedImage image) {
+    public static int[] extractLuminosityArray(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
 
@@ -107,6 +53,36 @@ public class ImageUtil {
                 yInt = Math.max(0, Math.min(255, yInt));
 
                 yImage[y * width + x] = yInt;
+            }
+        }
+        return yImage;
+    }
+
+    /**
+     * Calculates Y channel (YCbCr) from provided RGB image
+     *
+     * @param image rgb BufferedImage
+     * @return 2D array of Y channel int values
+     */
+    public static int[][] extractLuminosityMatrix(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        int[][] yImage = new int[height][width];
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixel = image.getRGB(x, y);
+
+                double yValue =
+                        ((pixel >> 16) & 0xFF) * 0.299 +
+                                ((pixel >> 8) & 0xFF) * 0.587 +
+                                (pixel & 0xFF) * 0.114;
+
+                int yInt = (int) Math.round(yValue);
+                yInt = Math.max(0, Math.min(255, yInt));
+
+                yImage[y][x] = yInt;
             }
         }
         return yImage;

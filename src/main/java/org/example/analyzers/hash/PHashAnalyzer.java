@@ -22,7 +22,7 @@ public class PHashAnalyzer {
      */
     public BitSet pHash(BufferedImage image) {
         BufferedImage resized = enforceImageSquareDimensions(image);
-        int[][] values = ImageUtil.extractGreyscaleArray(resized);
+        int[][] values = ImageUtil.extractLuminosityMatrix(resized);
 
         double[][] freqDomainValues = generateFrequencyDomain(values);
         double total = -freqDomainValues[0][0];

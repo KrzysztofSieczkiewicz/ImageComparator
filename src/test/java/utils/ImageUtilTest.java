@@ -61,12 +61,12 @@ public class ImageUtilTest {
     }
 
     @Test
-    public void testExtractGreyscale_returnCorrectArraySize() {
+    public void testExtractLuminosityArray_returnCorrectArraySize() {
         int width = 20;
         int height = 30;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
-        int[] greyscaleArray = ImageUtil.extractGreyscale(image);
+        int[] greyscaleArray = ImageUtil.extractLuminosityArray(image);
 
         Assertions.assertNotNull(greyscaleArray);
         Assertions.assertEquals(width * height, greyscaleArray.length);
@@ -75,27 +75,27 @@ public class ImageUtilTest {
     @ParameterizedTest
     @CsvSource({
             "0, 0, 0, 0",             // black pixel
-            "255, 255, 255, 765",     // white pixel
-            "100, 150, 200, 450",     // mixed color
-            "255, 0, 0, 255",         // red
-            "0, 255, 0, 255",         // green
-            "0, 0, 255, 255"          // blue
+            "255, 255, 255, 255",     // white pixel
+            "100, 150, 200, 141",     // mixed color
+            "255, 0, 0, 76",         // red
+            "0, 255, 0, 150",         // green
+            "0, 0, 255, 29"          // blue
     })
-    public void testExtractGreyscale_correctPixelValue(int red, int green, int blue, int expectedSum) {
+    public void testExtractLuminosityArray_correctPixelValue(int red, int green, int blue, int expectedSum) {
         int width = 1;
         int height = 1;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         int pixelColor = (red << 16) | (green << 8) | blue;
         image.setRGB(0, 0, pixelColor);
 
-        int[] greyscaleArray = ImageUtil.extractGreyscale(image);
+        int[] greyscaleArray = ImageUtil.extractLuminosityArray(image);
 
         Assertions.assertNotNull(greyscaleArray);
         Assertions.assertEquals(expectedSum, greyscaleArray[0]);
     }
 
     @Test
-    public void testExtractGreyscale_blackAndWhiteImage() {
+    public void testExtractLuminosityArray_blackAndWhiteImage() {
         int width = 2;
         int height = 1;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -104,19 +104,19 @@ public class ImageUtilTest {
         image.setRGB(0, 0, blackPixel);
         image.setRGB(1, 0, whitePixel);
 
-        int[] greyscaleArray = ImageUtil.extractGreyscale(image);
+        int[] greyscaleArray = ImageUtil.extractLuminosityArray(image);
 
         Assertions.assertEquals(0, greyscaleArray[0]);
-        Assertions.assertEquals(255 + 255 + 255, greyscaleArray[1]);
+        Assertions.assertEquals(255, greyscaleArray[1]);
     }
 
     @Test
-    public void testExtractGreyscaleArray_correctDimensions() {
+    public void testExtractLuminosityMatrix_correctDimensions() {
         int width = 50;
         int height = 30;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
-        int[][] greyscaleArray = ImageUtil.extractGreyscaleArray(image);
+        int[][] greyscaleArray = ImageUtil.extractLuminosityMatrix(image);
 
         Assertions.assertNotNull(greyscaleArray);
         Assertions.assertEquals(height, greyscaleArray.length);
@@ -127,73 +127,22 @@ public class ImageUtilTest {
     @CsvSource({
             "0, 0, 0, 0",             // black
             "255, 255, 255, 255",     // white
-            "100, 150, 200, 150",     // mixed color
-            "255, 0, 0, 85",          // red
-            "0, 255, 0, 85",          // green
-            "0, 0, 255, 85"           // blue
+            "100, 150, 200, 141",     // mixed color
+            "255, 0, 0, 76",          // red
+            "0, 255, 0, 150",          // green
+            "0, 0, 255, 29"           // blue
     })
-    public void testExtractGreyscaleArray_correctPixelValue(int red, int green, int blue, int expectedAverage) {
+    public void testExtractLuminosityMatrix_correctPixelValue(int red, int green, int blue, int expectedAverage) {
         int width = 1;
         int height = 1;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         int pixelColor = (red << 16) | (green << 8) | blue;
         image.setRGB(0, 0, pixelColor);
 
-        int[][] greyscaleArray = ImageUtil.extractGreyscaleArray(image);
+        int[][] greyscaleArray = ImageUtil.extractLuminosityMatrix(image);
 
         Assertions.assertNotNull(greyscaleArray);
         Assertions.assertEquals(expectedAverage, greyscaleArray[0][0]);
-    }
-
-    @Test
-    public void testExtractLuminosity_returnCorrectArraySize() {
-        int width = 20;
-        int height = 30;
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-
-        int[] luminosityArray = ImageUtil.extractLuminosity(image);
-
-        Assertions.assertNotNull(luminosityArray);
-        Assertions.assertEquals(width * height, luminosityArray.length);
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-          // R, G, B, Y(luminosity)
-            "0, 0, 0, 0",            // black
-            "255, 255, 255, 255",    // white
-            "100, 150, 200, 141",    // mixed color
-            "255, 0, 0, 76",         // red
-            "0, 255, 0, 150",        // green
-            "0, 0, 255, 29"          // blue
-    })
-    public void testExtractLuminosity_correctPixelValue(int red, int green, int blue, int expectedSum) {
-        int width = 1;
-        int height = 1;
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        int pixelColor = (red << 16) | (green << 8) | blue;
-        image.setRGB(0, 0, pixelColor);
-
-        int[] luminosityArray = ImageUtil.extractLuminosity(image);
-
-        Assertions.assertNotNull(luminosityArray);
-        Assertions.assertEquals(expectedSum, luminosityArray[0]);
-    }
-
-    @Test
-    public void testExtractLuminosity_blackAndWhiteImage() {
-        int width = 2;
-        int height = 1;
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        int blackPixel = 0x000000;
-        int whitePixel = 0xFFFFFF;
-        image.setRGB(0, 0, blackPixel);
-        image.setRGB(1, 0, whitePixel);
-
-        int[] greyscaleArray = ImageUtil.extractLuminosity(image);
-
-        Assertions.assertEquals(0, greyscaleArray[0]);
-        Assertions.assertEquals(255, greyscaleArray[1]);
     }
 
     @Test
