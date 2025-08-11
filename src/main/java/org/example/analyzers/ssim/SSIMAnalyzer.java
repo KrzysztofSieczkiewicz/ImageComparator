@@ -3,7 +3,6 @@ package org.example.analyzers.ssim;
 import org.example.comparators.SSIMComparatorConfig;
 import org.example.utils.ImageUtil;
 import org.example.analyzers.common.TriFunction;
-import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.Kernel;
@@ -47,8 +46,8 @@ public class SSIMAnalyzer {
     }
 
     public double calculateImagesSSIM(BufferedImage firstImage, BufferedImage secondImage) {
-        int[] firstImageLuminosity = ImageUtil.extractLuminosity(firstImage);
-        int[] secondImageLuminosity = ImageUtil.extractLuminosity(secondImage);
+        int[] firstImageLuminosity = ImageUtil.extractLuminosityArray(firstImage);
+        int[] secondImageLuminosity = ImageUtil.extractLuminosityArray(secondImage);
         int imgWidth = firstImage.getWidth();
         int imgHeight = firstImage.getHeight();
         int numPixels = firstImageLuminosity.length;

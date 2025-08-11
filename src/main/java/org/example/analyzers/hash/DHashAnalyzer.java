@@ -22,7 +22,7 @@ public class DHashAnalyzer {
         int height = image.getHeight();
 
         int[] values = ImageUtil.extractLuminosityArray(image);
-        BitSet hash = new BitSet(width * height);
+        BitSet hash = new BitSet(width * height - 1);
 
         int index = 0;
         for (int y = 0; y < height; y++) {
