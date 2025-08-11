@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-// TODO: MAYBE RENAME TO THE directComparisonResult or sth?
 public class Mismatches {
 
     private final int[][] neighboursMatrix;
