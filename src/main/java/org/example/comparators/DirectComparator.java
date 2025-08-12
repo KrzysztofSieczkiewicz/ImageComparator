@@ -1,7 +1,7 @@
 package org.example.comparators;
 
 import org.example.analyzers.direct.*;
-import org.example.analyzers.ExcludedAreas;
+import org.example.analyzers.direct.ExcludedAreas;
 import org.example.utils.ImageUtil;
 
 import java.awt.image.BufferedImage;

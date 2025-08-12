@@ -1,6 +1,5 @@
 package org.example.analyzers.direct;
 
-import org.example.analyzers.ExcludedAreas;
 import org.example.analyzers.common.PixelPoint;
 
 import java.util.ArrayList;

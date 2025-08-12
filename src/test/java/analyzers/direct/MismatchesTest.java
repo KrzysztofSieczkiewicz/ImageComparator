@@ -1,6 +1,6 @@
 package analyzers.direct;
 
-import org.example.analyzers.ExcludedAreas;
+import org.example.analyzers.direct.ExcludedAreas;
 import org.example.analyzers.common.PixelPoint;
 import org.example.analyzers.direct.Mismatches;
 import org.example.analyzers.direct.MismatchesGroup;

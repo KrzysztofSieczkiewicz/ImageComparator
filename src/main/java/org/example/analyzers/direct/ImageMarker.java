@@ -3,7 +3,6 @@ package org.example.analyzers.direct;
 import org.example.analyzers.common.PixelPoint;
 import org.example.comparators.DirectComparatorConfig;
 import org.example.utils.accessor.ImageAccessor;
-import org.example.analyzers.ExcludedAreas;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
