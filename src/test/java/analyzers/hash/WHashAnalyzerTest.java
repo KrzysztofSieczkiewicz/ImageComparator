@@ -26,7 +26,7 @@ public class WHashAnalyzerTest {
     }
 
     @Test
-    public void testWHash_forIdenticalImages_shouldReturnEqualHashes() {
+    public void testWHash_identicalImages() {
         double coefficient = 0.25;
         wHashAnalyzer = new WHashAnalyzer(coefficient);
         BufferedImage image1 = createTestImage(64, 64, Color.BLACK);
@@ -39,7 +39,7 @@ public class WHashAnalyzerTest {
     }
 
     @Test
-    public void testWHash_forDifferentImages_shouldReturnDifferentHashes() {
+    public void testWHash_differentImages() {
         double coefficient = 0.25;
         wHashAnalyzer = new WHashAnalyzer(coefficient);
         BufferedImage image1 = createTestImage(64, 64, Color.BLACK);
@@ -52,7 +52,7 @@ public class WHashAnalyzerTest {
     }
 
     @Test
-    public void testWHash_forSimilarImages_shouldReturnSimilarHashes() {
+    public void testWHash_similarImages() {
         double coefficient = 0.25;
         wHashAnalyzer = new WHashAnalyzer(coefficient);
         BufferedImage image1 = createTestImage(64, 64, Color.BLACK);
@@ -72,7 +72,7 @@ public class WHashAnalyzerTest {
     }
 
     @Test
-    public void testWHash_forRectangularImages_shouldNotThrowException() {
+    public void testWHash_rectangularImages() {
         double coefficient = 0.25;
         wHashAnalyzer = new WHashAnalyzer(coefficient);
         BufferedImage image = createTestImage(128, 64, Color.BLACK);
@@ -83,7 +83,7 @@ public class WHashAnalyzerTest {
     }
 
     @Test
-    public void testWHash_withDifferentCoefficients_shouldReturnDifferentHashSizes() {
+    public void testWHash_differentCoefficients() {
         WHashAnalyzer wHashAnalyzer1 = new WHashAnalyzer(0.25);
         WHashAnalyzer wHashAnalyzer2 = new WHashAnalyzer(0.5);
         BufferedImage image = createTestImage(64, 64, Color.BLACK);
