@@ -2,7 +2,6 @@ package org.example.comparators;
 
 import org.example.analyzers.direct.*;
 import org.example.analyzers.ExcludedAreas;
-import org.example.analyzers.ImageValidator;
 import org.example.utils.ImageUtil;
 
 import java.awt.image.BufferedImage;
@@ -11,6 +10,7 @@ import java.awt.image.BufferedImage;
 public class DirectComparator extends BaseComparator {
     private final DirectComparatorConfig config;
 
+    private final int mismatchesPercentageThreshold;
     private final boolean enforceImageSize;
     private final boolean assureImageSize;
 
@@ -18,6 +18,7 @@ public class DirectComparator extends BaseComparator {
     public DirectComparator(DirectComparatorConfig config) {
         this.config = config;
 
+        this.mismatchesPercentageThreshold = config.getMismatchedPercentageThreshold();
         this.enforceImageSize = config.isEnforceImageSize();
         this.assureImageSize = config.isAssureImageSize();
     }
@@ -37,7 +38,6 @@ public class DirectComparator extends BaseComparator {
 
     public DirectComparisonResult compare(BufferedImage baseImage, BufferedImage comparedImage, ExcludedAreas excludedAreas) {
         DirectAnalyzer analyzer = new DirectAnalyzer(config);
-        ImageValidator imageValidator = new ImageValidator(config);
 
         BufferedImage checkedComparedImage = handleInputComparedImage(
                 baseImage,
@@ -58,7 +58,7 @@ public class DirectComparator extends BaseComparator {
             resultsImage = imageMarker.mark(resultsImage, excludedAreas);
         }
 
-        boolean isMatching = imageValidator.isBelowMismatchThreshold(baseImage, mismatches);
+        boolean isMatching = isBelowMismatchThreshold(baseImage, mismatches);
 
         return new DirectComparisonResult(
                 resultsImage,
@@ -76,7 +76,6 @@ public class DirectComparator extends BaseComparator {
 
     public DirectComparisonResult fastCompare(BufferedImage baseImage, BufferedImage comparedImage, ExcludedAreas excludedAreas) {
         DirectAnalyzer analyzer = new DirectAnalyzer(config);
-        ImageValidator imageValidator = new ImageValidator(config);
 
         BufferedImage checkedComparedImage = handleInputComparedImage(
                 baseImage,
@@ -97,7 +96,7 @@ public class DirectComparator extends BaseComparator {
             resultsImage = imageMarker.mark(resultsImage, excludedAreas);
         }
 
-        boolean isMatching = imageValidator.isBelowMismatchThreshold(baseImage, mismatches);
+        boolean isMatching = isBelowMismatchThreshold(baseImage, mismatches);
 
         return new DirectComparisonResult(
                 resultsImage,
@@ -105,4 +104,10 @@ public class DirectComparator extends BaseComparator {
         );
     }
 
+    private boolean isBelowMismatchThreshold(BufferedImage actualImage, Mismatches mismatches) {
+        int imageSize = actualImage.getWidth() * actualImage.getHeight();
+        int mismatchesCount = mismatches.getMismatchesCount();
+
+        return mismatchesPercentageThreshold > mismatchesCount*100/imageSize;
+    }
 }
