@@ -45,6 +45,10 @@ public class SSIMAnalyzer {
         }
     }
 
+    public SSIMAnalyzer() {
+        this(new SSIMComparatorConfig());
+    }
+
     public double calculateImagesSSIM(BufferedImage firstImage, BufferedImage secondImage) {
         int[] firstImageLuminosity = ImageUtil.extractLuminosityArray(firstImage);
         int[] secondImageLuminosity = ImageUtil.extractLuminosityArray(secondImage);

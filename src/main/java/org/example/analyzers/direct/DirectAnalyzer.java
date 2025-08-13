@@ -41,6 +41,10 @@ public class DirectAnalyzer {
         }
     }
 
+    public DirectAnalyzer() {
+        this(new DirectComparatorConfig());
+    }
+
     public Mismatches compare(BufferedImage actual, BufferedImage checked) {
         ImageAccessor actualAccessor = ImageAccessor.create(actual);
         ImageAccessor checkedAccessor = ImageAccessor.create(checked);
