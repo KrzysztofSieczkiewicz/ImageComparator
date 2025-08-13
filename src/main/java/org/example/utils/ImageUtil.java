@@ -1,57 +1,10 @@
 package org.example.utils;
 
-import org.example.utils.accessor.ImageAccessor;
-
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 
 public class ImageUtil {
-
-    public static int[] getWindowData(int[] imageData, int imageWidth, int windowDimension, int startX, int startY) {
-        int[] windowData = new int[windowDimension * windowDimension];
-
-        for (int currRow=0; currRow<windowDimension; currRow++) {
-            for (int currCol=0; currCol<windowDimension; currCol++) {
-                int pixelX = startX + currRow;
-                int pixelY = startY + currCol;
-
-                int indexImage = pixelY * imageWidth + pixelX;
-                int indexWindow = currRow * windowDimension + currCol;
-
-                windowData[indexWindow] = imageData[indexImage];
-            }
-        }
-        return  windowData;
-    }
-
-    /**
-     * Resizes image to requested dimensions using nearest neighbour interpolation
-     *
-     * @param image BufferedImage to be resized
-     * @param width requested width to scale to
-     * @param height requested height to scale to
-     * @return new BuffedImage containing resized image
-     */
-    @Deprecated
-    public static BufferedImage resizeNearestNeighbour(BufferedImage image, int width, int height) {
-        BufferedImage rescaledImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        ImageAccessor imgAccessor = ImageAccessor.create(image);
-
-        int x, y;
-        int ww = image.getWidth();
-        int hh = image.getHeight();
-
-        for (x = 0; x < width; x++) {
-            for (y = 0; y < height; y++) {
-                int col = imgAccessor.getPixel(x * ww / width, y * hh / height);
-                rescaledImg.setRGB(x, y, col);
-            }
-        }
-
-        return rescaledImg;
-    }
 
     /**
      * Resizes an image to the requested dimensions using Graphics2D with high-quality rendering hints.
@@ -76,63 +29,12 @@ public class ImageUtil {
     }
 
     /**
-     * TODO: REPLACE THIS WITH extractGreyscale
-     * Converts image to greyscale color space using TYPE_BYTE_GRAY
-     *
-     * @param image BufferedImage to be converted
-     * @return new BuffedImage containing image in greyscale color space
-     */
-    @Deprecated
-    public static BufferedImage greyscale(BufferedImage image) {
-        BufferedImage greyscaleImg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-        ImageAccessor imageAccessor = ImageAccessor.create(image);
-
-        for (int y = 0; y < image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
-                int grey = (int) (imageAccessor.getRed(x,y) * 0.21 +
-                        imageAccessor.getGreen(x,y) * 0.72 +
-                        imageAccessor.getBlue(x,y) * 0.07);
-
-                int rgb = (grey << 16) | (grey << 8) | grey;
-                greyscaleImg.setRGB(x, y, rgb);
-            }
-        }
-
-        return greyscaleImg;
-    }
-
-    /**
-     * Calculates greyscale space from provided RGB image
-     *
-     * @param image rgb BufferedImage
-     * @return 1D array of greyscale int values
-     */
-    public static int[] extractGreyscale(BufferedImage image) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-
-        int[] gImage = new int[width * height];
-
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int pixel = image.getRGB(x, y);
-
-                gImage[y * width + x] =
-                    ((pixel >> 16) & 0xFF) +
-                    ((pixel >> 8) & 0xFF) +
-                    (pixel & 0xFF);
-            }
-        }
-        return gImage;
-    }
-
-    /**
      * Calculates Y channel (YCbCr) from provided RGB image
      *
      * @param image rgb BufferedImage
      * @return 1D array of Y channel int values
      */
-    public static int[] extractLuminosity(BufferedImage image) {
+    public static int[] extractLuminosityArray(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
 
@@ -151,6 +53,36 @@ public class ImageUtil {
                 yInt = Math.max(0, Math.min(255, yInt));
 
                 yImage[y * width + x] = yInt;
+            }
+        }
+        return yImage;
+    }
+
+    /**
+     * Calculates Y channel (YCbCr) from provided RGB image
+     *
+     * @param image rgb BufferedImage
+     * @return 2D array of Y channel int values
+     */
+    public static int[][] extractLuminosityMatrix(BufferedImage image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        int[][] yImage = new int[height][width];
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixel = image.getRGB(x, y);
+
+                double yValue =
+                        ((pixel >> 16) & 0xFF) * 0.299 +
+                                ((pixel >> 8) & 0xFF) * 0.587 +
+                                (pixel & 0xFF) * 0.114;
+
+                int yInt = (int) Math.round(yValue);
+                yInt = Math.max(0, Math.min(255, yInt));
+
+                yImage[y][x] = yInt;
             }
         }
         return yImage;
@@ -189,33 +121,11 @@ public class ImageUtil {
                         sumWeightedValue += (double) imageData[pixelIndex] * weight;
                     }
                 }
-                outputMap[y * imageWidth + x] = Math.round(sumWeightedValue);
+                outputMap[y * imageWidth + x] = sumWeightedValue;
             }
         }
 
         return outputMap;
-    }
-
-    /**
-     * Blurs image using convolve op with preset kernel.
-     * Used kernel size is 6 times sigma rounded up to the next odd integer.
-     *
-     * @param image BufferedImage to be affected
-     * @param sigma std deviation of th Gaussian distribution used for blurring
-     * @return new, blurred BuffedImage
-     */
-    public static BufferedImage gaussianBlur(BufferedImage image, double sigma) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-
-        BufferedImage blurredImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-
-        Kernel kernel = generateGaussianKernel(sigma);
-
-        ConvolveOp conv = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
-        conv.filter(image, blurredImg);
-
-        return blurredImg;
     }
 
     /**
@@ -235,35 +145,6 @@ public class ImageUtil {
         g2d.dispose();
 
         return copy;
-    }
-
-    /**
-     * Internal util method. Generates Gaussian blur kernel. Size is set to be ~6 times sigma and odd.
-     *
-     * @param sigma std deviation of the Gaussian distribution used for the blur
-     * @return normalized awt Kernel
-     */
-    public static Kernel generateGaussianKernel(double sigma) {
-        int size = (int) (5 * sigma);
-        if (size % 2 == 0) size++;
-
-        float[] kernelData = new float[size * size];
-        int halfSize = size / 2;
-        float sum = 0;
-
-        for (int x=-halfSize; x<=halfSize; x++) {
-            for (int y =-halfSize; y<=halfSize; y++) {
-                float value = (float) ((1 / (2 * Math.PI * sigma*sigma)) * Math.exp(-(x*x + y*y) / (2 * sigma*sigma)));
-                kernelData[(x+halfSize)*size + (y+halfSize)] = value;
-                sum += value;
-            }
-        }
-
-        for (int i=0; i<kernelData.length; i++) {
-            kernelData[i] /= sum;
-        }
-
-        return new Kernel(size, size, kernelData);
     }
 
     /**

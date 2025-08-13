@@ -3,7 +3,6 @@ package org.example.analyzers.ssim;
 import org.example.comparators.SSIMComparatorConfig;
 import org.example.utils.ImageUtil;
 import org.example.analyzers.common.TriFunction;
-import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.Kernel;
@@ -47,27 +46,24 @@ public class SSIMAnalyzer {
     }
 
     public double calculateImagesSSIM(BufferedImage firstImage, BufferedImage secondImage) {
-        ImageAccessor firstImageAccessor = ImageAccessor.create(firstImage);
-        ImageAccessor secondImageAccessor = ImageAccessor.create(secondImage);
-
-        int[] firstImageData = firstImageAccessor.getBlueArray();
-        int[] secondImageData = secondImageAccessor.getBlueArray();
-        int imgWidth = firstImageAccessor.getWidth();
-        int imgHeight = firstImageAccessor.getHeight();
-        int numPixels = firstImageData.length;
+        int[] firstImageLuminosity = ImageUtil.extractLuminosityArray(firstImage);
+        int[] secondImageLuminosity = ImageUtil.extractLuminosityArray(secondImage);
+        int imgWidth = firstImage.getWidth();
+        int imgHeight = firstImage.getHeight();
+        int numPixels = firstImageLuminosity.length;
 
         int[] firstImageSquaredData = new int[numPixels];
         int[] secondImageSquaredData = new int[numPixels];
         int[] imagesProductData = new int[numPixels];
 
         for(int i=0; i<numPixels; i++) {
-            firstImageSquaredData[i] = firstImageData[i] * firstImageData[i];
-            secondImageSquaredData[i] = secondImageData[i] * secondImageData[i];
-            imagesProductData[i] = firstImageData[i] * secondImageData[i];
+            firstImageSquaredData[i] = firstImageLuminosity[i] * firstImageLuminosity[i];
+            secondImageSquaredData[i] = secondImageLuminosity[i] * secondImageLuminosity[i];
+            imagesProductData[i] = firstImageLuminosity[i] * secondImageLuminosity[i];
         }
 
-        double[] firstImageWeightedMeanData = ImageUtil.convolve(firstImageData, imgWidth, imgHeight, gaussianKernel);
-        double[] secondImageWeightedMeanData = ImageUtil.convolve(secondImageData, imgWidth, imgHeight, gaussianKernel);
+        double[] firstImageWeightedMeanData = ImageUtil.convolve(firstImageLuminosity, imgWidth, imgHeight, gaussianKernel);
+        double[] secondImageWeightedMeanData = ImageUtil.convolve(secondImageLuminosity, imgWidth, imgHeight, gaussianKernel);
         double[] firstImageWeightedSquaredData = ImageUtil.convolve(firstImageSquaredData, imgWidth, imgHeight, gaussianKernel);
         double[] secondImageWeightedSquaredData = ImageUtil.convolve(secondImageSquaredData, imgWidth, imgHeight, gaussianKernel);
         double[] imagesWeightedProductData = ImageUtil.convolve(imagesProductData, imgWidth, imgHeight, gaussianKernel);

@@ -15,12 +15,9 @@ public class Main {
         BufferedImage image1 = ImageIO.read(new File("src/image.png"));
         BufferedImage image2 = ImageIO.read(new File("src/image.png"));
 
-        // TODO: introduce greyscale and YCbCr conversions before comparison
-
         long startTime = System.nanoTime();
         image2 = ImageUtil.resizeBilinear(image2, image1.getWidth(), image1.getHeight());
 
-        ImageUtil.extractLuminosity(image1);
         double ssim = new SSIMAnalyzer(new SSIMComparatorConfig()).calculateImagesSSIM(image1, image2);
         long endTime = System.nanoTime();
         System.out.println("Time taken: " + (endTime - startTime));

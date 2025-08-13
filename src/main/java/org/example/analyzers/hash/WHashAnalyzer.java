@@ -1,7 +1,6 @@
 package org.example.analyzers.hash;
 
 import org.example.utils.ImageUtil;
-import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
 import java.util.BitSet;
@@ -26,10 +25,7 @@ public class WHashAnalyzer {
      * @return BitSet containing image hash
      */
     public BitSet wHash(BufferedImage image) {
-        BufferedImage greyscaled = ImageUtil.greyscale(image);
-        ImageAccessor accessor = ImageAccessor.create(greyscaled);
-
-        int[][] imageMatrix = accessor.getBlueMatrix();
+        int[][] imageMatrix = ImageUtil.extractLuminosityMatrix(image);
         performHaarWaveletTransform(imageMatrix);
 
         int mean = calculateCoefficientsMean(imageMatrix);
@@ -72,9 +68,11 @@ public class WHashAnalyzer {
         double sum = 0;
         int count = 0;
 
-        int size = matrix.length / 2;
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
+        int rows = matrix.length / 2;
+        int cols = matrix[0].length / 2;
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
                 sum += matrix[i][j];
                 count++;
             }
@@ -84,13 +82,14 @@ public class WHashAnalyzer {
     }
 
     private BitSet calculateHash(int[][] matrix, int mean) {
-        int hashSize = (int) (matrix.length * hashSizeCoefficient);
+        int hashRows = (int) (matrix.length * hashSizeCoefficient);
+        int hashCols = (int) (matrix[0].length * hashSizeCoefficient);
 
-        BitSet hash = new BitSet(hashSize * hashSize);
+        BitSet hash = new BitSet(hashRows * hashCols);
 
         int bitIndex = 0;
-        for (int i = 0; i < hashSize; i++) {
-            for (int j = 0; j < hashSize; j++) {
+        for (int i = 0; i < hashRows; i++) {
+            for (int j = 0; j < hashCols; j++) {
                 if (matrix[i][j] > mean) {
                     hash.set(bitIndex);
                 }

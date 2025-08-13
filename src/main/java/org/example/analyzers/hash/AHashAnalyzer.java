@@ -1,7 +1,6 @@
 package org.example.analyzers.hash;
 
 import org.example.utils.ImageUtil;
-import org.example.utils.accessor.ImageAccessor;
 
 import java.awt.image.BufferedImage;
 import java.util.BitSet;
@@ -19,10 +18,7 @@ public class AHashAnalyzer {
      * @return BitSet containing image hash
      */
     public BitSet aHash(BufferedImage image) {
-        BufferedImage greyscaled = ImageUtil.greyscale(image);
-        ImageAccessor accessor = ImageAccessor.create(greyscaled);
-
-        int[] values = accessor.getBlueArray();
+        int[] values = ImageUtil.extractLuminosityArray(image);
         int averageValue = calculateAverage(values);
         int length = values.length;
 

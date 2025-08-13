@@ -1,11 +1,11 @@
-package org.example.analyzers;
+package org.example.analyzers.direct;
 
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.util.ArrayList;
 
 public class ExcludedAreas {
-    private Area excluded = new Area();
+    private final Area excluded = new Area();
 
 
     public void excludeAreas(ArrayList<Rectangle> rectangles) {

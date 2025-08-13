@@ -3,7 +3,6 @@ package org.example.analyzers.direct;
 import org.example.analyzers.common.PixelPoint;
 import org.example.comparators.DirectComparatorConfig;
 import org.example.utils.accessor.ImageAccessor;
-import org.example.analyzers.ExcludedAreas;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -29,7 +28,7 @@ public class ImageMarker {
         this.lineThickness = config.getMarkingLineThickness();
 
         this.mismatchedMarkingType = config.getMismatchedAreasMarking();
-        this.mismatchMarkingColor = config.getMismatchMarkingColor();
+        this.mismatchMarkingColor = config.getMismatchedMarkingColor();
 
         this.excludedMarkingType = config.getExcludedAreasMarking();
         this.excludedMarkingColor = config.getExcludedMarkingColor();
@@ -48,7 +47,7 @@ public class ImageMarker {
                 drawRectangles(boundingRectangles, bufferedImage, mismatchMarkingColor, rectangleOffset, lineThickness);
             }
             case PAINT_OVER -> {
-                paintPixels(mismatches.getPixels(), bufferedImage, mismatchMarkingColor);
+                paintPixels(mismatches.getMismatchedPixels(), bufferedImage, mismatchMarkingColor);
             }
         }
 

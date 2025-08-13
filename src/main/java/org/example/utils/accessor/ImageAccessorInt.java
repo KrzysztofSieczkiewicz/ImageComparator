@@ -1,7 +1,5 @@
 package org.example.utils.accessor;
 
-import org.example.utils.BitOperationsUtil;
-
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 
@@ -57,10 +55,10 @@ public class ImageAccessorInt extends ImageAccessorImpl {
 
         this.imageDataInt = ((DataBufferInt) bufferedImage.getRaster().getDataBuffer()).getData();
 
-        offsetAlpha = BitOperationsUtil.findFirstSetBitIndex(maskAlpha);
-        offsetRed   = BitOperationsUtil.findFirstSetBitIndex(maskRed);
-        offsetGreen = BitOperationsUtil.findFirstSetBitIndex(maskGreen);
-        offsetBlue  = BitOperationsUtil.findFirstSetBitIndex(maskBlue);
+        offsetAlpha = findFirstSetBitIndex(maskAlpha);
+        offsetRed   = findFirstSetBitIndex(maskRed);
+        offsetGreen = findFirstSetBitIndex(maskGreen);
+        offsetBlue  = findFirstSetBitIndex(maskBlue);
     }
 
     @Override
@@ -103,6 +101,16 @@ public class ImageAccessorInt extends ImageAccessorImpl {
     @Override
     public void setBlue(int index, int blue) {
         imageDataInt[index] = (imageDataInt[index] & (~maskBlue)) | (blue << offsetBlue);
+    }
+
+
+    /**
+     * Finds the first (least significant) bit that is set to 1
+     * @param mask mask to be searched
+     * @return index of the least significant set bit
+     */
+    private int findFirstSetBitIndex(int mask) {
+        return (mask == 0) ? -1 : Integer.numberOfTrailingZeros(mask);
     }
 
 }
