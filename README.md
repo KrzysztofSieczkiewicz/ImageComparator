@@ -31,6 +31,7 @@ Image Comparator offers two primary ways to perform comparisons:
     PHashAnalyzer
     DHashAnalyzer
     SSIMAnalyzer
+   note: comparing hashes using Hamming distance might be done with HashUtil
 
 ## Example:
 note: DirectComparator is the most extensive comparator as this method allows for more granular and visual outcome.
