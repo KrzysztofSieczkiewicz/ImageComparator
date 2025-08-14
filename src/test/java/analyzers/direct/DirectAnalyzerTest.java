@@ -1,10 +1,10 @@
 package analyzers.direct;
 
-import org.example.analyzers.common.PixelPoint;
-import org.example.analyzers.direct.ColorSpace;
-import org.example.analyzers.direct.DirectAnalyzer;
-import org.example.analyzers.direct.Mismatches;
-import org.example.comparators.DirectComparatorConfig;
+import com.sieczk.analyzers.common.PixelPoint;
+import com.sieczk.analyzers.direct.ColorSpace;
+import com.sieczk.analyzers.direct.DirectAnalyzer;
+import com.sieczk.analyzers.direct.Mismatches;
+import com.sieczk.comparators.DirectComparatorConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

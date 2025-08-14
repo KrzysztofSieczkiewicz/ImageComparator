@@ -1,9 +1,9 @@
 package analyzers.direct;
 
-import org.example.analyzers.direct.ExcludedAreas;
-import org.example.analyzers.common.PixelPoint;
-import org.example.analyzers.direct.Mismatches;
-import org.example.analyzers.direct.MismatchesGroup;
+import com.sieczk.analyzers.direct.ExcludedAreas;
+import com.sieczk.analyzers.common.PixelPoint;
+import com.sieczk.analyzers.direct.Mismatches;
+import com.sieczk.analyzers.direct.MismatchesGroup;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

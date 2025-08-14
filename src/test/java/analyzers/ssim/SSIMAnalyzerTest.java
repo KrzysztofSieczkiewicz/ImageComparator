@@ -1,7 +1,7 @@
 package analyzers.ssim;
 
-import org.example.analyzers.ssim.SSIMAnalyzer;
-import org.example.comparators.SSIMComparatorConfig;
+import com.sieczk.analyzers.ssim.SSIMAnalyzer;
+import com.sieczk.comparators.SSIMComparatorConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

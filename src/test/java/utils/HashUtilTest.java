@@ -1,6 +1,6 @@
 package utils;
 
-import org.example.utils.HashUtil;
+import com.sieczk.utils.HashUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

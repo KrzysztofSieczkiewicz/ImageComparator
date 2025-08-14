@@ -1,6 +1,6 @@
 package analyzers.hash;
 
-import org.example.analyzers.hash.PHashAnalyzer;
+import com.sieczk.analyzers.hash.PHashAnalyzer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

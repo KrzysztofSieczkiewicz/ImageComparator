@@ -1,7 +1,7 @@
 package analyzers.hash;
 
-import org.example.analyzers.hash.AHashAnalyzer;
-import org.example.utils.ImageUtil;
+import com.sieczk.analyzers.hash.AHashAnalyzer;
+import com.sieczk.utils.ImageUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

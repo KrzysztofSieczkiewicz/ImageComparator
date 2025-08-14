@@ -1,6 +1,6 @@
 package analyzers.hash;
 
-import org.example.analyzers.hash.WHashAnalyzer;
+import com.sieczk.analyzers.hash.WHashAnalyzer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

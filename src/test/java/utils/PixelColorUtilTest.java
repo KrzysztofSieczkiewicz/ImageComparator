@@ -1,6 +1,6 @@
 package utils;
 
-import org.example.utils.PixelColorUtil;
+import com.sieczk.utils.PixelColorUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
